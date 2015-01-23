@@ -1,0 +1,8 @@
+bin/*
+lib/*
+tmp/*
+doc/html
+Makefile
+src/Makefile
+.*.swp
+mdcv04ip.pro.user

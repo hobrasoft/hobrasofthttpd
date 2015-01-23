@@ -1,0 +1,2 @@
+SUBDIRS += example
+TEMPLATE = subdirs

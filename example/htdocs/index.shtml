@@ -1,0 +1,41 @@
+<!-- #include "header.shtml" -->
+<script>
+$(document).ready(function(){
+
+    // Setup event stream
+    if (window.EventSource == undefined) {
+        alert("HTML5 Server-Sent Events are not supported by your browser, the application will not work.")
+        return;
+        }
+    var source = new EventSource("/example/events");
+    source.addEventListener("status", function(event) {
+            var data = JSON.parse(event.data);
+            var id = data.id;
+            var rowdata = 
+                    "<tr id=\"" + id + "\">" + 
+                    "<td>" + data.id + "</td>" +
+                    "<td>" + data.text + "</td>" +
+                    "<td>" + data.counter + "</td>" +
+                    "<td><a href=\"/detail.shtml?id="+ id + "\"><div class=\"glyphicon glyphicon-zoom-in\"></div></a></td>" +
+                    "</tr>\n";
+            var rowelement = $("table#tabledata tbody tr#"+id);
+            if (rowelement.text() == "") {
+                $("table#tabledata tbody").append( rowdata );
+              } else {
+                rowelement.replaceWith( rowdata );
+                }
+            }, false);
+
+});
+
+</script>
+
+<div class="container">
+    <div class="table-responsive">
+        <table id="tabledata" class="table table-hover table-condensed">
+        <tr><th>ID</th><th>Text</th><th>Value</th><th></th></tr>
+        </table>
+    </div>
+</div>
+
+<!-- #include "footer.shtml" -->

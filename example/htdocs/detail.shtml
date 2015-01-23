@@ -1,0 +1,63 @@
+<!-- #include "header.shtml" -->
+<script>
+
+
+$(document).ready(function(){
+
+    $("#button").click(function() {
+            window.location.replace('index.shtml');
+        });
+
+    $.urlParam = function(name) {
+        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        if (results==null) {
+            return null;
+          } else {
+            return results[1] || 0;
+            }
+    };
+
+    var id = $.urlParam("id");
+
+    // Setup event stream
+    if (window.EventSource == undefined) {
+        alert("HTML5 Server-Sent Events are not supported by your browser, the application will not work.")
+        return;
+        }
+    var source = new EventSource("/example/"+id+"/events");
+    source.addEventListener("status", function(event) {
+            var data = JSON.parse(event.data);
+            $("#id").val(data.id);
+            $("#text").val(data.text);
+            $("#counter").val(data.counter);
+            }, false);
+
+});
+
+</script>
+
+<div class="container">
+    <form role="form">
+
+    <div class="form-group">
+        <label for="id">ID:</label>
+        <input class="form-control" id="id">
+    </div>
+
+    <div class="form-group">
+        <label for="text">Text:</label>
+        <input class="form-control" id="text">
+    </div>
+
+    <div class="form-group">
+        <label for="counter">Counter:</label>
+        <input class="form-control" id="counter">
+    </div>
+
+    </form>
+
+<button type="button" id="button" class="btn btn-primary">Back to list</button>
+
+</div>
+
+<!-- #include "footer.shtml" -->
