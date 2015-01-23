@@ -4,5 +4,6 @@ tmp/*
 doc/html
 Makefile
 src/Makefile
+example/src/Makefile
 .*.swp
-mdcv04ip.pro.user
+example/bin/*
