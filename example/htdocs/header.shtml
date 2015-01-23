@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap 101 Template</title>
+    <title>Hobrasoft HTTP server example</title>
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -29,6 +29,6 @@
         <a href="http://hobrasoft.cz/en"><img src="logo.png" class="img-responsive" alt=""></a>
         <h2>HTTP server example</h2>
         <h3>C++, Qt, Event driven, Single Thread, Embedded, Open Source</h3>
-        <p>Download: <a href="http://hobrasoft.cz/httpserver">http://hobrasoft.cz/httpserver</a></p>
+        <p>Download: <a href="http://www.hobrasoft.cz/en/blog/bravenec/httpd">http://www.hobrasoft.cz/en/blog/bravenec/httpd</a></p>
     </div>
 </div>
