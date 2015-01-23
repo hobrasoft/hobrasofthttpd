@@ -4,20 +4,20 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = MDCV04IP
+PROJECT_NAME           = "Hobrasoft httpd server"
 PROJECT_NUMBER         =
 PROJECT_BRIEF          = "HTTP server"
 PROJECT_LOGO           = 
 OUTPUT_DIRECTORY       = doc
 CREATE_SUBDIRS         = NO
-OUTPUT_LANGUAGE        = Czech
+OUTPUT_LANGUAGE        = English
 BRIEF_MEMBER_DESC      = YES
 REPEAT_BRIEF           = YES
 ABBREVIATE_BRIEF       =
 ALWAYS_DETAILED_SEC    = NO
 INLINE_INHERITED_MEMB  = NO
 FULL_PATH_NAMES        = YES
-STRIP_FROM_PATH        = src
+STRIP_FROM_PATH        = /home/tycho/SRC/
 STRIP_FROM_INC_PATH    =
 SHORT_NAMES            = NO
 JAVADOC_AUTOBRIEF      = NO
@@ -91,7 +91,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = src doc
+INPUT                  = src doc example
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.cpp *.h *.dox *.md
 RECURSIVE              = YES
@@ -110,8 +110,8 @@ FILTER_SOURCE_PATTERNS =
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
 #---------------------------------------------------------------------------
-SOURCE_BROWSER         = NO
-INLINE_SOURCES         = NO
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = UES
 STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = NO
 REFERENCES_RELATION    = NO

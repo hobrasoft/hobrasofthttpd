@@ -14,7 +14,7 @@
 #include <QStringList>
 
 
-using namespace Httpd;
+using namespace Example::Httpd;
 
 
 AbstractController::AbstractController(HobrasoftHttpd::HttpConnection *parent) : HobrasoftHttpd::HttpRequestHandler(parent) {

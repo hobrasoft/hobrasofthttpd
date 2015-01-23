@@ -10,12 +10,14 @@
 #include <QObject>
 #include "abstractcontroller.h"
 
+
+namespace Example {
 class Item;
 
 namespace Httpd {
 
 /**
- * @brief Vyřizuje požadavky /example
+ * @brief Processes requests with path /example
  */
 class ControllerExample : public AbstractController {
     Q_OBJECT
@@ -32,10 +34,14 @@ class ControllerExample : public AbstractController {
     virtual void serviceIdGet     (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QString& id);
 
   private slots:
+    /**
+     * @brief Sends data of the item to the event stream
+     */
     void    sendUpdate(const Item *);
 
 };
 
+}
 }
 
 #endif

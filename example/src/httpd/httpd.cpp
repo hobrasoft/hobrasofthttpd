@@ -9,11 +9,11 @@
 #include "application.h"
 
 
-Httpd::Httpd::Httpd(QObject *parent) : HobrasoftHttpd::HttpServer(parent) {
+Example::Httpd::Httpd::Httpd(QObject *parent) : HobrasoftHttpd::HttpServer(parent) {
 }
 
 
-HobrasoftHttpd::HttpRequestHandler *Httpd::Httpd::requestHandler(HobrasoftHttpd::HttpConnection *connection) {
+HobrasoftHttpd::HttpRequestHandler *Example::Httpd::Httpd::requestHandler(HobrasoftHttpd::HttpConnection *connection) {
     return new RequestMapper(connection);
 }
 

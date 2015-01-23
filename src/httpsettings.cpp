@@ -11,23 +11,23 @@
  * @addtogroup konfigurace
  * @{
  *
- * Konfigurace HobrasoftHttpd::HttpServer
+ * Configuration HobrasoftHttpd::HttpServer
  * ---------
  *
- * - __httpd/address__ - bind adresa pro http server (0.0.0.0)
- * - __httpd/port__ - bind port pro http server (8086)
- * - __httpd/timeout__ - timeout pro http požadavek, než se uzavře spojení při neaktivitě (600 sec)
- * - __httpd/maxRequestSize__ - maximání velikost požadavku (16384)
- * - __httpd/maxMultiPartSize__ - maximální velikost požadavku při multipart (1048576)
- * - __httpd/tempDir__ - dočasný adresář (/tmp)
- * - __httpd/sessionExpirationTime__ - čas pro vypršení session (3600 sec)
- * - __httpd/sessionIdName__ - jméno cookie pro předávání session (sessionid)
- * - __httpd/encoding__ - kódování předávané v hlavičce (UTF-8)
- * - __httpd/root__ - documentroot adresář (.)
- * - __httpd/cacheMaxAge__ -  (3600 sec)
- * - __httpd/maxCacheFileSize__ - maximální velikost soubor v cache (1000000)
- * - __httpd/indexFile__ - index v adresáři (index.html)
- * - __httpd/cacheOn__ - zapnutí/vypnutí cache (false)
+ * - __httpd/address__ - bind address for http server (::)
+ * - __httpd/port__ - bind port for http server (8080)
+ * - __httpd/timeout__ - timeout for http request (600 sec)
+ * - __httpd/maxRequestSize__ - maximum size of request (16384)
+ * - __httpd/maxMultiPartSize__ - maximum size of multipart request (1048576)
+ * - __httpd/tempDir__ - temporary directory (/tmp)
+ * - __httpd/sessionExpirationTime__ - session timeout (3600 sec)
+ * - __httpd/sessionIdName__ - session cookie name (sessionid)
+ * - __httpd/encoding__ - encoding set in headers (UTF-8)
+ * - __httpd/root__ - document root directory (.)
+ * - __httpd/cacheMaxAge__ - maximum age of objects in cache (3600 sec)
+ * - __httpd/maxCacheFileSize__ - maximum size of files in cache (1000000)
+ * - __httpd/indexFile__ - index file in direcotry (index.html)
+ * - __httpd/cacheOn__ - on/off cache (false)
  *
  * @}
  */
@@ -37,7 +37,7 @@ using namespace HobrasoftHttpd;
 
 HttpSettings::HttpSettings(QObject *parent) : QObject(parent) {
     m_port                  = 8080;
-    m_address               = QHostAddress("::");
+    m_address               = QHostAddress::AnyIPv6;
     m_timeout               = 600;
     m_maxAge                = 3600;
     m_encoding              = "UTF-8";

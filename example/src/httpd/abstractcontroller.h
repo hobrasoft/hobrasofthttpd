@@ -20,13 +20,27 @@ class HttpResponse;
 class HttpConnection;
 }
 
+namespace Example {
 namespace Httpd {
 
 /**
-@brief Virtuální třída pro vyřizování unifikovaných Http požadavků na server API
+@brief Abstract class for processing unified HTTP requests to server's API
 
-Třída vytváří šablonu pro tvorbu unifikovaných HTTP požadavků podle specifikace api. Požadavky jsou
-tvořené s pevnou strukturou, například:
+Data are passed in QVariant structures and converted to/from JSON for HTTP transport.
+The data can be created like this:
+~~~~~~~~~~~~~~
+QVariantMap data;
+data["ID"] = "1";
+data["Description"] = "Some text";
+QVariantList list;
+list << "abc" << "xyz";
+data["List"] = list;
+// corresponding json: { "ID" : "1", "Description" : "Some text", "List" : [ "abc", "xyz" ] }
+~~~~~~~~~~~~~~
+
+
+Class is a virtual template for unified HTTP requests. Requests are created with
+stable structure, for example the list of rooms:
 
 ~~~~~~~~~~~~~~
 http://localhost:8086/room
@@ -35,80 +49,66 @@ http://localhost:8086/room/e40f2af7ea281baba30381db700311f7
 http://localhost:8086/room/e40f2af7ea281baba30381db700311f7/events
 ~~~~~~~~~~~~~~
 
-Cesta je složená z několika komponent:
+The path consist of few components:
+- /room - module from which the data are acquired. It no other part of the path is given, such URL returns list of all objects in the modules.
+- e40f2af7ea281baba30381db700311f7 - object id
+- events - if the world _events_ is added to the end of the path, then the event stream is created. All changes in module
+   is written to the stream. There are two cases: if the id was givent, then only events associated with the id are sent, otherwise
+   all event for every object in the modules is sent.
 
-- /room - modul, kterého se týká. Pokud neuvedu další části cesty, vrací taková adresa okamžitý seznam všech objektů (zde pokojů)
-- e40f2af7ea281baba30381db700311f7 - id objektu, který chci obsluhovat
-- events - pokud se přidá na konec cesty slovo events, otevře se proud událostí, do kterého se začnou vypisovat všechny změny ve
-      sledovaných objektech. Pokud je objektem celý seznam, vypisují se změny každého objektu v seznamu (zde změny na všech pokojích).
-      Pokud je objektem konkrétní objekt, vypisují se pouze jeho změny (zde změny na konkrétním pokoji).
-
-Pro obsluhu cest se volají různé metody:
+Different methods are called to retrieve data:
 
 - /room - serviceList()
 - /room/events - serviceEvents()
-- /room/e40f2af7ea281baba30381db700311f7 - podle HTTP metody požadavku se volá některá z metod 
+- /room/e40f2af7ea281baba30381db700311f7 - depending on HTTP method some of these methods is called:
         serviceIdGet(), serviceIdDelete(), serviceIdPut(), serviceIdPost().
-- /room/e40f2af7ea281baba30381db700311f7/events - volá se metoda serviceEvent()
+- /room/e40f2af7ea281baba30381db700311f7/events - the serviceEvent() method is called
 
-### Implementace odvozených tříd ###
+### Derived class implementation ###
 
-Defaultní implementace vrací chybu 501. V odvozené třídě se musí implementovat všechny metody, které mají vracet užitečná data.
-Může být důležité implementovat i metodu exists() - tato metoda vrací bool hodnotu true, pokud dotazované ID existuje.
-Pokud metoda exists() vrátí false, defaultní implementace třídy vrátí jako odpověď na http požadavek chybu 404. Implementace
-konkrétní metody se tak nemusí starat o odesílání chybových stavů, například:
-
-~~~~~~~~~~~~~~
-void ControllerRoom::serviceIdGet (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QString& id) {
-    Pokoj *pokoj = SEZNAMPOKOJU->pokoj(id);
-    if (pokoj == NULL) {
-        // Pokoj neexistuje, chybu už nahlásila abstraktní třída
-        // Kontrola zde je zbytečná, ale je riskantní test neprovádět
-        return;
-        }
-    serviceOK(request, response, pokoj->webStatus());
-}
-~~~~~~~~~~~~~~
-
-Kontrola na existenci ID proběhla už v abstraktní třídě AbstractController, takže je v kódu zbytečná - k podobnému stavu by
-nemělo nikdy dojít. Kontrola je zde pouze pro jistoru, aby server nespadnul při nepředvídatelných událostech. Dobrodružné
-povahy mohou s velkou porcí jistoty zkrátit celou implementaci metody takto:
+Default implementation returns error 501. In the derived class all method should be implemeted, which returns some useful data.
+It can be important to implement also the exists() method - it returns true if the requested ID exists.
+If it returns false, then the default AbstractController method returned error 404 before your own implementation is called
+and the connection is closed.
+Your own implementation can avoid all the care about error states:
 
 ~~~~~~~~~~~~~~
 void ControllerRoom::serviceIdGet (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QString& id) {
-    serviceOK(request, response, SEZNAMPOKOJU->pokoj(id)->webStatus());
+    // It is useles to find if the room exists, abstract class cares about it
+    serviceOK(request, response, ROOMSLIST->room(id))
 }
 ~~~~~~~~~~~~~~
 
-### Implementace proudu událostí ###
-Implementace proudu událostí se dá zjednodušit použitím metody serviceEvent(). Tato metoda posílá v odpovědi předaná data
-zformátovaná jako událost - postará se o správné zformátování a potlačí odeslání hlaviček. Implementace proudu událostí pak
-může vypadat takto (pro stručnost jsou vyházené kontroly):
+
+### HTML5 event stream implementation ###
+The HTML5 event stream can be simply implemented in serviceEvent() method. The method sends responses formated as an event - the
+data are formated properly and the HTTP headers are supressed.
+Implementation of event stream can look like this:
 
 ~~~~~~~~~~~~~~
 void ControllerRoom::serviceEvents (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
-    connect (SEZNAMPOKOJU, SIGNAL( statusChanged(const SkupinaJednotek *)),
-             this,           SLOT(slotSendUpdate(const SkupinaJednotek *)));
+    connect (ROOMSLIST, SIGNAL( statusChanged(const Room *)),
+             this,        SLOT(slotSendUpdate(const Room *)));
 
-    QList<SkupinaJednotek *> list = SEZNAMPOKOJU->skupiny().toList();
+    QList<Room *> list = ROMSLIST->rooms().toList();
     for (int i=0; i<list.size(); i++) {
-        slotSendUpdate(qobject_cast<Pokoj *>(list[i]));
+        slotSendUpdate(list[i]);
         }
 }
 
 void ControllerRoom::serviceIdEvents (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QString& id) {
-    connect(pokoj, SIGNAL(statusChanged(const SkupinaJednotek *)),
-             this,   SLOT(slotSendUpdate(const SkupinaJednotek *)));
+    connect(room, SIGNAL( statusChanged(const Room *)),
+            this,   SLOT(slotSendUpdate(const Room *)));
 
-    slotSendUpdate(pokoj);
+    slotSendUpdate(room);
 }
 
-void ControllerRoom::slotSendUpdate(const SkupinaJednotek *skupina) {
-    serviceEvent(NULL, NULL, pokoj->webStatusPresenceAndCall());
+void ControllerRoom::slotSendUpdate(const Room *skupina) {
+    serviceEvent(NULL, NULL, room->webStatus());
 }
 ~~~~~~~~~~~~~~
 
-@see @ref api
+Data are passed in QVariant structures and formated in JSON to be send to clients.
 
 */
 class AbstractController : public HobrasoftHttpd::HttpRequestHandler {
@@ -116,55 +116,57 @@ class AbstractController : public HobrasoftHttpd::HttpRequestHandler {
   public:
 
     /**
-     * @brief Konstruktor
+     * @brief Constructor
      */
     AbstractController(HobrasoftHttpd::HttpConnection *parent);
 
     /**
-     * @brief Obsluha požadavku
+     * @brief Request processing
      */
     virtual void service(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
 
     /**
-     * @brief Nastavuje kontrolu položky ID v datech při PUT a POST
+     * @brief If the checkId is set then the exixtence of the item is checked in requests PUT and POST
      */
     void setCheckId(bool x) { m_checkId = x; }
 
     /**
-     * @brief Vrací stav kontroly položky ID v datech při PUT a POST
+     * @brief Returns the state of checkId
+     *
+     * @see setCheckId()
      */
     bool checkId() const { return m_checkId; }
 
   protected:
 
     /**
-     * @brief Kontrola existence zadaného ID
+     * @brief Check existence of th ID
      * 
-     * @returns true pokud zadané ID existuje
+     * @returns true if the ID exists 
      *
-     * V odvozených třídách by měla být metoda reimplementovaná. Na základě
-     * výsledků se rozhoduje, jestli se pošle jako odpověď na dotaz chyba 404,
-     * nebo se bude volat některá z dalších metod (serviceId(),
-     * serviceIdEvents(), serviceIdDelete()).
+     * The method should be reimplemented in derived classes. Depending of the
+     * result the decission is made if the 404 error is sent to the request, 
+     * of if the reimplemented method will be called 
+     * (one of serviceId(), serviceIdEvents(), serviceIdDelete()).
      */
     virtual bool exists(const QString& id) const { Q_UNUSED(id); return true; }
 
 
     /**
-     * @brief Pošle odpověď 200 OK
+     * @brief Sends 200 OK response
      *
-     * @param data - pokud je zadaný, pošle se místo defaultního '{ "ok" : true }'
+     * @param data - data are send instead of default '{ "ok" : true }'
      */
-    virtual void serviceOK        (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QVariant& data = QVariant() );
+    virtual void serviceOK (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QVariant& data = QVariant() );
 
     /**
-     * @brief Pošle chybovou odpověď
+     * @brief Send an error response
      *
-     * @param code - chybový kód (například 404)
-     * @param error - chybový textový kód
-     * @param reason - vysvětlení chyby
+     * @param code - error code (404)
+     * @param error - error brief description (not-found) - this is send also in the HTTP response header
+     * @param reason - detailed description of the error
      *
-     * Posílá odpověď zformátovanou takto:
+     * Sends the response formatted like this:
      *
      * ~~~~~~~~~~~~~~
        Content-Type: application/json
@@ -177,66 +179,70 @@ class AbstractController : public HobrasoftHttpd::HttpRequestHandler {
     virtual void serviceError     (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, int code, const QString& error, const QString& reason);
 
     /**
-     * @brief Měl by poslat v odpovědi kompletní seznam všech objektů ve třídě a ukončit se
+     * @brief Sends list of all object in the module
      *
-     * Defaultní implementace posílá chybu 501 Not Implemented
+     * Default implementation returns error 501 Not Implemented
      */
     virtual void serviceList (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
 
     /**
-     * @brief Pošle v odpovědi kompletní seznam všech objektů ve třídě a následně
+     * @brief Sends list of all object in the module and then sends all changes in the module as an event stream
      *
-     * Defaultní implementace posílá chybu 501 Not Implemented
+     * Default implementation returns error 501 Not Implemented
      */
     virtual void serviceEvents (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
 
     /**
-     * @brief Pošle v odpovědi proud událostí spojených se všemi objekty ve třídě
+     * @brief Sends an event stream associated with the given ID
      *
-     * Obvyklá implementace pošle na začátku seznam všech objektů (jako události) a potom posílá už jen změny
-     *
-     * Defaultní implementace posílá chybu 501 Not Implemented
+     * Default implementation returns error 501 Not Implemented
      */
     virtual void serviceIdEvents  (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QString& id);
 
     /**
-     * @brief Pošle odpověď na požadavek konkrétního ID metodou GET
+     * @brief Sends the object with given ID
      *
-     * Defaultní implementace posílá chybu 501 Not Implemented
+     * Default implementation returns error 501 Not Implemented
      */
     virtual void serviceIdGet     (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QString& id);
 
     /**
-     * @brief Pošle odpověď na požadavek konkrétního ID metodou DELETE - obvykle objekt smaže
+     * @brief Makes the DELETE operation with given ID
      *
-     * Defaultní implementace posílá chybu 501 Not Implemented
+     * Usualy the object is deleted in the application.
+     *
+     * Default implementation returns error 501 Not Implemented
      */
     virtual void serviceIdDelete  (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QString& id);
 
     /**
-     * @brief Pošle odpověď na požadavek konkrétního ID metodou PUT - obvykle vloží nový objekt nebo přepíše existující objekt
+     * @brief Makes the PUT operation with given ID
      *
-     * Defaultní implementace posílá chybu 501 Not Implemented
+     * Usualy the object is rewriten in the application.
+     *
+     * Default implementation returns error 501 Not Implemented
      */
     virtual void serviceIdPut     (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QVariantMap& data);
 
     /**
-     * @brief Pošle odpověď na požadavek konkrétního ID metodou PUT - obvykle vloží nový objekt nebo přepíše existující objekt
+     * @brief Makes the POST operation with given ID
      *
-     * Defaultní implementace posílá chybu 501 Not Implemented
+     * Usualy the object is rewriten in the application.
+     *
+     * Default implementation returns error 501 Not Implemented
      */
     virtual void serviceIdPost    (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QVariantMap& data);
 
     /**
-     * @brief Pošle do otevřeného proudu událostí jednu událost
+     * @brief Send one event to opened event stream
      *
-     * I když je možné reimplementovat, obvykle pro to není důvod. Posílá do proudu událostí jednu událost.
+     * Usualy it is not needed to reimplement this method.
      */
 
     virtual void serviceEvent (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response, const QVariant& data);
 
-    HobrasoftHttpd::HttpRequest    *request() const;        ///< Vrací ukazatel na aktuální request
-    HobrasoftHttpd::HttpConnection *connection() const;     ///< Vrací ukazatel na aktuální connection
+    HobrasoftHttpd::HttpRequest    *request() const;        ///< Returns pointer to current request
+    HobrasoftHttpd::HttpConnection *connection() const;     ///< Returns pointer to current connection
 
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -247,6 +253,7 @@ class AbstractController : public HobrasoftHttpd::HttpRequestHandler {
 
 };
 
+}
 }
 
 #endif

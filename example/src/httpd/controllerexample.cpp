@@ -12,7 +12,8 @@
 
 #define LIST application->list()
 
-using namespace Httpd;
+using namespace Example;
+using namespace Example::Httpd;
 
 
 void ControllerExample::serviceList (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {

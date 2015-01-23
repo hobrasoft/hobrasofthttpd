@@ -4,6 +4,7 @@
 #include <QString>
 #include <QVariantMap>
 
+using namespace Example;
 
 Item::Item(const QString& id, const QString& text, int interval, QObject *parent) : QObject(parent) {
     m_id = id;

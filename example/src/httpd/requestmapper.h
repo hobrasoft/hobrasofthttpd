@@ -17,14 +17,17 @@ class HttpResponse;
 class HttpConnection;
 }
 
+namespace Example {
 namespace Httpd {
 
 /**
- * @brief Zpracovává HTTP požadavky, vyřizuje speciální požadavky
+ * @brief Processes HTTP request
  *
- * Statické soubory a shtml stačí zpracovávat defaultním handlerem
- * HobrasoftHttpd::HttpRequestHandler, ale požadavky dotazující
- * vnitřní stav aplikace musejí být naprogramované v C++
+ * Special requests to inner data are processed by application.
+ * Such services has to be implemented in your own classes.
+ *
+ * Other general requests (static files) are processed by default
+ * implementation in HobrasoftHttpd::HttpRequestHandler.
  *
  */
 class RequestMapper : public HobrasoftHttpd::HttpRequestHandler {
@@ -34,26 +37,23 @@ class RequestMapper : public HobrasoftHttpd::HttpRequestHandler {
    ~RequestMapper();
 
     /**
-     * @brief Konstruktor
+     * @brief Construktor
      */
     RequestMapper(HobrasoftHttpd::HttpConnection *parent);
 
     /**
-     * @brief Vyřizuje jeden požadavek
+     * @brief Processes the request
      *
-     * Rozděluje podle typu požadavku do specializovaných handlerů 
+     * Own specialized classes are created and called for dynamic content.
+     * General request handler is created for other static content requests.
      */
     void service(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
 
   private:
-    QString     m_user;      ///< Uživatelské jméno pro přihlášení, bere se z konfigurace
-    QString     m_password;  ///< Uživatelské heslo pro přihlášení, bere se z konfigurace 
-    bool        m_authorize; ///< Jestli se má přihlašovat, bere se z konfigurace
-    QString     m_path;      ///< Obsluhovaná cesta (URL adresa)
-
 
 };
 
+}
 }
 
 #endif

@@ -2,6 +2,7 @@
 #include "list.h"
 #include "item.h"
 
+using namespace Example;
 
 Application::Application(QObject *parent) : QObject(parent) {
     m_list = new List(this);

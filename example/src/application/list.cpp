@@ -1,6 +1,8 @@
 #include "list.h"
 #include "item.h"
 
+using namespace Example;
+
 List::List(QObject *parent) : QObject(parent) {
 }
 

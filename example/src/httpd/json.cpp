@@ -6,6 +6,7 @@
 #include <QSet>
 #include <QDebug>
 
+using namespace Example;
 
 QByteArray JSON::json(const QVariant& data) {
     bool ok = true;

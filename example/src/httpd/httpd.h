@@ -16,28 +16,37 @@ class HttpConnection;
 class HttpRequestHandler;
 }
 
+namespace Example {
+
 /**
- * @brief Jmenný prostor pro obsluhu konkrétních HTTP požadavků aplikace
+ * @brief Name space for own application HTTP server
  */
 namespace Httpd {
 
-
 /**
- * @brief Konkrétní implementace HTTP serveru, rozšiřuje obecnou třídu HobrasoftHttpd::HttpServer, singleton
+ * @brief Own implementation of HTTP server. 
  *
- * Pro rozšíření je potřeba přepsat virtuální metodu requestHandler()
+ * It extends the general class HobrasoftHttpd::HttpServer.
  */
 class Httpd : public HobrasoftHttpd::HttpServer {
     Q_OBJECT
   public:
+
+    /**
+     * @brief Constructor
+     */
     Httpd(QObject *parent);
 
+    /**
+     * @brief Returns pointer to new instance of my own request handler HobrasoftHttpd::HttpRequestHandler
+     */
     virtual HobrasoftHttpd::HttpRequestHandler *requestHandler(HobrasoftHttpd::HttpConnection *);
 
   private:
 
 };
 
+}
 }
 
 #endif

@@ -7,13 +7,12 @@
 #include <QList>
 #include <QSet>
 
+namespace Example {
 class JSON {
   public:
-    static QByteArray json(const QVariant&);
-//  static QByteArray json(const QSet<QString>&);
-//  static QByteArray json(const QList<QString>&);
-
-    static QVariantMap data(const QByteArray& json);
+    static QByteArray json(const QVariant& data);           ///< Converts data to json
+    static QVariantMap data(const QByteArray& json);        ///< Converts json to data
 };
+}
 
 #endif

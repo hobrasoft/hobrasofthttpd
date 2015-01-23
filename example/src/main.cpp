@@ -8,8 +8,9 @@
 #include <QCoreApplication>
 #include "application.h"
 #include "httpd.h"
+#include "main.h"
 
-Application *application = NULL;
+Example::Application *Example::application = NULL;
 
 int main (int argc, char *argv[]) {
     QCoreApplication app(argc, argv);
@@ -21,8 +22,8 @@ int main (int argc, char *argv[]) {
     QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
     QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
 
-    application = new Application(0);
-    new Httpd::Httpd(0);
+    Example::application = new Example::Application(0);
+    new Example::Httpd::Httpd(0);
 
     return app.exec();
 
