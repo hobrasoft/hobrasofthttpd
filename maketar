@@ -1,0 +1,35 @@
+#!/bin/bash
+
+VERZE=$(cat version)
+
+doxygen
+(cd doc/html; find . -print | cpio -pvudm ../../../hobrasoft/www/en/httpserver/doc)
+
+tar -cjf /tmp/hobrasofthttp-$VERZE.tar.bz2 \
+    --exclude '.tmp' \
+    --exclude 'doc/html' \
+    --exclude '.moc' \
+    --exclude 'logs/*.log' \
+    --exclude 'maketar' \
+    --exclude 'lib/*.a' \
+    --exclude 'db/patch*' \
+    --exclude 'lib/*.prl' \
+    --exclude 'example/bin/example' \
+    --exclude '.hg' \
+    --exclude 'Makefile' \
+    --exclude '.git*' \
+    --exclude 'hobrasofthttp-*.tar.bz2' \
+    --directory .. \
+    --transform "s/^hobrasofthttp/hobrasofthttp-$VERZE/" \
+    hobrasofthttp
+
+rm -f hobrasofthttp-$VERZE.tar.bz2
+mv -f /tmp/hobrasofthttp-$VERZE.tar.bz2 .
+cp -f hobrasofthttp-$VERZE.tar.bz2 ../hobrasoft/www/en/httpserver
+cd ../hobrasoft/www/en/httpserver
+rm -f hobrasofthttp-latest.tar.bz2
+ln -s hobrasofthttp-$VERZE.tar.bz2 hobrasofthttp-latest.tar.bz2
+cd ..
+cd ..
+./rsync
+

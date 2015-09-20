@@ -65,6 +65,8 @@ class HttpConnection : public QObject {
      */
     HttpServer *httpServer() const { return m_parent; }
 
+    void setPersistent(bool x) { m_persistent = x; }
+
     /**
      * @brief Closes the connection.
      *
@@ -84,6 +86,7 @@ class HttpConnection : public QObject {
     HttpRequest         *m_request;
     HttpRequestHandler  *m_handler;
     HttpServer          *m_parent;
+    bool                 m_persistent;
     #endif
     
 };

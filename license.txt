@@ -1,0 +1,11 @@
+This program and its source is distributed under the
+LesserGeneral Public License.
+http://www.gnu.org/licenses/lgpl.html
+
+Author: Petr Bravenec
+http://www.hobrasoft.cz
+http://www.bravenec.eu
+
+Based on QtWebApp
+Author: Stefan Frings
+http://www.stefanfrings.de

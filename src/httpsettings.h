@@ -50,6 +50,7 @@ Configuration parameters
 - __maxRequestSize__ - maximum size of request
 - __maxMultiPartSize__ - maximum size of multipart requests
 - __tempDir__ - path to temporary directory (/tmp)
+- __persistent__ - of/off persistent connection for event streams
 
 */
 class HttpSettings : public QObject {
@@ -118,6 +119,10 @@ class HttpSettings : public QObject {
     const QString&  tempDir() const { return m_tempDir; }                                   ///< Returns path to temporary directory
     void            setTempDir(const QString& x) { m_tempDir = x; }                         ///< Sets path to temporary directory
 
+    bool            persistent() const { return m_persistent ; }
+    void            setPersistent(bool x) { m_persistent = x; }
+
+
 
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -136,6 +141,7 @@ class HttpSettings : public QObject {
     int             m_maxRequestSize;
     int             m_maxMultiPartSize;
     QString         m_tempDir;
+    bool            m_persistent;
     #endif
 
     void            readSettings(const QSettings* settings, const QString& section);

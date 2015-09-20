@@ -28,6 +28,7 @@
  * - __httpd/maxCacheFileSize__ - maximum size of files in cache (1000000)
  * - __httpd/indexFile__ - index file in direcotry (index.html)
  * - __httpd/cacheOn__ - on/off cache (false)
+ * - __httpd/persistent__ - on/off persistent connection for event stream (true)
  *
  * @}
  */
@@ -50,6 +51,7 @@ HttpSettings::HttpSettings(QObject *parent) : QObject(parent) {
     m_sessionExpirationTime = 3600;
     m_maxRequestSize        = 16384;
     m_maxMultiPartSize      = 1048576;
+    m_persistent            = true;
 }
 
 
@@ -83,6 +85,9 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
                               settings->value(section2 + "/maxRequestSize",        16384)).toInt();
     m_maxMultiPartSize      = settings->value(section  + "/maxMultiPartSize", 
                               settings->value(section2 + "/maxMultiPartSize",      1048576)).toInt();
+    m_persistent            = settings->value(section  + "/persistent",
+                              settings->value(section2 + "/persistent",            false)).toBool();
+
 }
 
 
