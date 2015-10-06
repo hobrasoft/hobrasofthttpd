@@ -13,6 +13,7 @@
 
 using namespace HobrasoftHttpd;
 
+
 HttpSessionStore::HttpSessionStore(const HttpSettings* settings, QObject *parent) : QObject(parent) {
     m_cleaner = new QTimer(this);
     m_cleaner->setInterval(30000);

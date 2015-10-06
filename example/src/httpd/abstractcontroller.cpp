@@ -63,7 +63,7 @@ void AbstractController::service(HobrasoftHttpd::HttpRequest *request, Hobrasoft
                 response->setHeader("Content-Type",      "text/event-stream");
                 response->setHeader("Cache-Control",     "no-cache,public");
                 response->setHeader("Transfer-Encoding", "chunked");
-                response->flush();
+                response->flushSocket();
                 serviceEvents(request, response);
                 return;
                 }
@@ -137,7 +137,7 @@ void AbstractController::service(HobrasoftHttpd::HttpRequest *request, Hobrasoft
             response->setHeader("Content-Type",      "text/event-stream");
             response->setHeader("Cache-Control",     "no-cache,public");
             response->setHeader("Transfer-Encoding", "chunked");
-            response->flush();
+            response->flushSocket();
             serviceIdEvents(request, response, parts[1]);
             return;
 
@@ -208,7 +208,7 @@ void AbstractController::serviceEvent (
     datagram += "\n";
     datagram += "\n";
     lresponse.write(datagram);
-    lresponse.flush();
+    lresponse.flushSocket();
 
 }
 

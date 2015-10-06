@@ -27,6 +27,7 @@ HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject
     m_parent  = parent;
 
     int timeout = parent->settings()->timeout() * 1000;
+    m_persistent = parent->settings()->persistent();
 
     m_timeout = new QTimer(this);
     m_timeout->setInterval(timeout);
@@ -48,7 +49,7 @@ const HttpSettings *HttpConnection::settings() const {
 
 
 void HttpConnection::close() {
-    m_socket->disconnectFromHost();
+    if (m_socket) { m_socket->disconnectFromHost(); }
     if (m_request) { delete m_request; }
     m_request = NULL;
 
@@ -61,17 +62,18 @@ void HttpConnection::slotTimeout() {
     m_socket->write("\r\n");
     m_socket->write("408 request timeout\r\n");
     m_socket->disconnectFromHost();
-    delete m_request;
+    if (m_request) { delete m_request; }
     m_request = NULL;
 }
 
 
 void HttpConnection::slotDisconnected() {
     m_socket->close();
-    delete m_request;
+//  m_socket = NULL;
+    if (m_request) { delete m_request; }
     m_request = NULL;
     m_timeout->stop();
-    deleteLater();
+    QTimer::singleShot(15000, this, SLOT(deleteLater()));
 }
 
 
@@ -103,27 +105,35 @@ void HttpConnection::slotRead() {
         m_socket->write("413 entity too large\r\n");
         m_socket->disconnectFromHost();
         m_timeout->stop();
-        delete m_request;
+        if (m_request) { delete m_request; }
         m_request = NULL;
         return;
         }
     
     if (m_request->status() == HttpRequest::StatusComplete) {
+        bool disconnect = (m_request->header("Connection").toLower() == "close");
         m_timeout->stop();
         HttpResponse response(m_socket);
+        if (!m_persistent) {
+            response.setHeader("Connection", "close");
+            }
         m_handler->service(m_request, &response);
 
-        if (!response.hasSentLastPart()) {
-            response.flush();
-            }
+        response.flushSocket();
 
-        if (m_request->header("Connection").toLower() == "close") {
+        if (disconnect) {
+            if (!response.hasSentLastPart()) {
+                response.flush();
+                }
             m_socket->disconnectFromHost();
           } else {
             m_timeout->start();
             }
 
-        delete m_request;
+        if (!m_persistent) {
+            close();
+            }
+        if (m_request) { delete m_request; }
         m_request = NULL;
         }
 
