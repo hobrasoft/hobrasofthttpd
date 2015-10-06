@@ -50,7 +50,7 @@ HttpSettings::HttpSettings(QObject *parent) : QObject(parent) {
     m_sessionCookieName     = "sessionid";
     m_sessionExpirationTime = 3600;
     m_maxRequestSize        = 16384;
-    m_maxMultiPartSize      = 1048576;
+    m_maxMultiPartSize      = 16728064;
     m_persistent            = true;
 }
 
@@ -84,10 +84,9 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
     m_maxRequestSize        = settings->value(section  + "/maxRequestSize", 
                               settings->value(section2 + "/maxRequestSize",        16384)).toInt();
     m_maxMultiPartSize      = settings->value(section  + "/maxMultiPartSize", 
-                              settings->value(section2 + "/maxMultiPartSize",      1048576)).toInt();
+                              settings->value(section2 + "/maxMultiPartSize",      16728064)).toInt();
     m_persistent            = settings->value(section  + "/persistent",
-                              settings->value(section2 + "/persistent",            false)).toBool();
-
+                              settings->value(section2 + "/persistent",            true)).toBool();
 }
 
 

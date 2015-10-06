@@ -89,6 +89,18 @@ class HttpResponse {
      */
     void write(const QByteArray& data);
 
+
+    /**
+     * @brief Zapíše data ze socketu do sítě
+     */
+    void flushSocket();
+
+
+    /**
+     * @brief Zavře socket
+     */
+    void close();
+
     /**
      * @brief Writes last part of the response and closes the socket when possible
      *

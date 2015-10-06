@@ -68,6 +68,11 @@ class HttpConnection : public QObject {
     void setPersistent(bool x) { m_persistent = x; }
 
     /**
+     * @brief Set or unset persistent connections
+     */
+    void setPersistent(bool x) { m_persistent = x; }
+
+    /**
      * @brief Closes the connection.
      *
      * When the connection is closed, all descendant objects are destroyed.

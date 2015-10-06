@@ -119,9 +119,8 @@ class HttpSettings : public QObject {
     const QString&  tempDir() const { return m_tempDir; }                                   ///< Returns path to temporary directory
     void            setTempDir(const QString& x) { m_tempDir = x; }                         ///< Sets path to temporary directory
 
-    bool            persistent() const { return m_persistent ; }
-    void            setPersistent(bool x) { m_persistent = x; }
-
+    bool            persistent() const { return m_persistent; }                             ///< Returns status of persistent connections
+    void            setPersistent(bool x) { m_persistent = x; }                             ///< Set status of persistent connections
 
 
   private:

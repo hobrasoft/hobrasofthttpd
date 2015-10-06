@@ -98,6 +98,18 @@ void HttpResponse::writeToSocket(const QByteArray& data) {
 
 void HttpResponse::flush() {
     write(QByteArray(), true);
+    m_socket->flush();
+}
+
+
+void HttpResponse::flushSocket() {
+    write(QByteArray(), false);
+    m_socket->flush();
+}
+
+
+void HttpResponse::close() {
+    m_socket->disconnectFromHost();
 }
 
 
@@ -140,7 +152,6 @@ void HttpResponse::write(const QByteArray& data, bool lastPart) {
         m_sentLastPart = true;
 
         if (chunked) {
-            return;
             writeToSocket("0\r\n\r\n");
             }
 

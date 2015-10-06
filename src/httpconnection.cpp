@@ -27,6 +27,7 @@ HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject
     m_parent  = parent;
 
     int timeout = parent->settings()->timeout() * 1000;
+    m_persistent = parent->settings()->persistent();
 
     m_timeout = new QTimer(this);
     m_timeout->setInterval(timeout);
@@ -48,7 +49,7 @@ const HttpSettings *HttpConnection::settings() const {
 
 
 void HttpConnection::close() {
-    if (m_socket) m_socket->disconnectFromHost();
+    if (m_socket) { m_socket->disconnectFromHost(); }
     if (m_request) { delete m_request; }
     m_request = NULL;
 
@@ -71,7 +72,7 @@ void HttpConnection::slotDisconnected() {
     if (m_request) { delete m_request; }
     m_request = NULL;
     m_timeout->stop();
-    deleteLater();
+    QTimer::singleShot(15000, this, SLOT(deleteLater()));
 }
 
 
@@ -117,11 +118,13 @@ void HttpConnection::slotRead() {
             }
         m_handler->service(m_request, &response);
 
-        if (!response.hasSentLastPart()) {
-            response.flush();
-            }
+        response.flushSocket();
 
         if (disconnect) {
+            if (!response.hasSentLastPart()) {
+                response.flush();
+                }
+
             m_socket->disconnectFromHost();
           } else {
             m_timeout->start();

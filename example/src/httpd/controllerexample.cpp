@@ -31,13 +31,6 @@ void ControllerExample::serviceEvents (HobrasoftHttpd::HttpRequest *request, Hob
     Q_UNUSED(response);
     connect (LIST, SIGNAL( statusChanged(const Item *)),
              this,   SLOT(    sendUpdate(const Item *)));
-
-/*
-    QList<SkupinaJednotek *> list = SEZNAMPOKOJU->skupiny().toList();
-    for (int i=0; i<list.size(); i++) {
-        slotSendUpdate(qobject_cast<Pokoj *>(list[i]));
-        }
-*/
 }
 
 
