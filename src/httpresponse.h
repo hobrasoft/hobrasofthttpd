@@ -70,7 +70,7 @@ class HttpResponse {
     QMap<QString, HttpCookie>& cookies();
 
     /**
-     * @brief Retursn cookie
+     * @brief Returns cookie
      */
     HttpCookie cookie(const QString& name) { return m_cookies.value(name); }
 
@@ -91,13 +91,13 @@ class HttpResponse {
 
 
     /**
-     * @brief Zapíše data ze socketu do sítě
+     * @brief Flushes socket 
      */
     void flushSocket();
 
 
     /**
-     * @brief Zavře socket
+     * @brief Closes the socket
      */
     void close();
 
