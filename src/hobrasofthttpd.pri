@@ -14,6 +14,7 @@ HEADERS += \
  $$PWD/httpsession.h \
  $$PWD/httpsessionstore.h \
  $$PWD/httpsettings.h \
+ $$PWD/httptcpserver.h \
 
 
 SOURCES += \
@@ -28,4 +29,5 @@ SOURCES += \
  $$PWD/httpsession.cpp \
  $$PWD/httpsessionstore.cpp \
  $$PWD/httpsettings.cpp \
+ $$PWD/httptcpserver.cpp \
 

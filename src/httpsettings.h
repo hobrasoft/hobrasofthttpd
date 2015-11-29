@@ -122,6 +122,15 @@ class HttpSettings : public QObject {
     bool            persistent() const { return m_persistent; }                             ///< Returns status of persistent connections
     void            setPersistent(bool x) { m_persistent = x; }                             ///< Set status of persistent connections
 
+    bool            useSSL() const { return m_useSSL; }                                     ///< Returns status of SSL connections
+    void            setUseSSL(bool x) { m_useSSL = x; }                                     ///< Set status of SSL connections
+
+    const QString&  sslKey() const { return m_sslKey; }                                     ///< Returns SSL key
+    void            setSslKey(const QString& x) { m_sslKey = x; }                           ///< Set SSL key
+
+    const QString&  sslCrt() const { return m_sslCrt; }                                     ///< Returns SSL certificate
+    void            setSslCrt(const QString& x) { m_sslCrt = x; }                           ///< Set SSL certificate
+
 
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -141,6 +150,9 @@ class HttpSettings : public QObject {
     int             m_maxMultiPartSize;
     QString         m_tempDir;
     bool            m_persistent;
+    bool            m_useSSL;
+    QString         m_sslKey;
+    QString         m_sslCrt;
     #endif
 
     void            readSettings(const QSettings* settings, const QString& section);

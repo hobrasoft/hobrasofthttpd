@@ -8,6 +8,8 @@
 #include "httpsettings.h"
 #include "httpconnection.h"
 #include "httprequesthandler.h"
+#include "httptcpserver.h"
+#include <QSslSocket>
 
 using namespace HobrasoftHttpd;
 
@@ -41,7 +43,7 @@ void HttpServer::start() {
         m_server->close();
         delete m_server;
         }
-    m_server = new QTcpServer(this);
+    m_server = new HttpTcpServer(this);
     connect(m_server, SIGNAL(    newConnection()),
             this,       SLOT(slotNewConnection()));
 

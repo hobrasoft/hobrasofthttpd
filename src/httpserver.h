@@ -12,6 +12,8 @@
 #include <QTcpServer>
 #include <QHostAddress>
 #include <QString>
+#include <QList>
+#include <QSslError>
 
 namespace HobrasoftHttpd {
 

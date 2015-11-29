@@ -29,6 +29,9 @@
  * - __httpd/indexFile__ - index file in direcotry (index.html)
  * - __httpd/cacheOn__ - on/off cache (false)
  * - __httpd/persistent__ - on/off persistent connection for event stream (true)
+ * - __httpd/useSSL__  - on/off SSL connection (off)
+ * - __httpd/sslKey__  - path to SSL key file in PEM format
+ * - __httpd/sslCrt__  - path to SSL certificate file in PEM format
  *
  * @}
  */
@@ -52,6 +55,7 @@ HttpSettings::HttpSettings(QObject *parent) : QObject(parent) {
     m_maxRequestSize        = 16384;
     m_maxMultiPartSize      = 16728064;
     m_persistent            = true;
+    m_useSSL                = false;
 }
 
 
@@ -87,6 +91,12 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
                               settings->value(section2 + "/maxMultiPartSize",      16728064)).toInt();
     m_persistent            = settings->value(section  + "/persistent",
                               settings->value(section2 + "/persistent",            true)).toBool();
+    m_useSSL                = settings->value(section  + "/useSSL",
+                              settings->value(section2 + "/useSSL",                false)).toBool();
+    m_sslKey                = settings->value(section  + "/sslKey",
+                              settings->value(section2 + "/sslKey",                "")).toString();
+    m_sslCrt                = settings->value(section  + "/sslCrt",
+                              settings->value(section2 + "/sslCrt",                "")).toString();
 }
 
 

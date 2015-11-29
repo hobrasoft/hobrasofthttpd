@@ -91,13 +91,13 @@ class HttpResponse {
 
 
     /**
-     * @brief Flushes socket 
+     * @brief Zapíše data ze socketu do sítě
      */
     void flushSocket();
 
 
     /**
-     * @brief Closes the socket
+     * @brief Zavře socket
      */
     void close();
 
