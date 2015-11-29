@@ -1,5 +1,5 @@
 This program and its source is distributed under the
-LesserGeneral Public License.
+Lesser General Public License.
 http://www.gnu.org/licenses/lgpl.html
 
 Author: Petr Bravenec
