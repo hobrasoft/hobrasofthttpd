@@ -50,7 +50,6 @@ Configuration parameters
 - __maxRequestSize__ - maximum size of request
 - __maxMultiPartSize__ - maximum size of multipart requests
 - __tempDir__ - path to temporary directory (/tmp)
-- __persistent__ - of/off persistent connection for event streams
 
 */
 class HttpSettings : public QObject {
@@ -119,9 +118,6 @@ class HttpSettings : public QObject {
     const QString&  tempDir() const { return m_tempDir; }                                   ///< Returns path to temporary directory
     void            setTempDir(const QString& x) { m_tempDir = x; }                         ///< Sets path to temporary directory
 
-    bool            persistent() const { return m_persistent; }                             ///< Returns status of persistent connections
-    void            setPersistent(bool x) { m_persistent = x; }                             ///< Set status of persistent connections
-
     bool            useSSL() const { return m_useSSL; }                                     ///< Returns status of SSL connections
     void            setUseSSL(bool x) { m_useSSL = x; }                                     ///< Set status of SSL connections
 
@@ -131,9 +127,14 @@ class HttpSettings : public QObject {
     const QString&  sslCrt() const { return m_sslCrt; }                                     ///< Returns SSL certificate
     void            setSslCrt(const QString& x) { m_sslCrt = x; }                           ///< Set SSL certificate
 
+    void            readSettings(const QSettings* settings, const QString& section, const QString& section2);
+    void            readSettings(const QSettings* settings, const QString& section);
+
+    void            setSection2(const QString& section) { m_section2 = section; }
 
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
+    QString         m_section2;
     int             m_port;
     QHostAddress    m_address;
     int             m_timeout;
@@ -149,13 +150,11 @@ class HttpSettings : public QObject {
     int             m_maxRequestSize;
     int             m_maxMultiPartSize;
     QString         m_tempDir;
-    bool            m_persistent;
     bool            m_useSSL;
     QString         m_sslKey;
     QString         m_sslCrt;
     #endif
 
-    void            readSettings(const QSettings* settings, const QString& section);
 
 };
 

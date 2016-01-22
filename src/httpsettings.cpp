@@ -28,7 +28,6 @@
  * - __httpd/maxCacheFileSize__ - maximum size of files in cache (1000000)
  * - __httpd/indexFile__ - index file in direcotry (index.html)
  * - __httpd/cacheOn__ - on/off cache (false)
- * - __httpd/persistent__ - on/off persistent connection for event stream (true)
  * - __httpd/useSSL__  - on/off SSL connection (off)
  * - __httpd/sslKey__  - path to SSL key file in PEM format
  * - __httpd/sslCrt__  - path to SSL certificate file in PEM format
@@ -54,58 +53,62 @@ HttpSettings::HttpSettings(QObject *parent) : QObject(parent) {
     m_sessionExpirationTime = 3600;
     m_maxRequestSize        = 16384;
     m_maxMultiPartSize      = 16728064;
-    m_persistent            = true;
     m_useSSL                = false;
 }
 
 
+void HttpSettings::readSettings(const QSettings *settings, const QString& section, const QString& section2) {
+    m_section2 = section2;
+    readSettings(settings, section);
+}
+
+
 void HttpSettings::readSettings(const QSettings *settings, const QString& section) {
-    QString section2 = "http";
-    m_port                  = settings->value(section  + "/port",
-                              settings->value(section2 + "/port",                  80)).toInt();
-    m_address               = settings->value(section  + "/address",
-                              settings->value(section2 + "/address",               "::")).toString();
-    m_timeout               = settings->value(section  + "/timeout",
-                              settings->value(section2 + "/timeout",               600)).toInt();
-    m_maxAge                = settings->value(section  + "/maxAge", 
-                              settings->value(section2 + "/maxAge",                3600)).toInt();
-    m_encoding              = settings->value(section  + "/encoding", 
-                              settings->value(section2 + "/encoding",              "UTF-8")).toString();
-    m_docroot               = settings->value(section  + "/root", 
-                              settings->value(section2 + "/root",                  ".")).toString();
-    m_maxCachedFileSize     = settings->value(section  + "/maxCachedFileSize", 
-                              settings->value(section2 + "/maxCachedFileSize",     1000000)).toInt();
-    m_cacheTimeout          = settings->value(section  + "/cacheTimeout", 
-                              settings->value(section2 + "/cacheTimeout",          600000)).toInt();
-    m_indexFile             = settings->value(section  + "/indexFile", 
-                              settings->value(section2 + "/indexFile",             "index.html")).toString();
-    m_cacheOn               = settings->value(section  + "/cacheOn", 
-                              settings->value(section2 + "/cacheOn",               false)).toBool();
-    m_sessionCookieName     = settings->value(section  + "/sessionCookieName", 
-                              settings->value(section2 + "/sessionCookieName",     "sessionid")).toString();
-    m_sessionExpirationTime = settings->value(section  + "/sessionExpirationTime", 
-                              settings->value(section2 + "/sessionExpirationTime", 3600)).toInt();
-    m_maxRequestSize        = settings->value(section  + "/maxRequestSize", 
-                              settings->value(section2 + "/maxRequestSize",        16384)).toInt();
-    m_maxMultiPartSize      = settings->value(section  + "/maxMultiPartSize", 
-                              settings->value(section2 + "/maxMultiPartSize",      16728064)).toInt();
-    m_persistent            = settings->value(section  + "/persistent",
-                              settings->value(section2 + "/persistent",            true)).toBool();
-    m_useSSL                = settings->value(section  + "/useSSL",
-                              settings->value(section2 + "/useSSL",                false)).toBool();
-    m_sslKey                = settings->value(section  + "/sslKey",
-                              settings->value(section2 + "/sslKey",                "")).toString();
-    m_sslCrt                = settings->value(section  + "/sslCrt",
-                              settings->value(section2 + "/sslCrt",                "")).toString();
+    m_port                  = settings->value(  section  + "/port",
+                              settings->value(m_section2 + "/port",                  80)).toInt();
+    m_address               = settings->value(  section  + "/address",
+                              settings->value(m_section2 + "/address",               "::")).toString();
+    m_timeout               = settings->value(  section  + "/timeout",
+                              settings->value(m_section2 + "/timeout",               600)).toInt();
+    m_maxAge                = settings->value(  section  + "/maxAge", 
+                              settings->value(m_section2 + "/maxAge",                3600)).toInt();
+    m_encoding              = settings->value(  section  + "/encoding", 
+                              settings->value(m_section2 + "/encoding",              "UTF-8")).toString();
+    m_docroot               = settings->value(  section  + "/root", 
+                              settings->value(m_section2 + "/root",                  ".")).toString();
+    m_maxCachedFileSize     = settings->value(  section  + "/maxCachedFileSize", 
+                              settings->value(m_section2 + "/maxCachedFileSize",     1000000)).toInt();
+    m_cacheTimeout          = settings->value(  section  + "/cacheTimeout", 
+                              settings->value(m_section2 + "/cacheTimeout",          600000)).toInt();
+    m_indexFile             = settings->value(  section  + "/indexFile", 
+                              settings->value(m_section2 + "/indexFile",             "index.html")).toString();
+    m_cacheOn               = settings->value(  section  + "/cacheOn", 
+                              settings->value(m_section2 + "/cacheOn",               false)).toBool();
+    m_sessionCookieName     = settings->value(  section  + "/sessionCookieName", 
+                              settings->value(m_section2 + "/sessionCookieName",     "sessionid")).toString();
+    m_sessionExpirationTime = settings->value(  section  + "/sessionExpirationTime", 
+                              settings->value(m_section2 + "/sessionExpirationTime", 3600)).toInt();
+    m_maxRequestSize        = settings->value(  section  + "/maxRequestSize", 
+                              settings->value(m_section2 + "/maxRequestSize",        16384)).toInt();
+    m_maxMultiPartSize      = settings->value(  section  + "/maxMultiPartSize", 
+                              settings->value(m_section2 + "/maxMultiPartSize",      16728064)).toInt();
+    m_useSSL                = settings->value(  section  + "/useSSL",
+                              settings->value(m_section2 + "/useSSL",                false)).toBool();
+    m_sslKey                = settings->value(  section  + "/sslKey",
+                              settings->value(m_section2 + "/sslKey",                "")).toString();
+    m_sslCrt                = settings->value(  section  + "/sslCrt",
+                              settings->value(m_section2 + "/sslCrt",                "")).toString();
 }
 
 
 HttpSettings::HttpSettings(const QSettings *settings, const QString& section, QObject *parent) : QObject(parent) {
+    QString m_section2 = "http";
     readSettings(settings, section);
 }
 
 
 HttpSettings::HttpSettings(const QSettings *settings, QObject *parent) : QObject(parent) {
+    QString m_section2 = "http";
     readSettings(settings, "http");
 }
 
