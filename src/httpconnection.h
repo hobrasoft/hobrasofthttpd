@@ -71,11 +71,25 @@ class HttpConnection : public QObject {
      */
     QTcpSocket *socket() const { return m_socket; }
 
+    /**
+     * @brief Returns true if the client is verifiend using SSL
+     */
     bool verified() const { return m_peerCertificate.isValid() && !m_peerCertificate.isNull(); }
 
+    /**
+     * @brief  
+     */
     void setPeerCertificate(const QSslCertificate&);
 
+    /**
+     * @brief Returns CommonName field from certificate
+     */
     QString commonName() const;
+
+    /**
+     * @brief Returns Peer's certificate
+     */
+    const QSslCertificate peerCertificate() const { return m_peerCertificate; }
 
 
   public slots:

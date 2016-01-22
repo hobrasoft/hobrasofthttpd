@@ -113,9 +113,47 @@ class HttpSettings : public QObject {
     const QString&  sslCaCrt() const { return m_sslCaCrt; }                                 ///< Returns SSL CA certificate
     void            setSslCaCrt(const QString& x) { m_sslCaCrt = x; }                       ///< Set SSL CA certificate
 
+    /**
+     * @brief Read settings from configuration file. 
+     *
+     * First are read values from first section (second parameter), then from section2 (third parameter).
+     * From the second section are read values which were not read from first section.
+     * You can have set your configuration file like this:
+
+        ~~~~~~~~~~
+        [httpd]
+        address  = ::
+        port     = 8086
+        root     = /usr/share/appdata/htdocs
+        user     = admin
+        password = admin
+
+        [httpds]
+        port     = 8087
+        sslKey   = /etc/ssl/private/server.hobrasoft.eu.key.pem
+        sslCrt   = /etc/ssl/private/server.hobrasoft.eu.crt.pem
+        useSSL   = true
+        ~~~~~~~~~~
+
+     */
+    void            readSettings(const QSettings* settings, const QString& section, const QString& section2);
+
+
+    /**
+     * @brief Read settings from configuration file. 
+     */
+    void            readSettings(const QSettings* settings, const QString& section);
+
+    /**
+     * @brief Sets the name for the second section
+     *
+     * From the second section are read values which were not read from first section.
+     */
+    void            setSection2(const QString& section) { m_section2 = section; }
 
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
+    QString         m_section2;
     int             m_port;
     QHostAddress    m_address;
     int             m_timeout;
@@ -137,7 +175,6 @@ class HttpSettings : public QObject {
     QString         m_sslCaCrt;
     #endif
 
-    void            readSettings(const QSettings* settings, const QString& section);
 
 };
 
