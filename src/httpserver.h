@@ -20,6 +20,7 @@ namespace HobrasoftHttpd {
 class HttpRequestHandler;
 class HttpConnection;
 class HttpSettings;
+class HttpTcpServer;
 
 /**
 @brief General single-threaded, event-driven HTTP server 
@@ -133,7 +134,7 @@ class HttpServer : public QObject {
 
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
-    QTcpServer     *m_server;
+    HttpTcpServer  *m_server;
     #endif
 
     const HttpSettings   *m_settings;

@@ -42,7 +42,7 @@ class HttpRequest {
     /**
      * @brief Returns HttpConnection of the request
      */
-    HttpConnection *connection() const { return m_parent; }
+    HttpConnection *connection() const { return m_connection; }
 
     /**
      * @brief Reads data from socket.
@@ -167,7 +167,7 @@ class HttpRequest {
 
     void    extractCookies();
 
-    HttpConnection  *m_parent;
+    HttpConnection  *m_connection;
 };
 
 }

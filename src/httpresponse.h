@@ -14,7 +14,7 @@
 #include "httpcookie.h"
 
 namespace HobrasoftHttpd {
-
+class HttpConnection;
 class HttpCookie;
 
 /**
@@ -31,7 +31,7 @@ class HttpResponse {
     /**
      * @brief Constructor sets default values for headers (status 200, OK)
      */
-    HttpResponse(QTcpSocket *socket);
+    HttpResponse(HttpConnection *);
 
     /**
      * @brief Sets or rewrite one header
@@ -91,15 +91,16 @@ class HttpResponse {
 
 
     /**
-     * @brief Flushes socket 
+     * @brief Flushed sockets data to network
      */
     void flushSocket();
 
 
     /**
-     * @brief Closes the socket
+     * @brief Closes socket and destroys connection
      */
     void close();
+
 
     /**
      * @brief Writes last part of the response and closes the socket when possible
@@ -128,7 +129,8 @@ class HttpResponse {
 
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
-    QTcpSocket* m_socket;
+    QTcpSocket *m_socket;
+    HttpConnection *m_connection;
 
     QMap<QString, QString>      m_headers;
     QMap<QString, HttpCookie>   m_cookies;

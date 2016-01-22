@@ -67,7 +67,11 @@ HttpRequestHandler *HttpServer::requestHandler(HttpConnection *parent) {
 void HttpServer::slotNewConnection() {
     while (m_server->hasPendingConnections()) {
         QTcpSocket *socket = m_server->nextPendingConnection();
-        new HttpConnection(this, socket);
+        HttpConnection *connection = new HttpConnection(this, socket);
+        socket->setParent(connection);
+        if (m_server->verified(socket)) {
+            connection->setPeerCertificate(m_server->peerCertificate(socket));
+            }
         }
 }
 

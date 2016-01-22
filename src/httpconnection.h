@@ -10,6 +10,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QSslCertificate>
 #include <QTimer>
 
 namespace HobrasoftHttpd {
@@ -66,10 +67,18 @@ class HttpConnection : public QObject {
     HttpServer *httpServer() const { return m_parent; }
 
     /**
-     * @brief Set or unset persistent connections
+     * @brief Returns the socket
      */
-    void setPersistent(bool x) { m_persistent = x; }
+    QTcpSocket *socket() const { return m_socket; }
 
+    bool verified() const { return m_peerCertificate.isValid() && !m_peerCertificate.isNull(); }
+
+    void setPeerCertificate(const QSslCertificate&);
+
+    QString commonName() const;
+
+
+  public slots:
     /**
      * @brief Closes the connection.
      *
@@ -89,7 +98,7 @@ class HttpConnection : public QObject {
     HttpRequest         *m_request;
     HttpRequestHandler  *m_handler;
     HttpServer          *m_parent;
-    bool                 m_persistent;
+    QSslCertificate      m_peerCertificate;
     #endif
     
 };

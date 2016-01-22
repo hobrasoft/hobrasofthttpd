@@ -27,7 +27,6 @@ HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject
     m_parent  = parent;
 
     int timeout = parent->settings()->timeout() * 1000;
-    m_persistent = parent->settings()->persistent();
 
     m_timeout = new QTimer(this);
     m_timeout->setInterval(timeout);
@@ -45,6 +44,17 @@ HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject
 
 const HttpSettings *HttpConnection::settings() const { 
     return m_parent->settings(); 
+}
+
+
+void HttpConnection::setPeerCertificate(const QSslCertificate& crt) {
+    m_peerCertificate = crt;
+}
+
+
+QString HttpConnection::commonName() const {
+    if (!m_peerCertificate.isValid()) { return QString(); }
+    return m_peerCertificate.subjectInfo(QSslCertificate::CommonName);
 }
 
 
@@ -72,13 +82,14 @@ void HttpConnection::slotDisconnected() {
     if (m_request) { delete m_request; }
     m_request = NULL;
     m_timeout->stop();
-    QTimer::singleShot(15000, this, SLOT(deleteLater()));
+    QTimer::singleShot(150, this, SLOT(deleteLater()));
+//  QTimer::singleShot(15000, this, SLOT(deleteLater()));
 }
 
 
 HttpResponse HttpConnection::response() {
     m_timeout->start();
-    return HttpResponse(m_socket);
+    return HttpResponse(this);
 }
 
 
@@ -112,10 +123,7 @@ void HttpConnection::slotRead() {
     if (m_request->status() == HttpRequest::StatusComplete) {
         bool disconnect = (m_request->header("Connection").toLower() == "close");
         m_timeout->stop();
-        HttpResponse response(m_socket);
-        if (!m_persistent) {
-            response.setHeader("Connection", "close");
-            }
+        HttpResponse response(this);
         m_handler->service(m_request, &response);
 
         response.flushSocket();
@@ -130,9 +138,6 @@ void HttpConnection::slotRead() {
             m_timeout->start();
             }
 
-        if (!m_persistent) {
-            close();
-            }
         if (m_request) { delete m_request; }
         m_request = NULL;
         }

@@ -18,7 +18,7 @@ HttpRequest::HttpRequest(HttpConnection *parent) {
     m_status = StatusWaitForRequest;
     m_currentSize = 0;
     m_expectedBodySize = 0;
-    m_parent = parent;
+    m_connection = parent;
 }
 
 
@@ -40,7 +40,7 @@ void HttpRequest::readFromSocket(QTcpSocket *socket) {
             readBody(socket);
             break;
         };
-    if (m_currentSize > m_parent->settings()->maxRequestSize()) {
+    if (m_currentSize > m_connection->settings()->maxRequestSize()) {
         m_status = StatusAbort;
         }
     if (m_status == StatusComplete) {
@@ -51,7 +51,7 @@ void HttpRequest::readFromSocket(QTcpSocket *socket) {
 
 
 void HttpRequest::readRequest(QTcpSocket *socket) {
-    int toRead = m_parent->settings()->maxRequestSize() - m_currentSize + 1;
+    int toRead = m_connection->settings()->maxRequestSize() - m_currentSize + 1;
     QByteArray newdata = socket->readLine(toRead).trimmed();
     m_currentSize += newdata.size();
 
@@ -70,11 +70,12 @@ void HttpRequest::readRequest(QTcpSocket *socket) {
     m_path    = list[1];
     m_version = list[2];
     m_status  = StatusWaitForHeader;
+    m_connection->setObjectName(m_path);
 }
 
 
 void HttpRequest::readHeader(QTcpSocket *socket) {
-    int toRead = m_parent->settings()->maxRequestSize() - m_currentSize + 1;
+    int toRead = m_connection->settings()->maxRequestSize() - m_currentSize + 1;
     QByteArray newdata = socket->readLine(toRead).trimmed();
     m_currentSize += newdata.size();
 
@@ -110,13 +111,13 @@ void HttpRequest::readHeader(QTcpSocket *socket) {
             return;
             }
 
-        if (m_boundary.isEmpty() && m_expectedBodySize + m_currentSize > m_parent->settings()->maxRequestSize()) {
+        if (m_boundary.isEmpty() && m_expectedBodySize + m_currentSize > m_connection->settings()->maxRequestSize()) {
             qWarning("HttpRequest: expected body is too large");
             m_status = StatusAbort;
             return;
             }
 
-        if (!m_boundary.isEmpty() && m_expectedBodySize > m_parent->settings()->maxMultiPartSize()) {
+        if (!m_boundary.isEmpty() && m_expectedBodySize > m_connection->settings()->maxMultiPartSize()) {
             qWarning("HttpRequest: expected multipart body is too large");
             m_status = StatusAbort;
             return;
@@ -154,7 +155,7 @@ void HttpRequest::readBody(QTcpSocket *socket) {
             }
 
         filesize += m_tempFile.write(socket->read(toRead));
-        if (filesize >= m_parent->settings()->maxMultiPartSize()) {
+        if (filesize >= m_connection->settings()->maxMultiPartSize()) {
             qWarning("HttpRequest: received too many multipart bytes");
             m_status = StatusAbort;
             return;

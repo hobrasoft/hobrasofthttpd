@@ -22,6 +22,7 @@ HttpRequestHandler::HttpRequestHandler(HttpConnection *parent) : QObject(parent)
 
 void HttpRequestHandler::service(HttpRequest *request, HttpResponse *response) {
     QString path = request->path();
+    m_connection->setObjectName(path);
 
     if (path.endsWith(".shtml")) {
         ShtmlController(m_connection).service(request,response);

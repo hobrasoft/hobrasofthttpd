@@ -6,12 +6,14 @@
  */
 
 #include "httpresponse.h"
+#include "httpconnection.h"
 #include <QStringList>
 
 using namespace HobrasoftHttpd;
 
-HttpResponse::HttpResponse(QTcpSocket *socket) {
-    m_socket = socket;
+HttpResponse::HttpResponse(HttpConnection *connection) {
+    m_connection = connection;
+    m_socket = m_connection->socket();
     m_statusCode = 200;
     m_statusText = "OK";
     m_sentHeaders = false;
@@ -153,10 +155,12 @@ void HttpResponse::write(const QByteArray& data, bool lastPart) {
 
         if (chunked) {
             writeToSocket("0\r\n\r\n");
+            m_connection->close();
             }
 
         if (!m_headers.contains("Content-Length")) {
-            m_socket->disconnectFromHost();
+//          m_socket->disconnectFromHost();
+            m_connection->close();
             }
 
         }

@@ -34,24 +34,6 @@ cacheOn = false
 timeout = 60000
 @endcode
 
-Configuration parameters
-------------------------
-
-- __address__ - listening bind address, 0.0.0.0, 192.168.1.0, 127.0.0.1 or ::1
-- __port__ - port number
-- __root__ - path to document root. Can be absolute or relative to current working directory
-- __chacheMaxAge__ - maximum age for static files in cache
-- __indexFile__ - name of index file in directory (index.html)
-- __encoding__ - encoding in Content-type header (default utf-8)
-- __maxCacheFileSize__ - maximum file size for static files in cache
-- __cacheOn__ - if true, the cache is on
-- __cacheTimeout__ - the object in cache is valid only if it is not older then the cacheTimeout
-- __timeout__ - timeout for opened connection from clients
-- __maxRequestSize__ - maximum size of request
-- __maxMultiPartSize__ - maximum size of multipart requests
-- __tempDir__ - path to temporary directory (/tmp)
-- __persistent__ - of/off persistent connection for event streams
-
 */
 class HttpSettings : public QObject {
     Q_OBJECT
@@ -119,9 +101,6 @@ class HttpSettings : public QObject {
     const QString&  tempDir() const { return m_tempDir; }                                   ///< Returns path to temporary directory
     void            setTempDir(const QString& x) { m_tempDir = x; }                         ///< Sets path to temporary directory
 
-    bool            persistent() const { return m_persistent; }                             ///< Returns status of persistent connections
-    void            setPersistent(bool x) { m_persistent = x; }                             ///< Set status of persistent connections
-
     bool            useSSL() const { return m_useSSL; }                                     ///< Returns status of SSL connections
     void            setUseSSL(bool x) { m_useSSL = x; }                                     ///< Set status of SSL connections
 
@@ -130,6 +109,9 @@ class HttpSettings : public QObject {
 
     const QString&  sslCrt() const { return m_sslCrt; }                                     ///< Returns SSL certificate
     void            setSslCrt(const QString& x) { m_sslCrt = x; }                           ///< Set SSL certificate
+
+    const QString&  sslCaCrt() const { return m_sslCaCrt; }                                 ///< Returns SSL CA certificate
+    void            setSslCaCrt(const QString& x) { m_sslCaCrt = x; }                       ///< Set SSL CA certificate
 
 
   private:
@@ -149,10 +131,10 @@ class HttpSettings : public QObject {
     int             m_maxRequestSize;
     int             m_maxMultiPartSize;
     QString         m_tempDir;
-    bool            m_persistent;
     bool            m_useSSL;
     QString         m_sslKey;
     QString         m_sslCrt;
+    QString         m_sslCaCrt;
     #endif
 
     void            readSettings(const QSettings* settings, const QString& section);
