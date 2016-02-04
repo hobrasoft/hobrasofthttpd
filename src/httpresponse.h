@@ -127,6 +127,9 @@ class HttpResponse {
      */
     bool containsHeader(const QString& name) { return m_headers.contains(name); }
 
+
+    bool isConnected() const;
+
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     QTcpSocket *m_socket;

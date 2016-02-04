@@ -21,6 +21,11 @@ HttpResponse::HttpResponse(HttpConnection *connection) {
 }
 
 
+bool HttpResponse::isConnected() const {
+    return m_connection->isConnected();
+}
+
+
 void HttpResponse::setHeader(const QString& name, const QString& value) {
     if (m_sentHeaders) return;
     m_headers[name] = value;
@@ -89,7 +94,13 @@ void HttpResponse::setCookie(const HttpCookie& cookie) {
 void HttpResponse::writeToSocket(const QByteArray& data) {
     int remaining = data.size();
     const char *ptr = data.data();
-    while (m_socket->isOpen() && remaining>0) {
+    if (!isConnected()) { 
+        return;
+        }
+    if (m_socket->isOpen() && !m_socket->isWritable()) {
+        return;
+        }
+    while (m_socket->isOpen() && m_socket->isWritable() && remaining>0) {
         int written = m_socket->write(data);
 //      m_socket->waitForBytesWritten(3000);
         ptr += written;
@@ -99,18 +110,21 @@ void HttpResponse::writeToSocket(const QByteArray& data) {
 
 
 void HttpResponse::flush() {
+    if (!isConnected()) { return; }
     write(QByteArray(), true);
     m_socket->flush();
 }
 
 
 void HttpResponse::flushSocket() {
+    if (!isConnected()) { return; }
     write(QByteArray(), false);
     m_socket->flush();
 }
 
 
 void HttpResponse::close() {
+    if (!isConnected()) { return; }
     m_socket->disconnectFromHost();
 }
 

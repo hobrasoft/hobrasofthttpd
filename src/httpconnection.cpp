@@ -25,6 +25,8 @@ HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject
     m_request = NULL;
     m_handler = parent->requestHandler(this);
     m_parent  = parent;
+    m_connected = true;
+    m_inService = true;
 
     int timeout = parent->settings()->timeout() * 1000;
 
@@ -59,6 +61,7 @@ QString HttpConnection::commonName() const {
 
 
 void HttpConnection::close() {
+    if (!isConnected()) { return; }
     if (m_socket) { m_socket->disconnectFromHost(); }
     if (m_request) { delete m_request; }
     m_request = NULL;
@@ -67,6 +70,7 @@ void HttpConnection::close() {
 
 
 void HttpConnection::slotTimeout() {
+    if (!isConnected()) { return; }
     m_socket->write("HTTP/1.1 408 request timeout\r\n");
     m_socket->write("Connection: close\r\n");
     m_socket->write("\r\n");
@@ -78,12 +82,14 @@ void HttpConnection::slotTimeout() {
 
 
 void HttpConnection::slotDisconnected() {
+    m_connected = false;
     m_socket->close();
     if (m_request) { delete m_request; }
     m_request = NULL;
     m_timeout->stop();
-    QTimer::singleShot(150, this, SLOT(deleteLater()));
-//  QTimer::singleShot(15000, this, SLOT(deleteLater()));
+    if (!m_inService) {
+        deleteLater();
+        }
 }
 
 
@@ -94,6 +100,7 @@ HttpResponse HttpConnection::response() {
 
 
 void HttpConnection::slotRead() {
+    if (!isConnected()) { return; }
     m_timeout->start();
     if (m_request == NULL) {
         m_request = new HttpRequest(this);
@@ -124,8 +131,14 @@ void HttpConnection::slotRead() {
         bool disconnect = (m_request->header("Connection").toLower() == "close");
         m_timeout->stop();
         HttpResponse response(this);
+        m_inService = true;
         m_handler->service(m_request, &response);
+        m_inService = false;
 
+        if (!isConnected()) { 
+            deleteLater();
+            return; 
+            }
         response.flushSocket();
 
         if (disconnect) {
@@ -133,7 +146,7 @@ void HttpConnection::slotRead() {
                 response.flush();
                 }
 
-            m_socket->disconnectFromHost();
+            if (isConnected()) { m_socket->disconnectFromHost(); }
           } else {
             m_timeout->start();
             }

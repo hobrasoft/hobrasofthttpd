@@ -91,6 +91,8 @@ class HttpConnection : public QObject {
      */
     const QSslCertificate peerCertificate() const { return m_peerCertificate; }
 
+    bool isConnected() const { return m_connected; }
+
 
   public slots:
     /**
@@ -113,6 +115,8 @@ class HttpConnection : public QObject {
     HttpRequestHandler  *m_handler;
     HttpServer          *m_parent;
     QSslCertificate      m_peerCertificate;
+    bool                 m_connected;
+    bool                 m_inService;
     #endif
     
 };
