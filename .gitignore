@@ -7,3 +7,4 @@ src/Makefile
 example/src/Makefile
 .*.swp
 example/bin/*
+tests/.tmp

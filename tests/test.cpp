@@ -87,39 +87,45 @@ void Test::settingsCustomValues1() {
 }
 
 
-void Test::httpserverStartIPv4() {
+void Test::createServer(QObject *parent, const QHostAddress& address) {
     QSettings q;
     q.clear();
-    q.setValue("http/address", QHostAddress(QHostAddress::LocalHost).toString());
+    q.setValue("http/address", address.toString());
     q.setValue("http/port",    8080); 
-    q.setValue("http/root",    "/tmp"); 
+    q.setValue("http/root",    "."); 
     q.sync();
-    HttpSettings hq(&q,0);
-    QVERIFY(hq.port()    == 8080);
-    QVERIFY(hq.address() == QHostAddress::LocalHost);
-    HttpServer s(&hq,0);
-    QVERIFY(s.m_server != NULL);
-    QVERIFY(s.m_settings != NULL);
+    HttpSettings *hq = new HttpSettings(&q,parent);
+    QVERIFY(hq->port()    == 8080);
+    QVERIFY(hq->address() == address);
+    HttpServer *s = new HttpServer(hq,parent);
+    QVERIFY(s->m_server != NULL);
+    QVERIFY(s->m_settings != NULL);
+}
+
+void Test::httpserverStartIP(const QHostAddress& address) {
+    QObject qobject(0);
+    createServer(&qobject,address);
 
     QTcpSocket socket(this);
-    socket.connectToHost(QHostAddress(QHostAddress::LocalHost), 8080);
+    socket.connectToHost(QHostAddress(address), 8080);
     QVERIFY(socket.waitForConnected(1000));
     socket.close();
 }
 
+
+void Test::httpserverStartIPv4() {
+    httpserverStartIP(QHostAddress::LocalHost);
+}
+
+
+void Test::httpserverStartIPv6() {
+    httpserverStartIP(QHostAddress::LocalHostIPv6);
+}
+
+
 void Test::httpserverHttpService() {
-    QSettings q;
-    q.clear();
-    q.setValue("http/address", QHostAddress(QHostAddress::LocalHost).toString());
-    q.setValue("http/port",    8080); 
-    q.setValue("http/root",    "."); 
-    q.sync();
-    HttpSettings hq(&q,0);
-    QVERIFY(hq.port()    == 8080);
-    QVERIFY(hq.address() == QHostAddress::LocalHost);
-    HttpServer s(&hq,0);
-    QVERIFY(s.m_server != NULL);
-    QVERIFY(s.m_settings != NULL);
+    QObject qobject(0);
+    createServer(&qobject);
 
     QFile file("./hobrasofthttpd.test.html");
     file.open(QIODevice::WriteOnly);
@@ -127,33 +133,69 @@ void Test::httpserverHttpService() {
     file.close();
 
     QNetworkAccessManager manager(this);
-    QNetworkRequest rq(QUrl("http://128.0.0.1:8080/hobrasofthttpd.test.html"));
+    QNetworkRequest rq(QUrl("http://127.0.0.1:8080/hobrasofthttpd.test.html"));
     QNetworkReply *reply = manager.get(rq);
     QEventLoop loop;
     connect(&manager, SIGNAL(finished(QNetworkReply *)),
             &loop,      SLOT(quit()));
     QTimer::singleShot(1000, &loop, SLOT(quit()));
-    qDebug() << reply->readAll();
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::NoError);
     QVERIFY(reply->readAll()  == "test");
     file.remove();
+
 }
 
-void Test::httpserverStartIPv6() {
-    return;
-    QSettings q;
-    q.clear();
-    q.setValue("http/address", QHostAddress(QHostAddress::LocalHostIPv6).toString());
-    q.setValue("http/port",    8080); 
-    q.sync();
-    HttpSettings hq(&q,0);
-    HttpServer s(&hq,0);
-    QVERIFY(s.m_server != NULL);
-    QVERIFY(s.m_settings != NULL);
 
-    QTcpSocket socket(this);
-    socket.connectToHost(QHostAddress(QHostAddress::LocalHostIPv6), 8080);
-    QVERIFY(socket.waitForConnected(1000));
-    socket.close();
+void Test::httpserverHttpService404() {
+    QObject qobject(0);
+    createServer(&qobject);
+
+    QFile file("./hobrasofthttpd.test.html");
+    file.remove();
+
+    QNetworkAccessManager manager(this);
+    QNetworkRequest rq(QUrl("http://127.0.0.1:8080/hobrasofthttpd.test.html"));
+    QNetworkReply *reply = manager.get(rq);
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)),
+            &loop,      SLOT(quit()));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::ContentNotFoundError);
+
+}
+
+
+void Test::httpserverHttpServiceShtmlInclude() {
+    QObject qobject(0);
+    createServer(&qobject);
+
+    QFile file("./hobrasofthttpd.test.shtml");
+    file.open(QIODevice::WriteOnly);
+    file.write("<!-- #include \"hobrasofthttpd.test.html\" -->");
+    file.close();
+
+    QFile filei("./hobrasofthttpd.test.html");
+    filei.open(QIODevice::WriteOnly);
+    filei.write("test");
+    filei.close();
+
+    QNetworkAccessManager manager(this);
+    QNetworkRequest rq(QUrl("http://127.0.0.1:8080/hobrasofthttpd.test.shtml"));
+    QNetworkReply *reply = manager.get(rq);
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)),
+            &loop,      SLOT(quit()));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::NoError);
+    QVERIFY(reply->readAll()  == "test");
+    file.remove();
+    filei.remove();
 }
 
 

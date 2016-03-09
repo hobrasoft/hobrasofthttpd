@@ -8,6 +8,7 @@
 
 #include <QObject>
 #include <QtTest/QtTest>
+#include <QHostAddress>
 
 /**
  * @brief
@@ -25,7 +26,12 @@ class Test : public QObject {
     void    httpserverStartIPv4();
     void    httpserverStartIPv6();
     void    httpserverHttpService();
+    void    httpserverHttpService404();
+    void    httpserverHttpServiceShtmlInclude();
 
+  private:
+    void    httpserverStartIP(const QHostAddress&);
+    void    createServer     (QObject *parent, const QHostAddress& address = QHostAddress::LocalHost);
 };
 
 #endif
