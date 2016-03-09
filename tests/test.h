@@ -22,7 +22,9 @@ class Test : public QObject {
 
     void    settingsDefaultValues();
     void    settingsCustomValues1();
-    void    httpserverStart();
+    void    httpserverStartIPv4();
+    void    httpserverStartIPv6();
+    void    httpserverHttpService();
 
 };
 

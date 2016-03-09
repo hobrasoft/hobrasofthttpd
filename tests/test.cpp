@@ -9,7 +9,14 @@
 #include "httptcpserver.h"
 
 #include <QDebug>
+#include <QTcpSocket>
 #include <QSignalSpy>
+#include <QTimer>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QUrl>
+#include <QEventLoop>
 
 using namespace HobrasoftHttpd;
 
@@ -80,13 +87,73 @@ void Test::settingsCustomValues1() {
 }
 
 
-void Test::httpserverStart() {
+void Test::httpserverStartIPv4() {
     QSettings q;
     q.clear();
-    HttpServer s(0);
+    q.setValue("http/address", QHostAddress(QHostAddress::LocalHost).toString());
+    q.setValue("http/port",    8080); 
+    q.setValue("http/root",    "/tmp"); 
+    q.sync();
+    HttpSettings hq(&q,0);
+    QVERIFY(hq.port()    == 8080);
+    QVERIFY(hq.address() == QHostAddress::LocalHost);
+    HttpServer s(&hq,0);
     QVERIFY(s.m_server != NULL);
     QVERIFY(s.m_settings != NULL);
-    
+
+    QTcpSocket socket(this);
+    socket.connectToHost(QHostAddress(QHostAddress::LocalHost), 8080);
+    QVERIFY(socket.waitForConnected(1000));
+    socket.close();
+}
+
+void Test::httpserverHttpService() {
+    QSettings q;
+    q.clear();
+    q.setValue("http/address", QHostAddress(QHostAddress::LocalHost).toString());
+    q.setValue("http/port",    8080); 
+    q.setValue("http/root",    "."); 
+    q.sync();
+    HttpSettings hq(&q,0);
+    QVERIFY(hq.port()    == 8080);
+    QVERIFY(hq.address() == QHostAddress::LocalHost);
+    HttpServer s(&hq,0);
+    QVERIFY(s.m_server != NULL);
+    QVERIFY(s.m_settings != NULL);
+
+    QFile file("./hobrasofthttpd.test.html");
+    file.open(QIODevice::WriteOnly);
+    file.write("test");
+    file.close();
+
+    QNetworkAccessManager manager(this);
+    QNetworkRequest rq(QUrl("http://128.0.0.1:8080/hobrasofthttpd.test.html"));
+    QNetworkReply *reply = manager.get(rq);
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)),
+            &loop,      SLOT(quit()));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    qDebug() << reply->readAll();
+    QVERIFY(reply->readAll()  == "test");
+    file.remove();
+}
+
+void Test::httpserverStartIPv6() {
+    return;
+    QSettings q;
+    q.clear();
+    q.setValue("http/address", QHostAddress(QHostAddress::LocalHostIPv6).toString());
+    q.setValue("http/port",    8080); 
+    q.sync();
+    HttpSettings hq(&q,0);
+    HttpServer s(&hq,0);
+    QVERIFY(s.m_server != NULL);
+    QVERIFY(s.m_settings != NULL);
+
+    QTcpSocket socket(this);
+    socket.connectToHost(QHostAddress(QHostAddress::LocalHostIPv6), 8080);
+    QVERIFY(socket.waitForConnected(1000));
+    socket.close();
 }
 
 
