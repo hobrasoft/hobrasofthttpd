@@ -21,7 +21,6 @@ class HttpConnection;
  * @brief Processes HTTP request, parses headers, body and files sent by HTTP protocol
  */
 class HttpRequest {
-
   public:
     /**
      * @brief Inner state of request, changes when parts of request are read from networkd

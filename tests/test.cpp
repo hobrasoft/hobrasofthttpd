@@ -7,6 +7,9 @@
 #include "httpsettings.h"
 #include "httpserver.h"
 #include "httptcpserver.h"
+#include "httpconnection.h"
+#include "httprequest.h"
+#include "httpresponse.h"
 
 #include <QDebug>
 #include <QTcpSocket>
@@ -87,7 +90,7 @@ void Test::settingsCustomValues1() {
 }
 
 
-void Test::createServer(QObject *parent, const QHostAddress& address) {
+HobrasoftHttpd::HttpServer *Test::createServer(QObject *parent, const QHostAddress& address) {
     QSettings q;
     q.clear();
     q.setValue("http/address", address.toString());
@@ -95,11 +98,8 @@ void Test::createServer(QObject *parent, const QHostAddress& address) {
     q.setValue("http/root",    "."); 
     q.sync();
     HttpSettings *hq = new HttpSettings(&q,parent);
-    QVERIFY(hq->port()    == 8080);
-    QVERIFY(hq->address() == address);
-    HttpServer *s = new HttpServer(hq,parent);
-    QVERIFY(s->m_server != NULL);
-    QVERIFY(s->m_settings != NULL);
+    HttpServer    *s = new HttpServer(hq,parent);
+    return s;
 }
 
 void Test::httpserverStartIP(const QHostAddress& address) {
@@ -136,8 +136,7 @@ void Test::httpserverHttpService() {
     QNetworkRequest rq(QUrl("http://127.0.0.1:8080/hobrasofthttpd.test.html"));
     QNetworkReply *reply = manager.get(rq);
     QEventLoop loop;
-    connect(&manager, SIGNAL(finished(QNetworkReply *)),
-            &loop,      SLOT(quit()));
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
     QTimer::singleShot(1000, &loop, SLOT(quit()));
     loop.exec();
     QVERIFY(reply->isFinished());
@@ -159,8 +158,7 @@ void Test::httpserverHttpService404() {
     QNetworkRequest rq(QUrl("http://127.0.0.1:8080/hobrasofthttpd.test.html"));
     QNetworkReply *reply = manager.get(rq);
     QEventLoop loop;
-    connect(&manager, SIGNAL(finished(QNetworkReply *)),
-            &loop,      SLOT(quit()));
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
     QTimer::singleShot(1000, &loop, SLOT(quit()));
     loop.exec();
     QVERIFY(reply->isFinished());
@@ -187,8 +185,7 @@ void Test::httpserverHttpServiceShtmlInclude() {
     QNetworkRequest rq(QUrl("http://127.0.0.1:8080/hobrasofthttpd.test.shtml"));
     QNetworkReply *reply = manager.get(rq);
     QEventLoop loop;
-    connect(&manager, SIGNAL(finished(QNetworkReply *)),
-            &loop,      SLOT(quit()));
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
     QTimer::singleShot(1000, &loop, SLOT(quit()));
     loop.exec();
     QVERIFY(reply->isFinished());
@@ -196,6 +193,119 @@ void Test::httpserverHttpServiceShtmlInclude() {
     QVERIFY(reply->readAll()  == "test");
     file.remove();
     filei.remove();
+}
+
+
+Httpd::Httpd(const HobrasoftHttpd::HttpSettings *settings, QObject *parent) : HttpServer(settings, parent) {
+}
+
+
+HobrasoftHttpd::HttpRequestHandler *Httpd::requestHandler(HobrasoftHttpd::HttpConnection *connection) {
+    RequestMapper *mapper = new RequestMapper(connection);
+    connect(mapper, SIGNAL(sigService(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,   SIGNAL(sigService(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+    return mapper;
+}
+
+
+Httpd *Httpd::create(QObject *parent, const QHostAddress& address) {
+    QSettings q;
+    q.clear();
+    q.setValue("http/address", address.toString());
+    q.setValue("http/port",    8080); 
+    q.setValue("http/root",    "."); 
+    q.sync();
+    HttpSettings *hq = new HttpSettings(&q,parent);
+    return new Httpd(hq,parent);
+}
+
+
+RequestMapper::RequestMapper(HobrasoftHttpd::HttpConnection *parent) : HobrasoftHttpd::HttpRequestHandler(parent) {
+}
+
+
+void RequestMapper::service(HttpRequest *request, HttpResponse *response) {
+    QVERIFY(request  != NULL);
+    QVERIFY(response != NULL);
+    QVERIFY(request->status() == HttpRequest::StatusComplete);
+    HttpConnection *connection = request->connection();
+    QVERIFY(connection != NULL);
+    emit sigService(request, response);
+}
+
+
+void Test::slotServiceGet(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    QVERIFY(request->method() == "GET");
+    QVERIFY(request->path() == "/hobrasofthttpd.test.html");
+    QVERIFY(request->version() == "HTTP/1.1");
+    QVERIFY(request->parameter("A") == "1");
+    QVERIFY(request->parameter("B") == "2");
+    QVERIFY(request->parameterMap().size() == 2);
+    response->write("test");
+    response->flush();
+}
+
+
+void Test::httpServiceGet() {
+    QObject qobject(0);
+    Httpd *server = Httpd::create(&qobject);
+    QVERIFY(server != NULL);
+    connect(server, SIGNAL( sigService   (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,     SLOT(slotServiceGet(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+
+    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    url.addQueryItem("A", "1");
+    url.addQueryItem("B", "2");
+    QNetworkAccessManager manager(this);
+    QNetworkRequest rq(url);
+    QNetworkReply *reply = manager.get(rq);
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::NoError);
+    QVERIFY(reply->readAll()  == "test");
+}
+
+
+void Test::slotServicePost(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    QVERIFY(request->method() == "POST");
+    QVERIFY(request->path() == "/hobrasofthttpd.test.html");
+    QVERIFY(request->version() == "HTTP/1.1");
+    QVERIFY(request->header("Content-type") == "text/text");
+    QVERIFY(request->headers("Content-type").contains("text/text") == true);
+    QVERIFY(request->headerMap().values("Content-type").contains("text/text") == true);
+    QVERIFY(request->body() == "abcd");
+    QVERIFY(request->parameter("A") == "1");
+    QVERIFY(request->parameter("B") == "2");
+    QVERIFY(request->parameterMap().size() == 2);
+    response->write("test");
+    response->flush();
+}
+
+
+void Test::httpServicePost() {
+    QObject qobject(0);
+    Httpd *server = Httpd::create(&qobject);
+    QVERIFY(server != NULL);
+    connect(server, SIGNAL( sigService    (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,     SLOT(slotServicePost(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+
+    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    url.addQueryItem("A", "1");
+    url.addQueryItem("B", "2");
+    QNetworkAccessManager manager(this);
+    QNetworkRequest rq(url);
+    rq.setRawHeader("Content-type", "text/text");
+    QNetworkReply *reply = manager.post(rq, "abcd");
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::NoError);
+    QVERIFY(reply->readAll()  == "test");
 }
 
 
