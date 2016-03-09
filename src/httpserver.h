@@ -15,6 +15,8 @@
 #include <QList>
 #include <QSslError>
 
+class Test;
+
 namespace HobrasoftHttpd {
 
 class HttpRequestHandler;
@@ -84,6 +86,7 @@ each listening on different addresses or ports.
 
 */
 class HttpServer : public QObject {
+    friend Test;
     Q_OBJECT
   public:
 
@@ -134,10 +137,9 @@ class HttpServer : public QObject {
 
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
-    HttpTcpServer  *m_server;
+    HttpTcpServer       *m_server;
+    const HttpSettings  *m_settings;
     #endif
-
-    const HttpSettings   *m_settings;
 
 };
     
