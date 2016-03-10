@@ -64,9 +64,12 @@ class Test : public QObject {
     void    httpserverHttpServiceShtmlInclude();
     void    httpServiceGet();
     void    httpServicePost();
+    void    httpServiceCookie();
+    void    requestUrlDecode();
 
-    void    slotServiceGet (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
-    void    slotServicePost(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServiceGet   (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServicePost  (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServiceCookie(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
 
   private:
     void    httpserverStartIP(const QHostAddress&);

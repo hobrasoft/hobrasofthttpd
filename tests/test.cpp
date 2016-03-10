@@ -18,6 +18,8 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QNetworkCookie>
+#include <QList>
 #include <QUrl>
 #include <QEventLoop>
 
@@ -241,10 +243,23 @@ void Test::slotServiceGet(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::
     QVERIFY(request->parameter("A") == "1");
     QVERIFY(request->parameter("B") == "2");
     QVERIFY(request->parameterMap().size() == 2);
+    QVERIFY(request->parameters("A").size() == 1);
+    QVERIFY(request->parameters("B").size() == 1);
+    QVERIFY(request->parameters("A").first() == "1");
+    QVERIFY(request->parameters("B").first() == "2");
     response->write("test");
     response->flush();
 }
 
+
+#define WAITFORREPLY() { \
+    QEventLoop loop; \
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit())); \
+    QTimer::singleShot(1000, &loop, SLOT(quit())); \
+    loop.exec(); \
+    QVERIFY(reply->isFinished()); \
+    QVERIFY(reply->error() == QNetworkReply::NoError); \
+    }
 
 void Test::httpServiceGet() {
     QObject qobject(0);
@@ -259,13 +274,9 @@ void Test::httpServiceGet() {
     QNetworkAccessManager manager(this);
     QNetworkRequest rq(url);
     QNetworkReply *reply = manager.get(rq);
-    QEventLoop loop;
-    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
-    QTimer::singleShot(1000, &loop, SLOT(quit()));
-    loop.exec();
-    QVERIFY(reply->isFinished());
-    QVERIFY(reply->error() == QNetworkReply::NoError);
-    QVERIFY(reply->readAll()  == "test");
+    WAITFORREPLY();
+    QVERIFY(reply->readAll() == "test"); \
+
 }
 
 
@@ -280,6 +291,10 @@ void Test::slotServicePost(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd:
     QVERIFY(request->parameter("A") == "1");
     QVERIFY(request->parameter("B") == "2");
     QVERIFY(request->parameterMap().size() == 2);
+    QVERIFY(request->parameters("A").size() == 1);
+    QVERIFY(request->parameters("B").size() == 1);
+    QVERIFY(request->parameters("A").first() == "1");
+    QVERIFY(request->parameters("B").first() == "2");
     response->write("test");
     response->flush();
 }
@@ -299,13 +314,50 @@ void Test::httpServicePost() {
     QNetworkRequest rq(url);
     rq.setRawHeader("Content-type", "text/text");
     QNetworkReply *reply = manager.post(rq, "abcd");
-    QEventLoop loop;
-    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
-    QTimer::singleShot(1000, &loop, SLOT(quit()));
-    loop.exec();
-    QVERIFY(reply->isFinished());
-    QVERIFY(reply->error() == QNetworkReply::NoError);
-    QVERIFY(reply->readAll()  == "test");
+    WAITFORREPLY();
+    QVERIFY(reply->readAll() == "test"); \
+
+}
+
+
+void Test::slotServiceCookie(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    QVERIFY(request->method() == "GET");
+    QVERIFY(request->path() == "/hobrasofthttpd.test.html");
+    QVERIFY(request->version() == "HTTP/1.1");
+    QVERIFY(request->cookie("kuki") == "xyz");
+    response->write("test");
+    response->flush();
+}
+
+
+void Test::httpServiceCookie() {
+    QObject qobject(0);
+    Httpd *server = Httpd::create(&qobject);
+    QVERIFY(server != NULL);
+    connect(server, SIGNAL( sigService      (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,     SLOT(slotServiceCookie(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+
+    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    QNetworkAccessManager manager(this);
+    QNetworkRequest rq(url);
+    QNetworkCookie c("kuki", "xyz");
+    rq.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue<QNetworkCookie>(c));
+    QNetworkReply *reply = manager.get(rq);
+    WAITFORREPLY();
+    QVERIFY(reply->readAll() == "test"); \
+
+}
+
+
+void Test::requestUrlDecode() {
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%25") == "%");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%2B") == "+");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("A+B") == "A B");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("A%2BB") == "A+B");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("A%25B") == "A%B");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%") == "%");        // Nedefinované, ale je potřeba otestovat
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%%") == "%%");      // Nedefinované, ale je potřeba otestovat
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%%%") == "%%%");    // Nedefinované, ale je potřeba otestovat
 }
 
 

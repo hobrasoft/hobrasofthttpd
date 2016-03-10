@@ -119,7 +119,7 @@ class HttpRequest {
     /**
      * @brief Converts URL encoded string to UTF8 string
      */
-    QString urlDecode(const QString& source) const; 
+    static QString urlDecode(const QString& source); 
 
     /**
      * @brief Returns cookie

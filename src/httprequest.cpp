@@ -230,7 +230,7 @@ void HttpRequest::extractCookies() {
 }
 
 
-QString HttpRequest::urlDecode(const QString& text) const {
+QString HttpRequest::urlDecode(const QString& text) {
     QString buffer(text);
     buffer.replace('+',' ');
     int percentpos = buffer.indexOf('%');
@@ -241,7 +241,7 @@ QString HttpRequest::urlDecode(const QString& text) const {
             buffer.remove(percentpos,3);
             buffer.insert(percentpos, byte);
             }
-        percentpos = buffer.indexOf('%');
+        percentpos = buffer.indexOf('%', percentpos+1);
         }
     return buffer;
 }
