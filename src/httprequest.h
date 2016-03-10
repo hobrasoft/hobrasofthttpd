@@ -136,6 +136,8 @@ class HttpRequest {
      */
     QTemporaryFile *uploadedFile(const QString& fieldName) { return m_uploadedFiles.value(fieldName); }
 
+    const QMap<QString, QTemporaryFile *>&  uploadedFiles() const { return m_uploadedFiles; }
+
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     QMultiMap<QString, QString>         m_headers;
