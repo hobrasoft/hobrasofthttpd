@@ -258,27 +258,24 @@ void HttpRequest::parseMultiPartFile() {
         QString fileName;
         while (!m_tempFile.atEnd() && !finished && !m_tempFile.error()) {
             QString line = QString::fromUtf8(m_tempFile.readLine(65536).trimmed());
-            if (line.startsWith("Content-Disposition:", Qt::CaseInsensitive)) {
-                if (line.contains("form-data", Qt::CaseInsensitive)) {
-                    int start=line.indexOf(" name=\"", 0, Qt::CaseInsensitive);
-                    int end=line.indexOf("\"",start+7);
-                    if (start>=0 && end>=start) {
-                        fieldName=line.mid(start+7,end-start-7);
+            if (line.isEmpty()) { break; }
+            if (!line.startsWith("Content-Disposition:", Qt::CaseInsensitive)) { continue; }
+            if (line.contains("form-data", Qt::CaseInsensitive)) {
+                int start=line.indexOf(" name=\"", 0, Qt::CaseInsensitive);
+                int end=line.indexOf("\"",start+7);
+                if (start>=0 && end>=start) {
+                    fieldName=line.mid(start+7,end-start-7);
                     }
-                    start=line.indexOf(" filename=\"", 0, Qt::CaseInsensitive);
-                    end=line.indexOf("\"",start+11);
-                    if (start>=0 && end>=start) {
-                        fileName=line.mid(start+11,end-start-11);
+                start=line.indexOf(" filename=\"", 0, Qt::CaseInsensitive);
+                end=line.indexOf("\"",start+11);
+                if (start>=0 && end>=start) {
+                    fileName=line.mid(start+11,end-start-11);
                     }
+                continue;
                 }
-                else {
-                    qDebug() << "HttpRequest: ignoring unsupported content part" << line;
-                }
+
+            qDebug() << "HttpRequest: ignoring unsupported content part" << line;
             }
-            else if (line.isEmpty()) {
-                break;
-            }
-        }
 
         QTemporaryFile* uploadedFile=0;
         QByteArray fieldValue;
