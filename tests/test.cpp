@@ -95,6 +95,130 @@ void Test::settingsCustomValues1() {
 }
 
 
+void Test::requestUrlDecode() {
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%25") == "%");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%2B") == "+");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("A+B") == "A B");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("A%2BB") == "A+B");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("A%25B") == "A%B");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%") == "%");        // Nedefinované, ale je potřeba otestovat
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%%") == "%%");      // Nedefinované, ale je potřeba otestovat
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%%%") == "%%%");    // Nedefinované, ale je potřeba otestovat
+}
+
+
+void Test::httpCookie() {
+    HttpCookie c("name", "value", 100);
+    QVERIFY(c.m_name    == "name");
+    QVERIFY(c.m_value   == "value");
+    QVERIFY(c.m_maxAge  == 100);
+    QVERIFY(c.m_path    == "/");
+    QVERIFY(c.m_comment == "");
+    QVERIFY(c.m_domain  == "");
+    QVERIFY(c.m_secure  == false); 
+    QVERIFY(c.name()    == "name");
+    QVERIFY(c.value()   == "value");
+    QVERIFY(c.maxAge()  == 100);
+    QVERIFY(c.path()    == "/");
+    QVERIFY(c.comment() == "");
+    QVERIFY(c.domain()  == "");
+    QVERIFY(c.secure()  == false); 
+    QVERIFY(c.toByteArray() == "name=value; Max-Age=100; Path=/; Version=1");
+
+    HttpCookie c1("name", "value", 100, "/path");
+    QVERIFY(c1.m_name    == "name");
+    QVERIFY(c1.m_value   == "value");
+    QVERIFY(c1.m_maxAge  == 100);
+    QVERIFY(c1.m_path    == "/path");
+    QVERIFY(c1.m_comment == "");
+    QVERIFY(c1.m_domain  == "");
+    QVERIFY(c1.m_secure  == false); 
+    QVERIFY(c1.name()    == "name");
+    QVERIFY(c1.value()   == "value");
+    QVERIFY(c1.maxAge()  == 100);
+    QVERIFY(c1.path()    == "/path");
+    QVERIFY(c1.comment() == "");
+    QVERIFY(c1.domain()  == "");
+    QVERIFY(c1.secure()  == false); 
+    QVERIFY(c1.version() == 1); 
+    QVERIFY(c1.toByteArray() == "name=value; Max-Age=100; Path=/path; Version=1");
+
+    HttpCookie c2("name", "value", 100, "/path", "comment");
+    QVERIFY(c2.m_name    == "name");
+    QVERIFY(c2.m_value   == "value");
+    QVERIFY(c2.m_maxAge  == 100);
+    QVERIFY(c2.m_path    == "/path");
+    QVERIFY(c2.m_comment == "comment");
+    QVERIFY(c2.m_domain  == "");
+    QVERIFY(c2.m_secure  == false); 
+    QVERIFY(c2.name()    == "name");
+    QVERIFY(c2.value()   == "value");
+    QVERIFY(c2.maxAge()  == 100);
+    QVERIFY(c2.path()    == "/path");
+    QVERIFY(c2.comment() == "comment");
+    QVERIFY(c2.domain()  == "");
+    QVERIFY(c2.secure()  == false); 
+    QVERIFY(c2.version() == 1); 
+    QVERIFY(c2.toByteArray() == "name=value; Comment=comment; Max-Age=100; Path=/path; Version=1");
+
+    HttpCookie c3("name", "value", 100, "/path", "comment", "hobrasoft.cz");
+    QVERIFY(c3.m_name    == "name");
+    QVERIFY(c3.m_value   == "value");
+    QVERIFY(c3.m_maxAge  == 100);
+    QVERIFY(c3.m_path    == "/path");
+    QVERIFY(c3.m_comment == "comment");
+    QVERIFY(c3.m_domain  == "hobrasoft.cz");
+    QVERIFY(c3.m_secure  == false); 
+    QVERIFY(c3.name()    == "name");
+    QVERIFY(c3.value()   == "value");
+    QVERIFY(c3.maxAge()  == 100);
+    QVERIFY(c3.path()    == "/path");
+    QVERIFY(c3.comment() == "comment");
+    QVERIFY(c3.domain()  == "hobrasoft.cz");
+    QVERIFY(c3.secure()  == false); 
+    QVERIFY(c3.version() == 1); 
+    QVERIFY(c3.toByteArray() == "name=value; Comment=comment; Domain=hobrasoft.cz; Max-Age=100; Path=/path; Version=1");
+
+    HttpCookie c4("name", "value", 100, "/path", "comment", "hobrasoft.cz", true);
+    QVERIFY(c4.m_name    == "name");
+    QVERIFY(c4.m_value   == "value");
+    QVERIFY(c4.m_maxAge  == 100);
+    QVERIFY(c4.m_path    == "/path");
+    QVERIFY(c4.m_comment == "comment");
+    QVERIFY(c4.m_domain  == "hobrasoft.cz");
+    QVERIFY(c4.m_secure  == true); 
+    QVERIFY(c4.name()    == "name");
+    QVERIFY(c4.value()   == "value");
+    QVERIFY(c4.maxAge()  == 100);
+    QVERIFY(c4.path()    == "/path");
+    QVERIFY(c4.comment() == "comment");
+    QVERIFY(c4.domain()  == "hobrasoft.cz");
+    QVERIFY(c4.secure()  == true); 
+    QVERIFY(c4.version() == 1); 
+    QVERIFY(c4.toByteArray() == "name=value; Comment=comment; Domain=hobrasoft.cz; Max-Age=100; Path=/path; Secure; Version=1");
+
+    c4.setName("a1");
+    QVERIFY(c4.name() == "a1");
+    c4.setValue("a2");
+    QVERIFY(c4.value() == "a2");
+    c4.setComment("a3");
+    QVERIFY(c4.comment() == "a3");
+    c4.setDomain("a4");
+    QVERIFY(c4.domain() == "a4");
+    c4.setMaxAge(19);
+    QVERIFY(c4.maxAge() == 19);
+    c4.setPath("a5");
+    QVERIFY(c4.path() == "a5");
+    c4.setSecure(true);
+    QVERIFY(c4.secure() == true);
+    c4.setSecure(false);
+    QVERIFY(c4.secure() == false);
+    c4.setVersion(2);
+    QVERIFY(c4.version() == 2);
+
+}
+
+
 HobrasoftHttpd::HttpServer *Test::createServer(QObject *parent, const QHostAddress& address) {
     QSettings q;
     q.clear();
@@ -285,7 +409,7 @@ void Test::httpServiceGet() {
     QNetworkRequest rq(url);
     QNetworkReply *reply = manager.get(rq);
     WAITFORREPLY();
-    QVERIFY(reply->readAll() == "test"); \
+    QVERIFY(reply->readAll() == "test");
 
 }
 
@@ -332,7 +456,7 @@ void Test::httpServicePost() {
     rq.setRawHeader("Content-type", "text/text");
     QNetworkReply *reply = manager.post(rq, "abcd");
     WAITFORREPLY();
-    QVERIFY(reply->readAll() == "test"); \
+    QVERIFY(reply->readAll() == "test");
 
 }
 
@@ -361,20 +485,8 @@ void Test::httpServiceCookie() {
     rq.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue<QNetworkCookie>(c));
     QNetworkReply *reply = manager.get(rq);
     WAITFORREPLY();
-    QVERIFY(reply->readAll() == "test"); \
+    QVERIFY(reply->readAll() == "test");
 
-}
-
-
-void Test::requestUrlDecode() {
-    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%25") == "%");
-    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%2B") == "+");
-    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("A+B") == "A B");
-    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("A%2BB") == "A+B");
-    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("A%25B") == "A%B");
-    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%") == "%");        // Nedefinované, ale je potřeba otestovat
-    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%%") == "%%");      // Nedefinované, ale je potřeba otestovat
-    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%%%") == "%%%");    // Nedefinované, ale je potřeba otestovat
 }
 
 
@@ -424,6 +536,170 @@ void Test::httpServiceUpload() {
     rq.setRawHeader("Content-Type", "multipart/form-data; boundary=BOUNDARY");
     QNetworkReply *reply = manager.post(rq,data);
     WAITFORREPLY();
-    QVERIFY(reply->readAll() == "test"); \
+    QVERIFY(reply->readAll() == "test");
 }
+
+
+
+void Test::slotServiceUploadInsensitive(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    QVERIFY(request->header("Content-type") == "muLTIParT/fORM-DaTa; BOUndARy=BOUNDARY");
+
+    QVERIFY(request->uploadedFile("file1") != NULL);
+    QTemporaryFile *file1 = request->uploadedFile("file1");
+    QVERIFY(file1 != NULL);
+    QVERIFY(file1->readAll() == "ABCD");
+    file1->close();
+    file1->deleteLater();
+
+    QVERIFY(request->uploadedFile("file2") != NULL);
+    QTemporaryFile *file2 = request->uploadedFile("file2");
+    QVERIFY(file2 != NULL);
+    QVERIFY(file2->readAll() == "XYZ");
+    file2->close();
+    file2->deleteLater();
+
+    QVERIFY(request->uploadedFile("file3") == NULL);
+
+    response->write("test");
+    response->flush();
+}
+
+
+void Test::httpServiceUploadInsensitive() {
+    QObject qobject(0);
+    Httpd *server = Httpd::create(&qobject);
+    QVERIFY(server != NULL);
+    connect(server, SIGNAL( sigService                 (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,     SLOT(slotServiceUploadInsensitive(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+
+    QByteArray data;
+    data += "--BOUNDARY\r\n";
+    data += "Content-Disposition: form-data; name=\"file1\"; filename=\"file1.txt\"\r\n";
+    data += "Content-Type: text/text\r\n\r\n";
+    data += "ABCD\r\n";
+    data += "--BOUNDARY\r\n";
+    data += "Content-Disposition: form-data; name=\"file2\"; filename=\"file2.txt\"\r\n";
+    data += "Content-Type: text/text\r\n\r\n";
+    data += "XYZ\r\n";
+    data += "--BOUNDARY--\r\n";
+
+    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    QNetworkAccessManager manager(this);
+    QNetworkRequest rq(url);
+    rq.setRawHeader("conTENt-TyPE", "muLTIParT/fORM-DaTa; BOUndARy=BOUNDARY");
+    QNetworkReply *reply = manager.post(rq,data);
+    WAITFORREPLY();
+    QVERIFY(reply->readAll() == "test");
+}
+
+
+void Test::slotServiceResponse(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    Q_UNUSED(request);
+    QVERIFY(response->headers().isEmpty() == true);
+    QVERIFY(response->isConnected() == true);
+
+    HttpCookie c("name", "value", 100, "/path", "Comment", "hobrasoft.cz", false);
+    response->setCookie(c);
+    QVERIFY(response->cookie("name").name()  ==  "name");
+    QVERIFY(response->cookie("name").value() ==  "value");
+    QVERIFY(response->cookies().size() == 1);
+
+    response->clearHeaders();
+    QVERIFY(response->headers().isEmpty() == true);
+    response->setHeader("Size", 12);
+    QVERIFY(response->headers()["Size"] == "12");
+    QVERIFY(response->containsHeader("Size"));
+    response->clearHeaders();
+    QVERIFY(response->headers().isEmpty() == true);
+    
+    response->setHeader("Content-Type", "text/text");
+    QVERIFY(response->headers().size() == 1);
+    response->clearHeaders();
+    QVERIFY(response->headers().isEmpty() == true);
+    response->setHeader("Content-Type", "text/text");
+    QVERIFY(response->headers().size() == 1);
+    QVERIFY(response->headers()["Content-Type"] == "text/text");
+    QVERIFY(response->containsHeader("Content-Type"));
+
+    response->setStatus(404, "Not found");
+    response->write("test");
+    response->flush();
+
+    response->close();
+    QVERIFY(response->isConnected() == false);
+}
+
+
+void Test::httpServiceResponse() {
+    QObject qobject(0);
+    Httpd *server = Httpd::create(&qobject);
+    QVERIFY(server != NULL);
+    connect(server, SIGNAL( sigService        (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,     SLOT(slotServiceResponse(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+
+    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    QNetworkAccessManager manager(this);
+    QNetworkRequest rq(url);
+    QNetworkReply *reply = manager.get(rq);
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::ContentNotFoundError);
+    QVERIFY(reply->readAll() == "test"); 
+    QVERIFY(reply->header(QNetworkRequest::ContentTypeHeader) == "text/text");
+    QVERIFY(reply->header(QNetworkRequest::ContentLengthHeader) == 4);
+    QVariant cv = reply->header(QNetworkRequest::SetCookieHeader);
+    QList<QNetworkCookie> cookies = qvariant_cast<QList<QNetworkCookie> >(cv);
+    QVERIFY(cookies.size() == 1);
+    const QNetworkCookie& cookie = cookies[0];
+    QVERIFY(cookie.name()  == "name");
+    QVERIFY(cookie.value() == "value");
+    QVERIFY(cookie.path()  == "/path");
+    QVERIFY(cookie.isSecure() == false);
+    QVERIFY(cookie.isHttpOnly() == false);
+    QVERIFY(cookie.expirationDate() > QDateTime::currentDateTime().addSecs(90));
+    QVERIFY(cookie.expirationDate() < QDateTime::currentDateTime().addSecs(110));
+    QVERIFY(cookie.domain() == "hobrasoft.cz");
+
+}
+
+
+void Test::slotServiceResponseChunked(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    Q_UNUSED(request);
+    QVERIFY(response->headers().isEmpty() == true);
+    QVERIFY(response->isConnected() == true);
+
+    response->setHeader("Transfer-Encoding", "chunked");
+
+    for (int i=0; i<10; i++) {
+        QString chunk = QString("%1").arg(i);
+        response->write(chunk.toUtf8());
+        response->flushSocket();
+        }
+
+    response->flush();
+    response->close();
+}
+
+
+void Test::httpServiceResponseChunked() {
+    QObject qobject(0);
+    Httpd *server = Httpd::create(&qobject);
+    QVERIFY(server != NULL);
+    connect(server, SIGNAL( sigService               (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,     SLOT(slotServiceResponseChunked(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+
+    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    QNetworkAccessManager manager(this);
+    QNetworkRequest rq(url);
+    QNetworkReply *reply = manager.get(rq);
+    WAITFORREPLY();
+    QVERIFY(reply->readAll() == "0123456789"); 
+
+}
+
+
+
 

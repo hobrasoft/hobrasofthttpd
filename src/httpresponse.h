@@ -67,7 +67,7 @@ class HttpResponse {
     /**
      * @brief Returns cookies of the response in QMap
      */
-    QMap<QString, HttpCookie>& cookies();
+    const QMap<QString, HttpCookie>& cookies() const { return m_cookies; };
 
     /**
      * @brief Returns cookie

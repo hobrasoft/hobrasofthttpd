@@ -10,6 +10,7 @@
 #include "httpsettings.h"
 #include <QList>
 #include <QDir>
+#include <QMapIterator>
 
 using namespace HobrasoftHttpd;
 
@@ -96,16 +97,16 @@ void HttpRequest::readHeader(QTcpSocket *socket) {
         }
 
     if (newdata.isEmpty()) { // Prázdný řádek, konec hlaviček
-        QString contentType = m_headers.value("Content-Type");
+        QString contentType = header("Content-Type");
 
-        if (contentType.startsWith("multipart/form-data")) {
-            int pos  = contentType.indexOf("boundary=");
+        if (contentType.startsWith("multipart/form-data", Qt::CaseInsensitive)) {
+            int pos  = contentType.indexOf("boundary=", 0, Qt::CaseInsensitive);
             if (pos >= 0) {
                 m_boundary = contentType.mid(pos+9);
                 }
             }
 
-        m_expectedBodySize = m_headers.value("Content-Length").toInt();
+        m_expectedBodySize = header("Content-Length").toInt();
         if (m_expectedBodySize <= 0) {
             m_status = StatusComplete;
             return;
@@ -175,7 +176,7 @@ void HttpRequest::readBody(QTcpSocket *socket) {
 
 void HttpRequest::decodeRequestParams() {
     QString rawParameters;
-    if (m_headers.value("Content-Type") == "application/x-www-form-urlencoded") {
+    if (header("Content-Type").toLower() == "application/x-www-form-urlencoded") {
         rawParameters = m_bodyData;
       } else {
         int questionmarkpos = m_path.indexOf('?');
@@ -205,7 +206,7 @@ void HttpRequest::decodeRequestParams() {
 
 
 void HttpRequest::extractCookies() {
-    QStringList cookies = m_headers.values("Cookie");
+    QStringList cookies = headers("Cookie");
     for (int i=0; i<cookies.size(); i++) {
         // rozdělit řádek podle středníků
         QStringList parts = cookies[i].split(";");
@@ -227,7 +228,7 @@ void HttpRequest::extractCookies() {
                 }
             }
         }
-    m_headers.remove("Cookie");
+    header("Cookie");
 }
 
 
@@ -253,25 +254,25 @@ void HttpRequest::parseMultiPartFile() {
     bool finished=false;
     while (!m_tempFile.atEnd() && !finished && !m_tempFile.error()) {
 
-        QByteArray fieldName;
-        QByteArray fileName;
+        QString fieldName;
+        QString fileName;
         while (!m_tempFile.atEnd() && !finished && !m_tempFile.error()) {
-            QByteArray line=m_tempFile.readLine(65536).trimmed();
-            if (line.startsWith("Content-Disposition:")) {
-                if (line.contains("form-data")) {
-                    int start=line.indexOf(" name=\"");
+            QString line = QString::fromUtf8(m_tempFile.readLine(65536).trimmed());
+            if (line.startsWith("Content-Disposition:", Qt::CaseInsensitive)) {
+                if (line.contains("form-data", Qt::CaseInsensitive)) {
+                    int start=line.indexOf(" name=\"", 0, Qt::CaseInsensitive);
                     int end=line.indexOf("\"",start+7);
                     if (start>=0 && end>=start) {
                         fieldName=line.mid(start+7,end-start-7);
                     }
-                    start=line.indexOf(" filename=\"");
+                    start=line.indexOf(" filename=\"", 0, Qt::CaseInsensitive);
                     end=line.indexOf("\"",start+11);
                     if (start>=0 && end>=start) {
                         fileName=line.mid(start+11,end-start-11);
                     }
                 }
                 else {
-                    qDebug("HttpRequest: ignoring unsupported content part %s",line.data());
+                    qDebug() << "HttpRequest: ignoring unsupported content part" << line;
                 }
             }
             else if (line.isEmpty()) {
@@ -282,7 +283,7 @@ void HttpRequest::parseMultiPartFile() {
         QTemporaryFile* uploadedFile=0;
         QByteArray fieldValue;
         while (!m_tempFile.atEnd() && !finished && !m_tempFile.error()) {
-            QByteArray line = m_tempFile.readLine(65536);
+            QString line = QString::fromUtf8(m_tempFile.readLine(65536));
             if (line.startsWith("--"+m_boundary.toUtf8())) {
                 // Boundary found. Until now we have collected 2 bytes too much,
                 // so remove them from the last result
@@ -315,7 +316,7 @@ void HttpRequest::parseMultiPartFile() {
                         uploadedFile=new QTemporaryFile();
                         uploadedFile->open();
                         }
-                    uploadedFile->write(line);
+                    uploadedFile->write(line.toUtf8());
                     if (uploadedFile->error()) {
                         qCritical("HttpRequest: error writing temp file, %s",qPrintable(uploadedFile->errorString()));
                         }
@@ -328,4 +329,27 @@ void HttpRequest::parseMultiPartFile() {
         }
 }
 
+
+QString HttpRequest::header(const QString& name) const { 
+    QMapIterator<QString, QString>  iterator(m_headers);
+    while (iterator.hasNext()) {
+        iterator.next();
+        if (iterator.key().toLower() == name.toLower()) {
+            return iterator.value();
+            }
+        }
+    return QString();
+}
+
+
+QList<QString>  HttpRequest::headers(const QString& name) const {
+    QMapIterator<QString, QString>  iterator(m_headers);
+    while (iterator.hasNext()) {
+        iterator.next();
+        if (iterator.key().toLower() == name.toLower()) {
+            return m_headers.values(iterator.key());
+            }
+        }
+    return QList<QString>();
+}
 

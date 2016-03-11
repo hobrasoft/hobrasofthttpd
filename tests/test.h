@@ -57,6 +57,8 @@ class Test : public QObject {
 
     void    settingsDefaultValues();
     void    settingsCustomValues1();
+    void    requestUrlDecode();
+    void    httpCookie();
     void    httpserverStartIPv4();
     void    httpserverStartIPv6();
     void    httpserverHttpService();
@@ -65,13 +67,18 @@ class Test : public QObject {
     void    httpServiceGet();
     void    httpServicePost();
     void    httpServiceCookie();
-    void    requestUrlDecode();
     void    httpServiceUpload();
+    void    httpServiceUploadInsensitive();
+    void    httpServiceResponse();
+    void    httpServiceResponseChunked();
 
-    void    slotServiceGet   (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
-    void    slotServicePost  (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
-    void    slotServiceCookie(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
-    void    slotServiceUpload(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServiceGet              (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServicePost             (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServiceCookie           (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServiceUpload           (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServiceUploadInsensitive(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServiceResponse         (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServiceResponseChunked  (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
 
   private:
     void    httpserverStartIP(const QHostAddress&);
@@ -79,4 +86,3 @@ class Test : public QObject {
 };
 
 #endif
-

@@ -11,12 +11,15 @@
 #include <QString>
 #include <QByteArray>
 
+class Test;
+
 namespace HobrasoftHttpd {
 
 /**
  * @brief One cookie of HTTP protocol
  */
 class HttpCookie {
+    friend Test;
   public:
 
     /**

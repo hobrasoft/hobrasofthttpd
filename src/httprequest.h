@@ -71,17 +71,16 @@ class HttpRequest {
     QString    version() const { return m_version; }
 
     /**
-     * @brief Returns requested header value
-     *
+     * @brief Returns requested header value, case insensitive
      */
-    QString    header(const QString& name) const { return m_headers.value(name); }
+    QString    header(const QString& name) const;
 
     /**
-     * @brief Returns all headers of HTTP request in QList
+     * @brief Returns all headers of HTTP request in QList, case insensitive
      *
      * Cookies are not contined in the returnetd values. If you want to read cookies, use cookie() method instead.
      */
-    QList<QString>  headers(const QString& name) const { return m_headers.values(name); }
+    QList<QString>  headers(const QString& name) const;
 
     /**
      * @brief Returns all headers of HTTP request in QMap
