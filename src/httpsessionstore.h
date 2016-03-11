@@ -16,6 +16,7 @@
 
 namespace HobrasoftHttpd {
 
+class HttpServer;
 class HttpRequest;
 class HttpResponse;
 class HttpSettings;
@@ -29,9 +30,14 @@ class HttpSessionStore : public QObject {
   public:
 
     /**
-     * @brief Construktor
+     * @brief Constructor
      */
     HttpSessionStore(const HttpSettings *settings, QObject *parent);
+
+    /**
+     * @brief Constructor
+     */
+    HttpSessionStore(HttpServer *server);
 
     /**
      * @brief Returns session ID associated with the request or response

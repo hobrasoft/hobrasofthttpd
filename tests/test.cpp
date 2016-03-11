@@ -10,6 +10,7 @@
 #include "httpconnection.h"
 #include "httprequest.h"
 #include "httpresponse.h"
+#include "httpsessionstore.h"
 
 #include <QDebug>
 #include <QTcpSocket>
@@ -343,6 +344,7 @@ Httpd *Httpd::create(QObject *parent, const QHostAddress& address) {
     q.setValue("http/address", address.toString());
     q.setValue("http/port",    8080); 
     q.setValue("http/root",    "."); 
+    q.setValue("http/sessionCookieName", "sessionid"); 
     q.sync();
     HttpSettings *hq = new HttpSettings(&q,parent);
     return new Httpd(hq,parent);
@@ -701,5 +703,100 @@ void Test::httpServiceResponseChunked() {
 }
 
 
+void Test::slotServiceSession(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    QVERIFY(m_sessionStore != NULL);
+    HttpSession session = m_sessionStore->session(request, response);
+    if (request->path() == "/1") {
+        session.add("A", "1");
+        }
+    if (request->path() == "/2") {
+        QVERIFY(session.contains("A") == true);
+        QVERIFY(session.value("A") == "1");
+        session.remove("A");
+        QVERIFY(session.contains("A") == false);
+        session.add("B", "2");
+        QVERIFY(session.contains("B") == true);
+        }
+    if (request->path() == "/3") {
+        QVERIFY(session.contains("A") == false);
+        QVERIFY(session.contains("B") == true);
+        QVERIFY(session.value("B") == "2");
+        }
+}
+
+
+void Test::httpServiceSession() {
+    QObject qobject(0);
+    Httpd *server = Httpd::create(&qobject);
+    QVERIFY(server != NULL);
+    m_sessionStore = new HttpSessionStore(server);
+    QVERIFY(m_sessionStore != NULL);
+    QVERIFY(m_sessionStore->sessionCookieName() == "sessionid");
+    connect(server, SIGNAL( sigService       (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,     SLOT(slotServiceSession(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+
+    QNetworkReply *reply;
+    QNetworkAccessManager manager(this);
+    reply = manager.get(QNetworkRequest(QUrl("http://127.0.0.1:8080/1")));
+    WAITFORREPLY();
+
+    QVariant cv = reply->header(QNetworkRequest::SetCookieHeader);
+    QList<QNetworkCookie> cookies = qvariant_cast<QList<QNetworkCookie> >(cv);
+    QVERIFY(cookies.size() == 1);
+    const QNetworkCookie& cookie = cookies[0];
+    QVERIFY(cookie.name()  == "sessionid");
+
+    reply = manager.get(QNetworkRequest(QUrl("http://127.0.0.1:8080/2")));
+    WAITFORREPLY();
+
+    reply = manager.get(QNetworkRequest(QUrl("http://127.0.0.1:8080/3")));
+    WAITFORREPLY();
+
+}
+
+
+void Test::slotServiceAbort(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    Q_UNUSED(request);
+    Q_UNUSED(response);
+    qDebug() << "slotServiceAbort(); -- start";
+    QTest::qWait(200);
+    qDebug() << "slotServiceAbort(); -- finished";
+    response->write("abcd");
+    response->flush();
+}
+
+
+void TestWorker::start() {
+    qDebug() << "TestWorker::start() -- start";
+    QNetworkAccessManager manager(this);
+    QNetworkReply *reply = manager.get(QNetworkRequest(QUrl("http://127.0.0.1:8080/ServiceAbort")));
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
+    QTimer::singleShot(100, &loop, SLOT(quit()));
+    loop.exec();
+    reply->abort();
+    qDebug() << "TestWorker::start() -- finished";
+}
+
+
+// This test does not work properly
+// The thread is not started
+// Application should not SIGSEGV here
+void Test::httpServiceAbort() {
+    QObject qobject(0);
+    Httpd *server = Httpd::create(&qobject);
+    QVERIFY(server != NULL);
+    connect(server, SIGNAL( sigService      (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,     SLOT(slotServiceAbort (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+    TestWorker *worker = new TestWorker;
+    worker->moveToThread(&m_workerThread);
+    connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater())); // Signal is not signalled to different thread??!!
+    QTimer::singleShot(1, worker, SLOT(start()));
+    QCoreApplication::processEvents();
+
+    m_workerThread.wait(3000);
+
+    QTest::qWait(300);
+}
 
 

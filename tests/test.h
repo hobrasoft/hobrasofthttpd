@@ -9,6 +9,7 @@
 #include <QObject>
 #include <QtTest/QtTest>
 #include <QHostAddress>
+#include <QThread>
 #include "httpserver.h"
 #include "httprequesthandler.h"
 
@@ -20,6 +21,7 @@ class HttpSettings;
 class HttpRequest;
 class HttpRequestHandler;
 class HttpResponse;
+class HttpSessionStore;
 };
 
 
@@ -43,6 +45,17 @@ class Httpd : public HobrasoftHttpd::HttpServer {
     void sigService(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *);
 };
 
+
+class TestWorker : public QObject {
+    Q_OBJECT
+  public:
+
+  signals:
+    void    finished();
+
+  public slots:
+    void    start();
+};
 
 /**
  * @brief
@@ -71,6 +84,8 @@ class Test : public QObject {
     void    httpServiceUploadInsensitive();
     void    httpServiceResponse();
     void    httpServiceResponseChunked();
+    void    httpServiceSession();
+    void    httpServiceAbort();
 
     void    slotServiceGet              (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotServicePost             (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
@@ -79,10 +94,15 @@ class Test : public QObject {
     void    slotServiceUploadInsensitive(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotServiceResponse         (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotServiceResponseChunked  (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServiceSession          (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotServiceAbort            (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
 
   private:
     void    httpserverStartIP(const QHostAddress&);
     HobrasoftHttpd::HttpServer *createServer(QObject *parent, const QHostAddress& address = QHostAddress::LocalHost);
+    HobrasoftHttpd::HttpSessionStore *m_sessionStore;
+
+    QThread m_workerThread;
 };
 
 #endif

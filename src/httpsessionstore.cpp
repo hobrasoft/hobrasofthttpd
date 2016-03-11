@@ -10,6 +10,7 @@
 #include "httpresponse.h"
 #include "httprequest.h"
 #include "httpsettings.h"
+#include "httpserver.h"
 
 using namespace HobrasoftHttpd;
 
@@ -20,8 +21,17 @@ HttpSessionStore::HttpSessionStore(const HttpSettings* settings, QObject *parent
     m_cleaner->setSingleShot(false);
     m_cleaner->start();
     connect(m_cleaner, SIGNAL(timeout()), this, SLOT(slotCleaner()));
-
     m_settings = settings;
+}
+
+
+HttpSessionStore::HttpSessionStore(HttpServer *server) : QObject(server) {
+    m_cleaner = new QTimer(this);
+    m_cleaner->setInterval(30000);
+    m_cleaner->setSingleShot(false);
+    m_cleaner->start();
+    connect(m_cleaner, SIGNAL(timeout()), this, SLOT(slotCleaner()));
+    m_settings = server->settings();
 }
 
 

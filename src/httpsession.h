@@ -55,6 +55,17 @@ class HttpSession {
         return m_data != NULL; 
         }
 
+
+    /**
+     * @brief Returns true if the session contains key
+     */
+    bool contains(const QString& key) const {
+        if (m_data != NULL) {
+            return m_data->values.contains(key);
+            }
+        return false;
+        }
+
     /**
      * @brief Adds an item to the session
      */
