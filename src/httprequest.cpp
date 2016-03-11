@@ -144,6 +144,7 @@ void HttpRequest::readBody(QTcpSocket *socket) {
         return;
         }
 
+    // Multipart body
     if (!m_boundary.isEmpty()) {
         if (!m_tempFile.isOpen()) {
             m_tempFile.open();
@@ -248,7 +249,6 @@ QString HttpRequest::urlDecode(const QString& text) {
 
 
 void HttpRequest::parseMultiPartFile() {
-    qDebug("HttpRequest: parsing multipart temp file");
     m_tempFile.seek(0);
     bool finished=false;
     while (!m_tempFile.atEnd() && !finished && !m_tempFile.error()) {
@@ -290,7 +290,6 @@ void HttpRequest::parseMultiPartFile() {
                     // last field was a form field
                     fieldValue.remove(fieldValue.size()-2,2);
                     m_parameters.insert(fieldName,fieldValue);
-                    qDebug("HttpRequest: set parameter %s=%s",fieldName.data(),fieldValue.data());
                     }
                 else if (!fileName.isEmpty() && !fieldName.isEmpty()) {
                     // last field was a file
@@ -298,38 +297,35 @@ void HttpRequest::parseMultiPartFile() {
                     uploadedFile->flush();
                     uploadedFile->seek(0);
                     m_parameters.insert(fieldName,fileName);
-                    qDebug("HttpRequest: set parameter %s=%s",fieldName.data(),fileName.data());
                     m_uploadedFiles.insert(fieldName,uploadedFile);
-                    qDebug("HttpRequest: uploaded file size is %i",(int) uploadedFile->size());
-                }
+                    }
                 if (line.contains(m_boundary.toUtf8()+"--")) {
                     finished=true;
-                }
+                    }
                 break;
-            }
-            else {
+              } else {
                 if (fileName.isEmpty() && !fieldName.isEmpty()) {
                     // this is a form field.
                     m_currentSize+=line.size();
                     fieldValue.append(line);
-                }
+                    }
                 else if (!fileName.isEmpty() && !fieldName.isEmpty()) {
                     // this is a file
                     if (!uploadedFile) {
                         uploadedFile=new QTemporaryFile();
                         uploadedFile->open();
-                    }
+                        }
                     uploadedFile->write(line);
                     if (uploadedFile->error()) {
                         qCritical("HttpRequest: error writing temp file, %s",qPrintable(uploadedFile->errorString()));
+                        }
                     }
                 }
             }
         }
-    }
     if (m_tempFile.error()) {
         qCritical("HttpRequest: cannot read temp file, %s",qPrintable(m_tempFile.errorString()));
-    }
+        }
 }
 
 

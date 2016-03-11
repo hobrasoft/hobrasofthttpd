@@ -362,16 +362,22 @@ void Test::requestUrlDecode() {
 
 
 void Test::slotServiceUpload(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
-/*
-    qDebug() << request->header("Content-type");
-    qDebug() << request->uploadedFiles();
-*/
-    QVERIFY(request->uploadedFile("file3") == NULL);
+    QVERIFY(request->uploadedFile("file1") != NULL);
     QTemporaryFile *file1 = request->uploadedFile("file1");
     QVERIFY(file1 != NULL);
     QVERIFY(file1->readAll() == "ABCD");
     file1->close();
     file1->deleteLater();
+
+    QVERIFY(request->uploadedFile("file2") != NULL);
+    QTemporaryFile *file2 = request->uploadedFile("file2");
+    QVERIFY(file2 != NULL);
+    QVERIFY(file2->readAll() == "XYZ");
+    file2->close();
+    file2->deleteLater();
+
+    QVERIFY(request->uploadedFile("file3") == NULL);
+
     response->write("test");
     response->flush();
 }
@@ -385,16 +391,20 @@ void Test::httpServiceUpload() {
             this,     SLOT(slotServiceUpload(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
 
     QByteArray data;
-    data += "----BOUNDARY\r\n";
+    data += "--BOUNDARY\r\n";
     data += "Content-Disposition: form-data; name=\"file1\"; filename=\"file1.txt\"\r\n";
     data += "Content-Type: text/text\r\n\r\n";
     data += "ABCD\r\n";
-    data += "----BOUNDARY--\r\n";
+    data += "--BOUNDARY\r\n";
+    data += "Content-Disposition: form-data; name=\"file2\"; filename=\"file2.txt\"\r\n";
+    data += "Content-Type: text/text\r\n\r\n";
+    data += "XYZ\r\n";
+    data += "--BOUNDARY--\r\n";
 
     QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
     QNetworkAccessManager manager(this);
     QNetworkRequest rq(url);
-    rq.setRawHeader("Content-type", "multipart/form-data; boundary=----BOUNDARY");
+    rq.setRawHeader("Content-Type", "multipart/form-data; boundary=BOUNDARY");
     QNetworkReply *reply = manager.post(rq,data);
     WAITFORREPLY();
     QVERIFY(reply->readAll() == "test"); \
