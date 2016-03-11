@@ -84,7 +84,7 @@ void AbstractController::service(HobrasoftHttpd::HttpRequest *request, Hobrasoft
                     response->setHeader("Content-Type",  "application/json");
                     response->setHeader("Cache-Control", "no-cache,public");
 
-                    QVariantMap data = JSON::data(request->body());
+                    QVariantMap data = JSON::data(request->body()).toMap();
                     if (m_checkId && !data.contains("id")) {
                         serviceError(request, response, 400, "bad-request", "Data must contain ID");
                         return; 
@@ -97,7 +97,7 @@ void AbstractController::service(HobrasoftHttpd::HttpRequest *request, Hobrasoft
                     response->setHeader("Content-Type",  "application/json");
                     response->setHeader("Cache-Control", "no-cache,public");
 
-                    QVariantMap data = JSON::data(request->body());
+                    QVariantMap data = JSON::data(request->body()).toMap();
                     if (m_checkId && !data.contains("id")) {
                         serviceError(request, response, 400, "bad-request", "Data must contain ID");
                         return; 

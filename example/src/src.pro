@@ -2,7 +2,10 @@ CODECFORTR = UTF-8
 TEMPLATE = app
 TARGET = example
 DESTDIR = ../bin
-LIBS += -lqjson -ldl
+
+equals(QT_MAJOR_VERSION, 4) {
+    LIBS += -lqjson
+    }
 
 CONFIG -= stl
 CONFIG += qt warn_on thread
