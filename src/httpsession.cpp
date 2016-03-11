@@ -24,7 +24,7 @@ HttpSession::HttpSession() {
     m_data = new HttpSessionData();
     m_data->refCount=1;
     m_data->lastAccess = QDateTime::currentDateTime().toTime_t()*1000;
-    m_data->id = QUuid::createUuid().toString().toAscii();
+    m_data->id = QUuid::createUuid().toString().toUtf8();
 }
 
 

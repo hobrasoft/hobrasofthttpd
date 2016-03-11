@@ -74,7 +74,7 @@ class HttpConnection : public QObject {
     /**
      * @brief Returns true if the client is verifiend using SSL
      */
-    bool verified() const { return m_peerCertificate.isValid() && !m_peerCertificate.isNull(); }
+    bool verified() const;
 
     /**
      * @brief  

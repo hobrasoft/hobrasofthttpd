@@ -55,8 +55,30 @@ void HttpConnection::setPeerCertificate(const QSslCertificate& crt) {
 
 
 QString HttpConnection::commonName() const {
+    #if QT_VERSION > 0x050000
+    QDateTime now = QDateTime::currentDateTime();
+    if (now > m_peerCertificate.expiryDate())    { return QString(); }
+    if (now < m_peerCertificate.effectiveDate()) { return QString(); }
+    if (m_peerCertificate.isBlacklisted()) { return QString(); }
+    QStringList cn = m_peerCertificate.subjectInfo(QSslCertificate::CommonName);
+    if (cn.isEmpty()) { return QString(); }
+    return cn.first();
+    #else
     if (!m_peerCertificate.isValid()) { return QString(); }
     return m_peerCertificate.subjectInfo(QSslCertificate::CommonName);
+    #endif
+}
+
+bool HttpConnection::verified() const {
+    #if QT_VERSION > 0x050000
+    QDateTime now = QDateTime::currentDateTime();
+    if (now > m_peerCertificate.expiryDate())    { return false; }
+    if (now < m_peerCertificate.effectiveDate()) { return false; }
+    if (m_peerCertificate.isBlacklisted()) { return false; }
+    return true;
+    #else
+    return m_peerCertificate.isValid() && !m_peerCertificate.isNull(); 
+    #endif
 }
 
 

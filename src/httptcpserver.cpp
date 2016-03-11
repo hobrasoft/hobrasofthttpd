@@ -72,15 +72,18 @@ void HttpTcpServer::slotEncrypted() {
     QSslSocket *socket = qobject_cast<QSslSocket *>(sender());
 
     QSslCertificate crt = socket->peerCertificate();
-    qDebug() 
-        << crt.isValid()
-        << crt.effectiveDate()
-        << crt.expiryDate()
-        << crt.subjectInfo(QSslCertificate::CommonName)
-        << crt.issuerInfo(QSslCertificate::CommonName)
-        << crt.serialNumber()
-        ;
-    m_verified[socket] = m_verified[socket] && crt.isValid() && !crt.isNull();
+
+    #if QT_VERSION > 0x050000
+    QDateTime now = QDateTime::currentDateTime();
+    bool valid = 
+       (!crt.isNull()) &&
+       (now > crt.expiryDate()) &&
+       (now < crt.effectiveDate()) &&
+       (crt.isBlacklisted()) ;
+    #else
+    bool valid = !crt.isNull() && crt.isValid();
+    #endif
+    m_verified[socket] = m_verified[socket] && valid;
     m_peerCert[socket] = crt;
 
     addPendingConnection(socket);

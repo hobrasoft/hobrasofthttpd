@@ -22,6 +22,9 @@
 #include <QList>
 #include <QUrl>
 #include <QEventLoop>
+#if QT_VERSION > 0x050000
+#include <QUrlQuery>
+#endif
 
 using namespace HobrasoftHttpd;
 
@@ -269,8 +272,15 @@ void Test::httpServiceGet() {
             this,     SLOT(slotServiceGet(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
 
     QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    #if QT_VERSION > 0x050000
+    QUrlQuery qu;
+    qu.addQueryItem("A", "1");
+    qu.addQueryItem("B", "2");
+    url.setQuery(qu);
+    #else
     url.addQueryItem("A", "1");
     url.addQueryItem("B", "2");
+    #endif
     QNetworkAccessManager manager(this);
     QNetworkRequest rq(url);
     QNetworkReply *reply = manager.get(rq);
@@ -308,8 +318,15 @@ void Test::httpServicePost() {
             this,     SLOT(slotServicePost(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
 
     QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    #if QT_VERSION > 0x050000
+    QUrlQuery qu;
+    qu.addQueryItem("A", "1");
+    qu.addQueryItem("B", "2");
+    url.setQuery(qu);
+    #else
     url.addQueryItem("A", "1");
     url.addQueryItem("B", "2");
+    #endif
     QNetworkAccessManager manager(this);
     QNetworkRequest rq(url);
     rq.setRawHeader("Content-type", "text/text");
