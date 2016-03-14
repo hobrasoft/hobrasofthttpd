@@ -17,6 +17,7 @@
  * - __httpd/address__ - bind address for http server (::)
  * - __httpd/port__ - bind port for http server (8080)
  * - __httpd/timeout__ - timeout for http request (600 sec)
+ * - __httpd/maxAge__ - maximum age for browser cache or caching proxy server for static files (3600 sec)
  * - __httpd/maxRequestSize__ - maximum size of request (16384)
  * - __httpd/maxMultiPartSize__ - maximum size of multipart request (1048576)
  * - __httpd/tempDir__ - temporary directory (/tmp)
@@ -25,9 +26,7 @@
  * - __httpd/encoding__ - encoding set in headers (UTF-8)
  * - __httpd/root__ - document root directory (.)
  * - __httpd/cacheMaxAge__ - maximum age of objects in cache (3600 sec)
- * - __httpd/maxCacheFileSize__ - maximum size of files in cache (1000000)
  * - __httpd/indexFile__ - index file in direcotry (index.html)
- * - __httpd/cacheOn__ - on/off cache (false)
  * - __httpd/useSSL__  - on/off SSL connection (off)
  * - __httpd/sslKey__  - path to SSL key file in PEM format
  * - __httpd/sslCrt__  - path to SSL certificate file in PEM format
@@ -46,10 +45,7 @@ HttpSettings::HttpSettings(QObject *parent) : QObject(parent) {
     m_maxAge                = 3600;
     m_encoding              = "UTF-8";
     m_docroot               = ".";
-    m_maxCachedFileSize     = 1000000;
-    m_cacheTimeout          = 600000;
     m_indexFile             = "index.html";
-    m_cacheOn               = false;
     m_sessionCookieName     = "sessionid";
     m_sessionExpirationTime = 3600;
     m_maxRequestSize        = 16384;
@@ -77,14 +73,8 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
                               settings->value(m_section2 + "/encoding",              "UTF-8")).toString();
     m_docroot               = settings->value(  section  + "/root", 
                               settings->value(m_section2 + "/root",                  ".")).toString();
-    m_maxCachedFileSize     = settings->value(  section  + "/maxCachedFileSize", 
-                              settings->value(m_section2 + "/maxCachedFileSize",     1000000)).toInt();
-    m_cacheTimeout          = settings->value(  section  + "/cacheTimeout", 
-                              settings->value(m_section2 + "/cacheTimeout",          600000)).toInt();
     m_indexFile             = settings->value(  section  + "/indexFile", 
                               settings->value(m_section2 + "/indexFile",             "index.html")).toString();
-    m_cacheOn               = settings->value(  section  + "/cacheOn", 
-                              settings->value(m_section2 + "/cacheOn",               false)).toBool();
     m_sessionCookieName     = settings->value(  section  + "/sessionCookieName", 
                               settings->value(m_section2 + "/sessionCookieName",     "sessionid")).toString();
     m_sessionExpirationTime = settings->value(  section  + "/sessionExpirationTime", 

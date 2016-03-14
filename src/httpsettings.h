@@ -28,9 +28,6 @@ root = /home/tycho/SRC/mdcv04ip/htdocs
 cacheMaxAge = 600000
 indexFile = index.html
 encoding = UTF-8
-maxCachedFileSize = 1000000
-cacheTime = 600000
-cacheOn = false
 timeout = 60000
 @endcode
 
@@ -65,8 +62,8 @@ class HttpSettings : public QObject {
     int             timeout() const { return m_timeout; }                                   ///< Returns timeout for opened connection from clients 
     void            setTimeout(int x) { m_timeout = x; }                                    ///< Sets timeout for opened connection from clients
 
-    int             maxAge() const { return m_maxAge; }                                     ///< Returns the max age for cache objects 
-    void            setMaxAge(int x) { m_maxAge = x; }                                      ///< Sets the max age cache objects
+    int             maxAge() const { return m_maxAge; }                                     ///< Returns the max age for cacheing proxy  objects 
+    void            setMaxAge(int x) { m_maxAge = x; }                                      ///< Sets the max age cacheing proxy  objects
 
     const QString&  encoding() const { return m_encoding; }                                 ///< Returns the encoding in COntent-type header
     void            setEncoding(const QString& x) { m_encoding = x; }                       ///< Sets the encoding in COntent-type header
@@ -74,17 +71,8 @@ class HttpSettings : public QObject {
     const QString&  docroot() const { return m_docroot; }                                   ///< Returns path to document root 
     void            setDocroot(const QString& x) { m_docroot = x; }                         ///< Sets path to document root
 
-    int             maxCachedFileSize() const { return m_maxCachedFileSize; }               ///< Returns maximum cached file size
-    void            setMaxCachedFileSize(int x) { m_maxCachedFileSize = x; }                ///< Sets maximum cached file size
-
     const QString&  indexFile() const { return m_indexFile; }                               ///< Returns name of index file in directory (index.html) 
     void            setIndexFile(const QString& x) { m_indexFile = x; }                     ///< Sets name of index file in directory (index.html)
-
-    int             cacheTimeout() const { return m_cacheTimeout; }                         ///< Returns the maximum life time for valid documents in cache
-    void            setCacheTimeout(int x) { m_cacheTimeout = x; }                          ///< Sets the maximum life time for valid documents if cache
-
-    bool            cacheOn() const { return m_cacheOn; }                                   ///< Returns true if the cache is on
-    void            setCacheOn(bool x) { m_cacheOn = x; }                                   ///< Sets the cache on or off
 
     int             sessionExpirationTime() const { return m_sessionExpirationTime; }       ///< Returns maximum expiration time for the session
     void            setExpirationTime(int x) { m_sessionExpirationTime = x; }               ///< Sets maximum expiration time for the session
@@ -160,10 +148,7 @@ class HttpSettings : public QObject {
     int             m_maxAge;
     QString         m_encoding;
     QString         m_docroot;
-    int             m_maxCachedFileSize;
-    int             m_cacheTimeout;
     QString         m_indexFile;
-    bool            m_cacheOn;
     QString         m_sessionCookieName;               ///< The name of session cookie
     int             m_sessionExpirationTime;           ///< Expiration age of session
     int             m_maxRequestSize;

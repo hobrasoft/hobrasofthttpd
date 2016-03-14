@@ -68,16 +68,6 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
         path += "/" + settings()->indexFile();
         }
 
-    qint64 now = QDateTime::currentDateTime().toTime_t() * 1000;
-    CacheEntry *entry = m_cache.object(path);
-    // Found in cache
-    if (settings()->cacheOn() && entry != NULL && (settings()->cacheTimeout() == 0 || entry->created > now-settings()->cacheTimeout())) {
-        setContentType(path, response);
-        response->setHeader("Cache-Control", QString("max-age=") + QString("%1").arg(settings()->maxAge()/1000) );
-        response->write(entry->document);
-        return;
-        }
-
     QFile file(settings()->docroot()+path);
     if (!file.exists()) {
 	qDebug() << "404 Not found: " << settings()->docroot()+path;
@@ -96,19 +86,9 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
         }
 
     setContentType(path, response);
-    if (file.size() <= settings()->maxCachedFileSize() && settings()->cacheOn()) {
-        response->setHeader("Cache-Control", QString("max-age=") + QString("%1").arg(settings()->maxAge()/1000) );
-        entry = new CacheEntry();
-        entry->created  = now;
-        entry->document = file.readAll();
-        response->write(entry->document);
-        m_cache.insert(path, entry, entry->document.size());
-        }
-
-    if (file.size() > settings()->maxCachedFileSize() || !settings()->cacheOn()) {
-        response->write( file.readAll() );
-        }
-
+    response->setHeader("Cache-Control", QString("max-age=") + QString("%1").arg(settings()->maxAge()) );
+    response->write( file.readAll() );
+    response->flush();
     file.close();
 }
 

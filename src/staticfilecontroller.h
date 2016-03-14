@@ -56,20 +56,10 @@ class StaticFileController : public HttpRequestHandler {
 
 
   private:
-    /**
-     * @brief One item in the cache
-     */
-    struct CacheEntry {
-        QByteArray document;    ///< Document
-        qint64 created;         ///< Creation time, unix epoch
-        };
-
     const HttpSettings *settings() const;
 
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     static QHash<QString, QString> m_mimetypes;
-
-    QCache<QString,CacheEntry> m_cache;
     #endif
 
     /**

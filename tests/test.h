@@ -39,8 +39,8 @@ class RequestMapper : public HobrasoftHttpd::HttpRequestHandler {
 class Httpd : public HobrasoftHttpd::HttpServer {
     Q_OBJECT
   public:
-    Httpd(const HobrasoftHttpd::HttpSettings*, QObject *parent);
-    static Httpd *create(QObject *parent, const QHostAddress& address = QHostAddress::LocalHost);
+    Httpd(HobrasoftHttpd::HttpSettings*, QObject *parent);
+    static Httpd *create(QObject *parent, const QHostAddress& address, int port);
     virtual HobrasoftHttpd::HttpRequestHandler *requestHandler(HobrasoftHttpd::HttpConnection *);
   signals:
     void sigService(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *);

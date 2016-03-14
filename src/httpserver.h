@@ -117,7 +117,7 @@ class HttpServer : public QObject {
     /**
      * @brief Returs pointer to HttpSettings used in the HttpServer
      */
-    const HttpSettings *settings() { return m_settings; }
+    const HttpSettings *settings() const { return m_settings; }
 
   protected:
 

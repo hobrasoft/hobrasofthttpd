@@ -59,7 +59,7 @@ void Test::initTestCase() {
     QUdpSocket socket6(this);
     if (socket6.bind(QHostAddress::LocalHostIPv6, m_port)) {
         m_ipv6 = true;
-        m_localhost = QHostAddress::LocalHostIPv6;
+        // m_localhost = QHostAddress::LocalHostIPv6;
         }
 
 }
@@ -73,10 +73,7 @@ void Test::settingsDefaultValues() {
     QVERIFY(s.maxAge()                  == 3600);
     QVERIFY(s.encoding()                == "UTF-8");
     QVERIFY(s.docroot()                 == ".");
-    QVERIFY(s.maxCachedFileSize()       == 1000000);
-    QVERIFY(s.cacheTimeout()            == 600000);
     QVERIFY(s.indexFile()               == "index.html");
-    QVERIFY(s.cacheOn()                 == false);
     QVERIFY(s.sessionCookieName()       == "sessionid");
     QVERIFY(s.sessionExpirationTime()   == 3600);
     QVERIFY(s.maxRequestSize()          == 16384);
@@ -93,10 +90,7 @@ void Test::settingsCustomValues1() {
     q.setValue("http/maxAge",                  3601);
     q.setValue("http/encoding",                "iso-8859-2");
     q.setValue("http/root",                    "/tmp");
-    q.setValue("http/maxCachedFileSize",       1000001);
-    q.setValue("http/cacheTimeout",            600001);
     q.setValue("http/indexFile",               "index.php");
-    q.setValue("http/cacheOn",                 true);
     q.setValue("http/sessionCookieName",       "otherid");
     q.setValue("http/sessionExpirationTime",   3601);
     q.setValue("http/maxRequestSize",          16385);
@@ -110,10 +104,7 @@ void Test::settingsCustomValues1() {
     QVERIFY(s.maxAge()                  == 3601);
     QVERIFY(s.encoding()                == "iso-8859-2");
     QVERIFY(s.docroot()                 == "/tmp");
-    QVERIFY(s.maxCachedFileSize()       == 1000001);
-    QVERIFY(s.cacheTimeout()            == 600001);
     QVERIFY(s.indexFile()               == "index.php");
-    QVERIFY(s.cacheOn()                 == true);
     QVERIFY(s.sessionCookieName()       == "otherid");
     QVERIFY(s.sessionExpirationTime()   == 3601);
     QVERIFY(s.maxRequestSize()          == 16385);
@@ -355,7 +346,7 @@ void Test::httpserverHttpServiceShtmlInclude() {
 }
 
 
-Httpd::Httpd(const HobrasoftHttpd::HttpSettings *settings, QObject *parent) : HttpServer(settings, parent) {
+Httpd::Httpd(HobrasoftHttpd::HttpSettings *settings, QObject *parent) : HttpServer(settings, parent) {
 }
 
 
@@ -367,11 +358,11 @@ HobrasoftHttpd::HttpRequestHandler *Httpd::requestHandler(HobrasoftHttpd::HttpCo
 }
 
 
-Httpd *Httpd::create(QObject *parent, const QHostAddress& address) {
+Httpd *Httpd::create(QObject *parent, const QHostAddress& address, int port) {
     QSettings q;
     q.clear();
     q.setValue("http/address", address.toString());
-    q.setValue("http/port",    8080); 
+    q.setValue("http/port",    port); 
     q.setValue("http/root",    "."); 
     q.setValue("http/sessionCookieName", "sessionid"); 
     q.sync();
@@ -421,7 +412,7 @@ void Test::slotServiceGet(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::
 
 void Test::httpServiceGet() {
     QObject qobject(0);
-    Httpd *server = Httpd::create(&qobject);
+    Httpd *server = Httpd::create(&qobject, m_localhost, m_port);
     QVERIFY(server != NULL);
     connect(server, SIGNAL( sigService   (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceGet(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
@@ -467,7 +458,7 @@ void Test::slotServicePost(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd:
 
 void Test::httpServicePost() {
     QObject qobject(0);
-    Httpd *server = Httpd::create(&qobject);
+    Httpd *server = Httpd::create(&qobject, m_localhost, m_port);
     QVERIFY(server != NULL);
     connect(server, SIGNAL( sigService    (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServicePost(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
@@ -504,7 +495,7 @@ void Test::slotServiceCookie(HobrasoftHttpd::HttpRequest *request, HobrasoftHttp
 
 void Test::httpServiceCookie() {
     QObject qobject(0);
-    Httpd *server = Httpd::create(&qobject);
+    Httpd *server = Httpd::create(&qobject, m_localhost, m_port);
     QVERIFY(server != NULL);
     connect(server, SIGNAL( sigService      (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceCookie(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
@@ -545,7 +536,7 @@ void Test::slotServiceUpload(HobrasoftHttpd::HttpRequest *request, HobrasoftHttp
 
 void Test::httpServiceUpload() {
     QObject qobject(0);
-    Httpd *server = Httpd::create(&qobject);
+    Httpd *server = Httpd::create(&qobject, m_localhost, m_port);
     QVERIFY(server != NULL);
     connect(server, SIGNAL( sigService      (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceUpload(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
@@ -598,7 +589,7 @@ void Test::slotServiceUploadInsensitive(HobrasoftHttpd::HttpRequest *request, Ho
 
 void Test::httpServiceUploadInsensitive() {
     QObject qobject(0);
-    Httpd *server = Httpd::create(&qobject);
+    Httpd *server = Httpd::create(&qobject, m_localhost, m_port);
     QVERIFY(server != NULL);
     connect(server, SIGNAL( sigService                 (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceUploadInsensitive(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
@@ -663,7 +654,7 @@ void Test::slotServiceResponse(HobrasoftHttpd::HttpRequest *request, HobrasoftHt
 
 void Test::httpServiceResponse() {
     QObject qobject(0);
-    Httpd *server = Httpd::create(&qobject);
+    Httpd *server = Httpd::create(&qobject, m_localhost, m_port);
     QVERIFY(server != NULL);
     connect(server, SIGNAL( sigService        (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceResponse(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
@@ -717,7 +708,7 @@ void Test::slotServiceResponseChunked(HobrasoftHttpd::HttpRequest *request, Hobr
 
 void Test::httpServiceResponseChunked() {
     QObject qobject(0);
-    Httpd *server = Httpd::create(&qobject);
+    Httpd *server = Httpd::create(&qobject, m_localhost, m_port);
     QVERIFY(server != NULL);
     connect(server, SIGNAL( sigService               (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceResponseChunked(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
@@ -756,7 +747,7 @@ void Test::slotServiceSession(HobrasoftHttpd::HttpRequest *request, HobrasoftHtt
 
 void Test::httpServiceSession() {
     QObject qobject(0);
-    Httpd *server = Httpd::create(&qobject);
+    Httpd *server = Httpd::create(&qobject, m_localhost, m_port);
     QVERIFY(server != NULL);
     m_sessionStore = new HttpSessionStore(server);
     QVERIFY(m_sessionStore != NULL);
@@ -813,7 +804,7 @@ void TestWorker::start() {
 // Application should not SIGSEGV here
 void Test::httpServiceAbort() {
     QObject qobject(0);
-    Httpd *server = Httpd::create(&qobject);
+    Httpd *server = Httpd::create(&qobject, m_localhost, m_port);
     QVERIFY(server != NULL);
     connect(server, SIGNAL( sigService      (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceAbort (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
@@ -845,13 +836,18 @@ void Test::slotStaticFileController(HobrasoftHttpd::HttpRequest *request, Hobras
     QVERIFY(sfc.m_mimetypes["json"]  == "application/json");
     QVERIFY(sfc.m_mimetypes["js"]    == "application/javascript");
 
+    QVERIFY(sfc.settings() == request->connection()->settings());
+
     sfc.service(request, response);
+
 }
 
 
 void Test::staticFileController() {
     QObject qobject(0);
-    Httpd *server = Httpd::create(&qobject);
+    Httpd *server = Httpd::create(&qobject, m_localhost, m_port);
+    HttpSettings *settings = const_cast<HttpSettings *>(server->settings());
+    settings->setMaxAge(3000);
     QVERIFY(server != NULL);
     connect(server, SIGNAL( sigService             (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotStaticFileController(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
@@ -861,11 +857,48 @@ void Test::staticFileController() {
     file.write("test");
     file.close();
 
+    QNetworkReply *reply;
     QNetworkAccessManager manager(this);
-    QNetworkRequest rq(QURL("hobrasofthttpd.test.html"));
-    QNetworkReply *reply = manager.get(rq);
-    WAITFORREPLY();
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
+
+    QVERIFY(file.setPermissions(QFileDevice::WriteUser) == true);
+    reply = manager.get(QNetworkRequest(QURL("hobrasofthttpd.test.html")));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::ContentOperationNotPermittedError);
+
+    QVERIFY(file.setPermissions(QFileDevice::WriteUser|QFileDevice::ReadUser) == true);
+    reply = manager.get(QNetworkRequest(QURL("hobrasofthttpd.test.html")));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::NoError);
     QVERIFY(reply->readAll() == "test");
+    QVERIFY(reply->header(QNetworkRequest::ContentTypeHeader) == "text/html");
+    QVERIFY(reply->hasRawHeader("Cache-Control") == true);
+    QVERIFY(reply->rawHeader("Cache-Control") == "max-age=3000");
+
+    reply = manager.get(QNetworkRequest(QURL("../hobrasofthttpd.test.html")));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::ContentOperationNotPermittedError);
+
+    QUrl url = QURL("hobrasofthttpd.test.html");
+    #if QT_VERSION > 0x050000
+    QUrlQuery qu;
+    qu.addQueryItem("CheckCache", "true");
+    url.setQuery(qu);
+    #else
+    url.addQueryItem("CheckCache", "true");
+    #endif
+    reply = manager.get(QNetworkRequest(url));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::NoError);
 
 }
 
