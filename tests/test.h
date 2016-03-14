@@ -7,6 +7,7 @@
 #define _Test_H_
 
 #include <QObject>
+#include <QTest>
 #include <QtTest/QtTest>
 #include <QHostAddress>
 #include <QThread>
@@ -49,12 +50,20 @@ class Httpd : public HobrasoftHttpd::HttpServer {
 class TestWorker : public QObject {
     Q_OBJECT
   public:
+    TestWorker(const QHostAddress& host, const int& port) { 
+        m_localhost = host;
+        m_port = port; 
+        }
 
   signals:
     void    finished();
 
   public slots:
     void    start();
+
+  private:
+    QHostAddress m_localhost;
+    int          m_port;
 };
 
 /**
@@ -102,6 +111,9 @@ class Test : public QObject {
     HobrasoftHttpd::HttpServer *createServer(QObject *parent, const QHostAddress& address = QHostAddress::LocalHost);
     HobrasoftHttpd::HttpSessionStore *m_sessionStore;
 
+    QHostAddress m_localhost;
+    bool    m_ipv6;
+    int     m_port;
     QThread m_workerThread;
 };
 

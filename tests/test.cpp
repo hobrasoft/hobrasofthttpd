@@ -14,6 +14,7 @@
 
 #include <QDebug>
 #include <QTcpSocket>
+#include <QUdpSocket>
 #include <QSignalSpy>
 #include <QTimer>
 #include <QNetworkAccessManager>
@@ -27,6 +28,12 @@
 #include <QUrlQuery>
 #endif
 
+#define QURL(x) \
+    QUrl(QString("http://%1:%2/%3") \
+        .arg(m_localhost.toString()) \
+        .arg(m_port) \
+        .arg(x))
+
 using namespace HobrasoftHttpd;
 
 Test::Test() : QObject() {
@@ -36,6 +43,24 @@ Test::Test() : QObject() {
 void Test::initTestCase() {
     QSettings s;
     s.clear();
+
+    m_localhost = QHostAddress::LocalHost;
+    m_port = 0;
+    m_ipv6 = false;
+    QUdpSocket socket4(this);
+    for (int i=8080; i<9000; i++) {
+        if (socket4.bind(QHostAddress::LocalHost, i)) {
+            m_port = i;
+            break;
+            }
+        }
+
+    QUdpSocket socket6(this);
+    if (socket6.bind(QHostAddress::LocalHostIPv6, m_port)) {
+        m_ipv6 = true;
+        m_localhost = QHostAddress::LocalHostIPv6;
+        }
+
 }
 
 
@@ -224,7 +249,7 @@ HobrasoftHttpd::HttpServer *Test::createServer(QObject *parent, const QHostAddre
     QSettings q;
     q.clear();
     q.setValue("http/address", address.toString());
-    q.setValue("http/port",    8080); 
+    q.setValue("http/port",    m_port); 
     q.setValue("http/root",    "."); 
     q.sync();
     HttpSettings *hq = new HttpSettings(&q,parent);
@@ -237,7 +262,7 @@ void Test::httpserverStartIP(const QHostAddress& address) {
     createServer(&qobject,address);
 
     QTcpSocket socket(this);
-    socket.connectToHost(QHostAddress(address), 8080);
+    socket.connectToHost(QHostAddress(address), m_port);
     QVERIFY(socket.waitForConnected(1000));
     socket.close();
 }
@@ -249,6 +274,9 @@ void Test::httpserverStartIPv4() {
 
 
 void Test::httpserverStartIPv6() {
+    if (!m_ipv6) {
+        QSKIP("IPv6 support missing", SkipAll);
+        }
     httpserverStartIP(QHostAddress::LocalHostIPv6);
 }
 
@@ -263,7 +291,7 @@ void Test::httpserverHttpService() {
     file.close();
 
     QNetworkAccessManager manager(this);
-    QNetworkRequest rq(QUrl("http://127.0.0.1:8080/hobrasofthttpd.test.html"));
+    QNetworkRequest rq(QURL("hobrasofthttpd.test.html"));
     QNetworkReply *reply = manager.get(rq);
     QEventLoop loop;
     connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
@@ -285,7 +313,7 @@ void Test::httpserverHttpService404() {
     file.remove();
 
     QNetworkAccessManager manager(this);
-    QNetworkRequest rq(QUrl("http://127.0.0.1:8080/hobrasofthttpd.test.html"));
+    QNetworkRequest rq(QURL("hobrasofthttpd.test.html"));
     QNetworkReply *reply = manager.get(rq);
     QEventLoop loop;
     connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
@@ -312,7 +340,7 @@ void Test::httpserverHttpServiceShtmlInclude() {
     filei.close();
 
     QNetworkAccessManager manager(this);
-    QNetworkRequest rq(QUrl("http://127.0.0.1:8080/hobrasofthttpd.test.shtml"));
+    QNetworkRequest rq(QURL("hobrasofthttpd.test.shtml"));
     QNetworkReply *reply = manager.get(rq);
     QEventLoop loop;
     connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
@@ -397,7 +425,7 @@ void Test::httpServiceGet() {
     connect(server, SIGNAL( sigService   (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceGet(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
 
-    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    QUrl url = QURL("hobrasofthttpd.test.html");
     #if QT_VERSION > 0x050000
     QUrlQuery qu;
     qu.addQueryItem("A", "1");
@@ -443,7 +471,7 @@ void Test::httpServicePost() {
     connect(server, SIGNAL( sigService    (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServicePost(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
 
-    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    QUrl url = QURL("hobrasofthttpd.test.html");
     #if QT_VERSION > 0x050000
     QUrlQuery qu;
     qu.addQueryItem("A", "1");
@@ -480,7 +508,7 @@ void Test::httpServiceCookie() {
     connect(server, SIGNAL( sigService      (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceCookie(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
 
-    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    QUrl url = QURL("hobrasofthttpd.test.html");
     QNetworkAccessManager manager(this);
     QNetworkRequest rq(url);
     QNetworkCookie c("kuki", "xyz");
@@ -532,7 +560,7 @@ void Test::httpServiceUpload() {
     data += "XYZ\r\n";
     data += "--BOUNDARY--\r\n";
 
-    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    QUrl url = QURL("hobrasofthttpd.test.html");
     QNetworkAccessManager manager(this);
     QNetworkRequest rq(url);
     rq.setRawHeader("Content-Type", "multipart/form-data; boundary=BOUNDARY");
@@ -585,7 +613,7 @@ void Test::httpServiceUploadInsensitive() {
     data += "XYZ\r\n";
     data += "--BOUNDARY--\r\n";
 
-    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    QUrl url = QURL("hobrasofthttpd.test.html");
     QNetworkAccessManager manager(this);
     QNetworkRequest rq(url);
     rq.setRawHeader("conTENt-TyPE", "muLTIParT/fORM-DaTa; BOUndARy=BOUNDARY");
@@ -639,7 +667,7 @@ void Test::httpServiceResponse() {
     connect(server, SIGNAL( sigService        (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceResponse(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
 
-    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    QUrl url = QURL("hobrasofthttpd.test.html");
     QNetworkAccessManager manager(this);
     QNetworkRequest rq(url);
     QNetworkReply *reply = manager.get(rq);
@@ -693,7 +721,7 @@ void Test::httpServiceResponseChunked() {
     connect(server, SIGNAL( sigService               (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceResponseChunked(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
 
-    QUrl url("http://127.0.0.1:8080/hobrasofthttpd.test.html");
+    QUrl url = QURL("hobrasofthttpd.test.html");
     QNetworkAccessManager manager(this);
     QNetworkRequest rq(url);
     QNetworkReply *reply = manager.get(rq);
@@ -737,7 +765,7 @@ void Test::httpServiceSession() {
 
     QNetworkReply *reply;
     QNetworkAccessManager manager(this);
-    reply = manager.get(QNetworkRequest(QUrl("http://127.0.0.1:8080/1")));
+    reply = manager.get(QNetworkRequest(QURL("1")));
     WAITFORREPLY();
 
     QVariant cv = reply->header(QNetworkRequest::SetCookieHeader);
@@ -746,10 +774,10 @@ void Test::httpServiceSession() {
     const QNetworkCookie& cookie = cookies[0];
     QVERIFY(cookie.name()  == "sessionid");
 
-    reply = manager.get(QNetworkRequest(QUrl("http://127.0.0.1:8080/2")));
+    reply = manager.get(QNetworkRequest(QURL("2")));
     WAITFORREPLY();
 
-    reply = manager.get(QNetworkRequest(QUrl("http://127.0.0.1:8080/3")));
+    reply = manager.get(QNetworkRequest(QURL("3")));
     WAITFORREPLY();
 
 }
@@ -769,7 +797,7 @@ void Test::slotServiceAbort(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd
 void TestWorker::start() {
     qDebug() << "TestWorker::start() -- start";
     QNetworkAccessManager manager(this);
-    QNetworkReply *reply = manager.get(QNetworkRequest(QUrl("http://127.0.0.1:8080/ServiceAbort")));
+    QNetworkReply *reply = manager.get(QNetworkRequest(QURL("ServiceAbort")));
     QEventLoop loop;
     connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
     QTimer::singleShot(100, &loop, SLOT(quit()));
@@ -788,7 +816,7 @@ void Test::httpServiceAbort() {
     QVERIFY(server != NULL);
     connect(server, SIGNAL( sigService      (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceAbort (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
-    TestWorker *worker = new TestWorker;
+    TestWorker *worker = new TestWorker(m_localhost, m_port);
     worker->moveToThread(&m_workerThread);
     connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater())); // Signal is not signalled to different thread??!!
     QTimer::singleShot(1, worker, SLOT(start()));
