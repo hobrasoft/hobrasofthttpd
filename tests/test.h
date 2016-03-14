@@ -95,6 +95,7 @@ class Test : public QObject {
     void    httpServiceResponseChunked();
     void    httpServiceSession();
     void    httpServiceAbort();
+    void    staticFileController();
 
     void    slotServiceGet              (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotServicePost             (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
@@ -105,6 +106,7 @@ class Test : public QObject {
     void    slotServiceResponseChunked  (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotServiceSession          (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotServiceAbort            (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotStaticFileController    (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
 
   private:
     void    httpserverStartIP(const QHostAddress&);

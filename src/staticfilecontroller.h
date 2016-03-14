@@ -13,6 +13,8 @@
 #include <QHash>
 #include "httprequesthandler.h"
 
+class Test;
+
 namespace HobrasoftHttpd {
 
 class HttpRequest;
@@ -29,6 +31,7 @@ class HttpSettings;
  * @see HttpSettings
  */
 class StaticFileController : public HttpRequestHandler {
+    friend Test;
     Q_OBJECT
   public:
 

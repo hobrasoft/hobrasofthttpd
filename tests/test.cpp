@@ -11,6 +11,7 @@
 #include "httprequest.h"
 #include "httpresponse.h"
 #include "httpsessionstore.h"
+#include "staticfilecontroller.h"
 
 #include <QDebug>
 #include <QTcpSocket>
@@ -392,6 +393,15 @@ void RequestMapper::service(HttpRequest *request, HttpResponse *response) {
     emit sigService(request, response);
 }
 
+#define WAITFORREPLY() { \
+    QEventLoop loop; \
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit())); \
+    QTimer::singleShot(1000, &loop, SLOT(quit())); \
+    loop.exec(); \
+    QVERIFY(reply->isFinished()); \
+    QVERIFY(reply->error() == QNetworkReply::NoError); \
+    }
+
 
 void Test::slotServiceGet(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
     QVERIFY(request->method() == "GET");
@@ -408,15 +418,6 @@ void Test::slotServiceGet(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::
     response->flush();
 }
 
-
-#define WAITFORREPLY() { \
-    QEventLoop loop; \
-    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit())); \
-    QTimer::singleShot(1000, &loop, SLOT(quit())); \
-    loop.exec(); \
-    QVERIFY(reply->isFinished()); \
-    QVERIFY(reply->error() == QNetworkReply::NoError); \
-    }
 
 void Test::httpServiceGet() {
     QObject qobject(0);
@@ -825,6 +826,47 @@ void Test::httpServiceAbort() {
     m_workerThread.wait(3000);
 
     QTest::qWait(300);
+}
+
+
+void Test::slotStaticFileController(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    StaticFileController sfc(request->connection());
+    sfc.addMimeType("tiff", "image/tiff");
+    QVERIFY(sfc.m_mimetypes["png"]   == "image/png");
+    QVERIFY(sfc.m_mimetypes["jpeg"]  == "image/jpeg");
+    QVERIFY(sfc.m_mimetypes["jpg"]   == "image/jpeg");
+    QVERIFY(sfc.m_mimetypes["gif"]   == "image/gif");
+    QVERIFY(sfc.m_mimetypes["tiff"]  == "image/tiff");
+    QVERIFY(sfc.m_mimetypes["txt"]   == "text/plain");
+    QVERIFY(sfc.m_mimetypes["html"]  == "text/html");
+    QVERIFY(sfc.m_mimetypes["xhtml"] == "text/html");
+    QVERIFY(sfc.m_mimetypes["htm"]   == "text/html");
+    QVERIFY(sfc.m_mimetypes["css"]   == "text/css");
+    QVERIFY(sfc.m_mimetypes["json"]  == "application/json");
+    QVERIFY(sfc.m_mimetypes["js"]    == "application/javascript");
+
+    sfc.service(request, response);
+}
+
+
+void Test::staticFileController() {
+    QObject qobject(0);
+    Httpd *server = Httpd::create(&qobject);
+    QVERIFY(server != NULL);
+    connect(server, SIGNAL( sigService             (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,     SLOT(slotStaticFileController(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+
+    QFile file("./hobrasofthttpd.test.html");
+    file.open(QIODevice::WriteOnly);
+    file.write("test");
+    file.close();
+
+    QNetworkAccessManager manager(this);
+    QNetworkRequest rq(QURL("hobrasofthttpd.test.html"));
+    QNetworkReply *reply = manager.get(rq);
+    WAITFORREPLY();
+    QVERIFY(reply->readAll() == "test");
+
 }
 
 
