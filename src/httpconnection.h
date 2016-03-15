@@ -72,9 +72,15 @@ class HttpConnection : public QObject {
     QTcpSocket *socket() const { return m_socket; }
 
     /**
-     * @brief Returns true if the client is verifiend using SSL
+     * @brief Returns true if the client is verified using SSL
      */
-    bool verified() const;
+    bool verified() const { return m_verified; }
+
+
+    /**
+     * @brief Sets the flag verified
+     */
+    void setVerified(bool x) { m_verified = x; }
 
     /**
      * @brief  
@@ -117,6 +123,7 @@ class HttpConnection : public QObject {
     QSslCertificate      m_peerCertificate;
     bool                 m_connected;
     bool                 m_inService;
+    bool                 m_verified;
     #endif
     
 };

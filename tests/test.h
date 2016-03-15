@@ -11,6 +11,9 @@
 #include <QtTest/QtTest>
 #include <QHostAddress>
 #include <QThread>
+#include <QNetworkReply>
+#include <QList>
+#include <QSslError>
 #include "httpserver.h"
 #include "httprequesthandler.h"
 
@@ -41,6 +44,7 @@ class Httpd : public HobrasoftHttpd::HttpServer {
   public:
     Httpd(HobrasoftHttpd::HttpSettings*, QObject *parent);
     static Httpd *create(QObject *parent, const QHostAddress& address, int port);
+    static Httpd *createSSL(QObject *parent, const QHostAddress& address, int port);
     virtual HobrasoftHttpd::HttpRequestHandler *requestHandler(HobrasoftHttpd::HttpConnection *);
   signals:
     void sigService(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *);
@@ -96,6 +100,8 @@ class Test : public QObject {
     void    httpServiceSession();
     void    httpServiceAbort();
     void    staticFileController();
+    void    httpSSL();
+    void    httpSSLselfsigned();
 
     void    slotServiceGet              (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotServicePost             (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
@@ -107,6 +113,9 @@ class Test : public QObject {
     void    slotServiceSession          (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotServiceAbort            (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotStaticFileController    (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotHttpSSL                 (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotHttpSSLselfsigned       (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    void    slotSslErrors               (QNetworkReply *, QList<QSslError>);
 
   private:
     void    httpserverStartIP(const QHostAddress&);

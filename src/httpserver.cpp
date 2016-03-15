@@ -69,9 +69,8 @@ void HttpServer::slotNewConnection() {
         QTcpSocket *socket = m_server->nextPendingConnection();
         HttpConnection *connection = new HttpConnection(this, socket);
         socket->setParent(connection);
-        if (m_server->verified(socket)) {
-            connection->setPeerCertificate(m_server->peerCertificate(socket));
-            }
+        connection->setPeerCertificate(m_server->peerCertificate(socket));
+        connection->setVerified(m_server->verified(socket));
         }
 }
 

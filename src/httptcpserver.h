@@ -17,6 +17,12 @@ namespace HobrasoftHttpd {
 class HttpServer;
 class HttpSettings;
 
+#if QT_VERSION > 0x050000
+#define QINTPTR qintptr
+#else
+#define QINTPTR int
+#endif
+
 /**
  * @brief
  */
@@ -38,7 +44,7 @@ class HttpTcpServer : public QTcpServer {
     void    slotDisconnected();
 
   private:
-    void    incomingConnection(int socketDescriptor);
+    void    incomingConnection(QINTPTR socketDescriptor);
 
     const HttpSettings   *m_settings;
 

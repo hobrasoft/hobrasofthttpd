@@ -70,7 +70,6 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
 
     QFile file(settings()->docroot()+path);
     if (!file.exists()) {
-	qDebug() << "404 Not found: " << settings()->docroot()+path;
         response->setStatus(404, "Not found");
         response->write("404 Not found");
         response->flush();
@@ -78,7 +77,6 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
         }
 
     if (!file.open(QIODevice::ReadOnly)) {
-	qDebug() << "403 Forbidden: " << settings()->docroot()+path;
         response->setStatus(403, "Forbidden");
         response->write("403 Forbidden");
         response->flush();

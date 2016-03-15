@@ -20,7 +20,7 @@ HttpTcpServer::HttpTcpServer(HttpServer *parent) : QTcpServer(parent) {
 }
 
 
-void HttpTcpServer::incomingConnection(int socketDescriptor) {
+void HttpTcpServer::incomingConnection(QINTPTR socketDescriptor) {
     if (!m_settings->useSSL()) {
         QTcpServer::incomingConnection(socketDescriptor);
         return;
@@ -34,6 +34,7 @@ void HttpTcpServer::incomingConnection(int socketDescriptor) {
         return;
         }
 
+    m_verified[socket] = true;
     connect(socket, SIGNAL(encrypted()),
             this,     SLOT(slotEncrypted()));
     connect(socket, SIGNAL(          sslErrors(const QList<QSslError>&)),
@@ -49,7 +50,6 @@ void HttpTcpServer::incomingConnection(int socketDescriptor) {
     if (cacertf.open(QIODevice::ReadOnly)) {
         cacerts << QSslCertificate(&cacertf);
         cacertf.close();
-        m_verified[socket] = true;
         }
 
     socket->setPrivateKey(m_settings->sslKey());
@@ -72,18 +72,6 @@ void HttpTcpServer::slotEncrypted() {
     QSslSocket *socket = qobject_cast<QSslSocket *>(sender());
 
     QSslCertificate crt = socket->peerCertificate();
-
-    #if QT_VERSION > 0x050000
-    QDateTime now = QDateTime::currentDateTime();
-    bool valid = 
-       (!crt.isNull()) &&
-       (now > crt.expiryDate()) &&
-       (now < crt.effectiveDate()) &&
-       (crt.isBlacklisted()) ;
-    #else
-    bool valid = !crt.isNull() && crt.isValid();
-    #endif
-    m_verified[socket] = m_verified[socket] && valid;
     m_peerCert[socket] = crt;
 
     addPendingConnection(socket);
@@ -104,16 +92,19 @@ QSslCertificate HttpTcpServer::peerCertificate(QTcpSocket *socket) const {
 
 
 void HttpTcpServer::slotPeerVerifyError(const QSslError& error) {
+    Q_UNUSED(error);
     QSslSocket *socket = qobject_cast<QSslSocket *>(sender());
-    qDebug() << "sslError" << error.errorString();
+//  qDebug() << "sslError" << error.errorString();
     m_verified[socket] = false;
 }
 
 
 void HttpTcpServer::slotSslErrors(const QList<QSslError>& errors) {
+    /*
     for (int i=0; i<errors.size(); i++) {
         qDebug() << "sslError" << errors[i].errorString();
         }
+    */
     QSslSocket *socket = qobject_cast<QSslSocket *>(sender());
     socket->ignoreSslErrors(errors);
 }

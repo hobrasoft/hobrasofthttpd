@@ -17,6 +17,8 @@ QT -= sql gui
 include(../global.pri)
 include(../src/hobrasofthttpd.pri)
 
+RESOURCES += \
+ test.qrc
 
 HEADERS += \
  test.h \

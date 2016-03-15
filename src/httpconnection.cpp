@@ -69,18 +69,6 @@ QString HttpConnection::commonName() const {
     #endif
 }
 
-bool HttpConnection::verified() const {
-    #if QT_VERSION > 0x050000
-    QDateTime now = QDateTime::currentDateTime();
-    if (now > m_peerCertificate.expiryDate())    { return false; }
-    if (now < m_peerCertificate.effectiveDate()) { return false; }
-    if (m_peerCertificate.isBlacklisted()) { return false; }
-    return true;
-    #else
-    return m_peerCertificate.isValid() && !m_peerCertificate.isNull(); 
-    #endif
-}
-
 
 void HttpConnection::close() {
     if (!isConnected()) { return; }

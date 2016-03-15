@@ -25,6 +25,8 @@
 #include <QList>
 #include <QUrl>
 #include <QEventLoop>
+#include <QSslConfiguration>
+#include <QSslKey>
 #if QT_VERSION > 0x050000
 #include <QUrlQuery>
 #endif
@@ -32,6 +34,11 @@
 #define QURL(x) \
     QUrl(QString("http://%1:%2/%3") \
         .arg(m_localhost.toString()) \
+        .arg(m_port) \
+        .arg(x))
+
+#define QURLSSL(x) \
+    QUrl(QString("https://localhost:%1/%2") \
         .arg(m_port) \
         .arg(x))
 
@@ -365,6 +372,23 @@ Httpd *Httpd::create(QObject *parent, const QHostAddress& address, int port) {
     q.setValue("http/port",    port); 
     q.setValue("http/root",    "."); 
     q.setValue("http/sessionCookieName", "sessionid"); 
+    q.sync();
+    HttpSettings *hq = new HttpSettings(&q,parent);
+    return new Httpd(hq,parent);
+}
+
+
+Httpd *Httpd::createSSL(QObject *parent, const QHostAddress& address, int port) {
+    QSettings q;
+    q.clear();
+    q.setValue("http/address",  address.toString());
+    q.setValue("http/port",     port); 
+    q.setValue("http/root",     "."); 
+    q.setValue("http/sessionCookieName", "sessionid"); 
+    q.setValue("http/useSSL",   true);
+    q.setValue("http/sslKey",   "://localhost.key");
+    q.setValue("http/sslCrt",   "://localhost.crt");
+    q.setValue("http/sslCaCrt", "://testCA.crt");
     q.sync();
     HttpSettings *hq = new HttpSettings(&q,parent);
     return new Httpd(hq,parent);
@@ -862,14 +886,22 @@ void Test::staticFileController() {
     QEventLoop loop;
     connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
 
+    #if QT_VERSION > 0x050000
     QVERIFY(file.setPermissions(QFileDevice::WriteUser) == true);
+    #else
+    QVERIFY(file.setPermissions(QFile::WriteUser) == true);
+    #endif
     reply = manager.get(QNetworkRequest(QURL("hobrasofthttpd.test.html")));
     QTimer::singleShot(1000, &loop, SLOT(quit()));
     loop.exec();
     QVERIFY(reply->isFinished());
     QVERIFY(reply->error() == QNetworkReply::ContentOperationNotPermittedError);
 
+    #if QT_VERSION > 0x050000
     QVERIFY(file.setPermissions(QFileDevice::WriteUser|QFileDevice::ReadUser) == true);
+    #else
+    QVERIFY(file.setPermissions(QFile::WriteUser|QFile::ReadUser) == true);
+    #endif
     reply = manager.get(QNetworkRequest(QURL("hobrasofthttpd.test.html")));
     QTimer::singleShot(1000, &loop, SLOT(quit()));
     loop.exec();
@@ -895,6 +927,219 @@ void Test::staticFileController() {
     url.addQueryItem("CheckCache", "true");
     #endif
     reply = manager.get(QNetworkRequest(url));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::NoError);
+
+}
+
+
+void Test::slotHttpSSL(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    QVERIFY(request->connection()->commonName() == "client");
+    QVERIFY(request->connection()->verified() == true);
+    QSslCertificate crt = request->connection()->peerCertificate();
+
+    response->write("test");
+    response->flush();
+    response->close();
+}
+
+
+void Test::httpSSL() {
+    QObject qobject(0);
+    Httpd *server = Httpd::createSSL(&qobject, m_localhost, m_port);
+    connect(server, SIGNAL( sigService(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,     SLOT(slotHttpSSL(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+
+    QNetworkRequest request;
+    QNetworkReply *reply;
+    QNetworkAccessManager manager(this);
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
+
+    QSslConfiguration configuration = QSslConfiguration::defaultConfiguration();
+    QList<QSslCertificate> caCertificates;
+    QFile fileca(":/testCA.crt");
+    QVERIFY(fileca.open(QIODevice::ReadOnly) == true);
+    QSslCertificate cacrt(&fileca);
+    QVERIFY(cacrt.isNull() == false);
+    #if QT_VERSION > 0x050000
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::Organization).isEmpty()           == false);
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::LocalityName).isEmpty()           == false);
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::OrganizationalUnitName).isEmpty() == false);
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::CountryName).isEmpty()            == false);
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::StateOrProvinceName).isEmpty()    == false);
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::Organization)[0]                  == "Hobrasoft s.r.o.");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::LocalityName)[0]                  == "Roznov pod Radhostem");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::OrganizationalUnitName)[0]        == "IT");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::CountryName)[0]                   == "CZ");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::StateOrProvinceName)[0]           == "Czech republic");
+    #else
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::Organization)                     == "Hobrasoft s.r.o.");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::LocalityName)                     == "Roznov pod Radhostem");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::OrganizationalUnitName)           == "IT");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::CountryName)                      == "CZ");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::StateOrProvinceName)              == "Czech republic");
+    #endif
+    caCertificates << cacrt;
+    configuration.setCaCertificates(caCertificates);
+    fileca.close();
+
+    QFile filekey(":/client.key");
+    QVERIFY(filekey.open(QIODevice::ReadOnly) == true);
+    QSslKey key(&filekey, QSsl::Rsa, QSsl::Pem);
+    filekey.close();
+    QVERIFY(key.isNull() == false);
+    QVERIFY(key.algorithm() == QSsl::Rsa);
+    QVERIFY(key.type() == QSsl::PrivateKey);
+    configuration.setPrivateKey(key);
+
+    QFile filecrt(":/client.crt");
+    QVERIFY(filecrt.open(QIODevice::ReadOnly) == true);
+    QSslCertificate crt(&filecrt);
+    QVERIFY(crt.isNull() == false);
+    #if QT_VERSION > 0x050000
+    QVERIFY(crt.subjectInfo(QSslCertificate::Organization).isEmpty()           == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::LocalityName).isEmpty()           == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::CommonName).isEmpty()             == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::OrganizationalUnitName).isEmpty() == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::CountryName).isEmpty()            == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::StateOrProvinceName).isEmpty()    == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::Organization)[0]                  == "Hobrasoft s.r.o.");
+    QVERIFY(crt.subjectInfo(QSslCertificate::CommonName)[0]                    == "client");
+    QVERIFY(crt.subjectInfo(QSslCertificate::LocalityName)[0]                  == "Roznov pod Radhostem");
+    QVERIFY(crt.subjectInfo(QSslCertificate::OrganizationalUnitName)[0]        == "IT");
+    QVERIFY(crt.subjectInfo(QSslCertificate::CountryName)[0]                   == "CZ");
+    QVERIFY(crt.subjectInfo(QSslCertificate::StateOrProvinceName)[0]           == "Czech republic");
+    #else
+    QVERIFY(crt.subjectInfo(QSslCertificate::CommonName)                       == "client");
+    QVERIFY(crt.subjectInfo(QSslCertificate::Organization)                     == "Hobrasoft s.r.o.");
+    QVERIFY(crt.subjectInfo(QSslCertificate::LocalityName)                     == "Roznov pod Radhostem");
+    QVERIFY(crt.subjectInfo(QSslCertificate::OrganizationalUnitName)           == "IT");
+    QVERIFY(crt.subjectInfo(QSslCertificate::CountryName)                      == "CZ");
+    QVERIFY(crt.subjectInfo(QSslCertificate::StateOrProvinceName)              == "Czech republic");
+    #endif
+    configuration.setLocalCertificate(crt);
+    filecrt.close();
+
+    request = QNetworkRequest(QURLSSL("1"));
+    request.setSslConfiguration(configuration);
+    reply = manager.get(request);
+
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::NoError);
+
+}
+
+
+void Test::slotSslErrors(QNetworkReply *reply, QList<QSslError> errors) {
+    Q_UNUSED(errors);
+    reply->ignoreSslErrors();
+}
+
+
+void Test::slotHttpSSLselfsigned(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    QVERIFY(request->connection()->commonName() == "selfsigned");
+    QVERIFY(request->connection()->verified() == false);
+    QSslCertificate crt = request->connection()->peerCertificate();
+
+    response->write("test");
+    response->flush();
+    response->close();
+}
+
+
+void Test::httpSSLselfsigned() {
+    QObject qobject(0);
+    Httpd *server = Httpd::createSSL(&qobject, m_localhost, m_port);
+    connect(server, SIGNAL( sigService          (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
+            this,     SLOT(slotHttpSSLselfsigned(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
+
+    QNetworkRequest request;
+    QNetworkReply *reply;
+    QNetworkAccessManager manager(this);
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
+
+    QSslConfiguration configuration = QSslConfiguration::defaultConfiguration();
+    QList<QSslCertificate> caCertificates;
+    QFile fileca(":/selfsigned.crt");
+    QVERIFY(fileca.open(QIODevice::ReadOnly) == true);
+    QSslCertificate cacrt(&fileca);
+    QVERIFY(cacrt.isNull() == false);
+    #if QT_VERSION > 0x050000
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::Organization).isEmpty()           == false);
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::LocalityName).isEmpty()           == false);
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::OrganizationalUnitName).isEmpty() == false);
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::CountryName).isEmpty()            == false);
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::StateOrProvinceName).isEmpty()    == false);
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::Organization)[0]                  == "Hobrasoft s.r.o.");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::LocalityName)[0]                  == "Roznov pod Radhostem");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::OrganizationalUnitName)[0]        == "IT");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::CountryName)[0]                   == "CZ");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::StateOrProvinceName)[0]           == "Czech republic");
+    #else
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::Organization)                     == "Hobrasoft s.r.o.");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::LocalityName)                     == "Roznov pod Radhostem");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::OrganizationalUnitName)           == "IT");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::CountryName)                      == "CZ");
+    QVERIFY(cacrt.subjectInfo(QSslCertificate::StateOrProvinceName)              == "Czech republic");
+    #endif
+    caCertificates << cacrt;
+    configuration.setCaCertificates(caCertificates);
+    fileca.close();
+
+    QFile filekey(":/selfsigned.key");
+    QVERIFY(filekey.open(QIODevice::ReadOnly) == true);
+    QSslKey key(&filekey, QSsl::Rsa, QSsl::Pem);
+    filekey.close();
+    QVERIFY(key.isNull() == false);
+    QVERIFY(key.algorithm() == QSsl::Rsa);
+    QVERIFY(key.type() == QSsl::PrivateKey);
+    configuration.setPrivateKey(key);
+
+    QFile filecrt(":/selfsigned.crt");
+    QVERIFY(filecrt.open(QIODevice::ReadOnly) == true);
+    QSslCertificate crt(&filecrt);
+    QVERIFY(crt.isNull() == false);
+    #if QT_VERSION > 0x050000
+    QVERIFY(crt.subjectInfo(QSslCertificate::Organization).isEmpty()           == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::LocalityName).isEmpty()           == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::CommonName).isEmpty()             == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::OrganizationalUnitName).isEmpty() == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::CountryName).isEmpty()            == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::StateOrProvinceName).isEmpty()    == false);
+    QVERIFY(crt.subjectInfo(QSslCertificate::Organization)[0]                  == "Hobrasoft s.r.o.");
+    QVERIFY(crt.subjectInfo(QSslCertificate::CommonName)[0]                    == "selfsigned");
+    QVERIFY(crt.subjectInfo(QSslCertificate::LocalityName)[0]                  == "Roznov pod Radhostem");
+    QVERIFY(crt.subjectInfo(QSslCertificate::OrganizationalUnitName)[0]        == "IT");
+    QVERIFY(crt.subjectInfo(QSslCertificate::CountryName)[0]                   == "CZ");
+    QVERIFY(crt.subjectInfo(QSslCertificate::StateOrProvinceName)[0]           == "Czech republic");
+    #else
+    QVERIFY(crt.subjectInfo(QSslCertificate::CommonName)                       == "selfsigned");
+    QVERIFY(crt.subjectInfo(QSslCertificate::Organization)                     == "Hobrasoft s.r.o.");
+    QVERIFY(crt.subjectInfo(QSslCertificate::LocalityName)                     == "Roznov pod Radhostem");
+    QVERIFY(crt.subjectInfo(QSslCertificate::OrganizationalUnitName)           == "IT");
+    QVERIFY(crt.subjectInfo(QSslCertificate::CountryName)                      == "CZ");
+    QVERIFY(crt.subjectInfo(QSslCertificate::StateOrProvinceName)              == "Czech republic");
+    #endif
+    configuration.setLocalCertificate(crt);
+    filecrt.close();
+
+    request = QNetworkRequest(QURLSSL("1"));
+    request.setSslConfiguration(configuration);
+    reply = manager.get(request);
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::SslHandshakeFailedError);
+
+    connect(&manager, SIGNAL(    sslErrors(QNetworkReply *, QList<QSslError>)),
+            this,       SLOT(slotSslErrors(QNetworkReply *, QList<QSslError>)));
+    reply = manager.get(request);
     QTimer::singleShot(1000, &loop, SLOT(quit()));
     loop.exec();
     QVERIFY(reply->isFinished());

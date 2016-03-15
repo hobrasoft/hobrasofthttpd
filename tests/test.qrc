@@ -1,0 +1,11 @@
+<RCC>
+<qresource prefix="/">
+<file alias="localhost.crt">certs/localhost.crt</file>
+<file alias="localhost.key">certs/localhost.key</file>
+<file alias="client.crt">certs/client.crt</file>
+<file alias="client.key">certs/client.key</file>
+<file alias="testCA.crt">certs/testCA.crt</file>
+<file alias="selfsigned.key">certs/selfsigned.key</file>
+<file alias="selfsigned.crt">certs/selfsigned.crt</file>
+</qresource>
+</RCC>
