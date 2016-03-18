@@ -74,7 +74,9 @@ void HttpTcpServer::slotEncrypted() {
     QSslCertificate crt = socket->peerCertificate();
     m_peerCert[socket] = crt;
 
+    #if QT_VERSION > 0x040700
     addPendingConnection(socket);
+    #endif
     emit newConnection();
 }
 

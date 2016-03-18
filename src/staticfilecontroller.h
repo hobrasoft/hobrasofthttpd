@@ -12,8 +12,7 @@
 #include <QCache>
 #include <QHash>
 #include "httprequesthandler.h"
-
-class Test;
+#include "testsettings.h"
 
 namespace HobrasoftHttpd {
 
@@ -31,7 +30,7 @@ class HttpSettings;
  * @see HttpSettings
  */
 class StaticFileController : public HttpRequestHandler {
-    friend Test;
+    FRIEND_CLASS_TEST;
     Q_OBJECT
   public:
 

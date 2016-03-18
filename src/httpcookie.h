@@ -10,8 +10,7 @@
 
 #include <QString>
 #include <QByteArray>
-
-class Test;
+#include "testsettings.h"
 
 namespace HobrasoftHttpd {
 
@@ -19,7 +18,7 @@ namespace HobrasoftHttpd {
  * @brief One cookie of HTTP protocol
  */
 class HttpCookie {
-    friend Test;
+    FRIEND_CLASS_TEST;
   public:
 
     /**

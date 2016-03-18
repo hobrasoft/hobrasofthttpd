@@ -15,6 +15,7 @@ HEADERS += \
  $$PWD/httpsessionstore.h \
  $$PWD/httpsettings.h \
  $$PWD/httptcpserver.h \
+ $$PWD/testsettings.h \
 
 
 SOURCES += \

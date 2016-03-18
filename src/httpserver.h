@@ -14,8 +14,7 @@
 #include <QString>
 #include <QList>
 #include <QSslError>
-
-class Test;
+#include "testsettings.h"
 
 namespace HobrasoftHttpd {
 
@@ -86,7 +85,7 @@ each listening on different addresses or ports.
 
 */
 class HttpServer : public QObject {
-    friend Test;
+    FRIEND_CLASS_TEST;
     Q_OBJECT
   public:
 
