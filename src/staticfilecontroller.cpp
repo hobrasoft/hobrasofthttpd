@@ -56,6 +56,7 @@ void StaticFileController::addMimeType(const QString& fileSuffix, const QString&
 
 void StaticFileController::service(HttpRequest *request, HttpResponse *response) {
     QString path = request->path();
+    QString rootpath = QDir::fromNativeSeparators(settings()->docroot());
 
     if (path.startsWith("/..")) {
         response->setStatus(403,"Forbidden");
@@ -64,11 +65,12 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
         return;
         }
 
-    if (QFileInfo(settings()->docroot()+path).isDir()) {
-        path += "/" + settings()->indexFile();
+    QString filename = rootpath + path;
+    if (QFileInfo(filename).isDir()) {
+        filename += "/" + settings()->indexFile();
         }
 
-    QFile file(settings()->docroot()+path);
+    QFile file(QDir::toNativeSeparators(filename));
     if (!file.exists()) {
         response->setStatus(404, "Not found");
         response->write("404 Not found");
