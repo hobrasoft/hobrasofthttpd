@@ -37,3 +37,8 @@ HttpResponse HttpRequestHandler::response() {
     return m_connection->response();
 }
 
+
+
+const HttpSettings *HttpRequestHandler::settings() const { 
+    return connection()->settings(); 
+}

@@ -15,6 +15,7 @@ namespace HobrasoftHttpd {
 class HttpRequest;
 class HttpResponse;
 class HttpConnection;
+class HttpSettings;
 
 /**
 @brief Processes incoming requests
@@ -112,7 +113,10 @@ class HttpRequestHandler : public QObject {
     /**
      * @brief Returns pointer to parent HttpConnection class
      */
-    HttpConnection *connection() { return m_connection; }
+    HttpConnection *connection() const { return m_connection; }
+
+
+    const HttpSettings *settings() const;
 
   private:
 

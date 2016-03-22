@@ -68,7 +68,12 @@ void Test::initTestCase() {
         m_ipv6 = true;
         // m_localhost = QHostAddress::LocalHostIPv6;
         }
+}
 
+
+void Test::cleanupTestCase() {
+    QFile::remove("./hobrasofthttpd.test.shtml");
+    QFile::remove("./hobrasofthttpd.test.html");
 }
 
 
@@ -339,8 +344,8 @@ void Test::httpserverHttpServiceShtmlInclude() {
     filei.close();
 
     QNetworkAccessManager manager(this);
-    QNetworkRequest rq(QURL("hobrasofthttpd.test.shtml"));
-    QNetworkReply *reply = manager.get(rq);
+    QNetworkReply *reply;
+    reply = manager.get(QNetworkRequest(QURL("hobrasofthttpd.test.shtml")));
     QEventLoop loop;
     connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
     QTimer::singleShot(1000, &loop, SLOT(quit()));
@@ -350,6 +355,20 @@ void Test::httpserverHttpServiceShtmlInclude() {
     QVERIFY(reply->readAll()  == "test");
     file.remove();
     filei.remove();
+
+    // Test rekurze include
+    QFile file2("./hobrasofthttpd.test.shtml");
+    file2.open(QIODevice::WriteOnly);
+    file2.write("<!-- #include \"hobrasofthttpd.test.shtml\" -->");
+    file2.close();
+
+    reply = manager.get(QNetworkRequest(QURL("hobrasofthttpd.test.shtml")));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::InternalServerError);
+    file2.remove();
+
 }
 
 

@@ -117,6 +117,8 @@ class Test : public QObject {
     void    slotHttpSSLselfsigned       (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotSslErrors               (QNetworkReply *, QList<QSslError>);
 
+    void    cleanupTestCase();
+
   private:
     void    httpserverStartIP(const QHostAddress&);
     HobrasoftHttpd::HttpServer *createServer(QObject *parent, const QHostAddress& address = QHostAddress::LocalHost);

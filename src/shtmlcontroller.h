@@ -50,7 +50,7 @@ class ShtmlController : public HttpRequestHandler {
     /**
      * @brief Reads and processes one file, other files can be included recursivelly
      */
-    QByteArray readFile(const QString& path, HttpResponse *response);
+    QByteArray readFile(const QString& path, HttpResponse *response, int depth);
 
     HttpConnection  *m_parent;
 

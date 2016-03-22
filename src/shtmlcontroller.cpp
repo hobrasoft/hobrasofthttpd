@@ -31,18 +31,27 @@ void ShtmlController::service(HttpRequest *request, HttpResponse *response) {
 
     QByteArray data;
     try {
-        data = readFile(path, response);
+        data = readFile(path, response, 0);
         } 
     catch (...) {
         return;
         }
-    response->setHeader("Content-Type", "text/html; charset=" + m_parent->settings()->encoding());
+    response->setHeader("Content-Type", "text/html; charset=" + settings()->encoding());
     response->write(data);
 
 }
 
 
-QByteArray ShtmlController::readFile(const QString& path, HttpResponse *response) {
+QByteArray ShtmlController::readFile(const QString& path, HttpResponse *response, int depth) {
+    QString rootpath = QDir::fromNativeSeparators(settings()->docroot());
+    depth += 1;
+    if (depth > 10) {
+        response->setStatus(500,"Server error");
+        response->write(QString("500 server error: %1<br>\nRecursive loop detected in included files.").arg(path).toUtf8());
+        response->flush();
+        throw false;;
+        }
+
     QByteArray data;
     if (path.startsWith("/..") || path.startsWith("..")) {
         response->setStatus(403,"Forbidden");
@@ -51,7 +60,16 @@ QByteArray ShtmlController::readFile(const QString& path, HttpResponse *response
         throw false;;
         }
 
-    QFile file(m_parent->settings()->docroot()+"/"+path);
+    QString filename = rootpath + "/" + path;
+    QFile file(filename);
+
+    if (QFileInfo(filename).isDir()) {
+        response->setStatus(500, "Server error");
+        response->write(QString("500 Server error: %1<br>\nCannot include directory").arg(file.fileName()).toUtf8());
+        response->flush();
+        throw false;
+        }
+
     if (!file.exists()) {
         response->setStatus(404, "Not found");
         response->write(QString("404 File not found: %1").arg(file.fileName()).toUtf8());
@@ -73,7 +91,7 @@ QByteArray ShtmlController::readFile(const QString& path, HttpResponse *response
             if (lineparts.size() != 3) {
                 continue;
                 }
-            data += readFile(lineparts[1], response);
+            data += readFile(lineparts[1], response, depth);
             continue;
             }
         data += line.toUtf8();
