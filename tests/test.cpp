@@ -134,6 +134,12 @@ void Test::requestUrlDecode() {
     QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%") == "%");        // Nedefinované, ale je potřeba otestovat
     QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%%") == "%%");      // Nedefinované, ale je potřeba otestovat
     QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%%%") == "%%%");    // Nedefinované, ale je potřeba otestovat
+    // UTF-8
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%C5%BD") == "Ž");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode(
+       "p%C5%99%C3%ADli%C5%A1%20%C5%BElu%C5%A5ou%C4%8Dk%C3%BD%20k%C5%AF%C5%88%20%C3%BAp%C4%9Bl%20%C4%8F%C3%A1belsk%C3%A9%20%C3%B3dy" 
+       ) == "příliš žluťoučký kůň úpěl ďábelské ódy");
+
 }
 
 

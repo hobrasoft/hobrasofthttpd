@@ -11,6 +11,7 @@
 #include <QList>
 #include <QDir>
 #include <QMapIterator>
+#include <QDebug>
 
 using namespace HobrasoftHttpd;
 
@@ -233,19 +234,20 @@ void HttpRequest::extractCookies() {
 
 
 QString HttpRequest::urlDecode(const QString& text) {
-    QString buffer(text);
+    QByteArray buffer(text.toUtf8());
     buffer.replace('+',' ');
     int percentpos = buffer.indexOf('%');
     while (percentpos >= 0) {
         bool ok;
-        QChar byte = QChar(buffer.mid(percentpos+1, 2).toInt(&ok, 16));
+        // QChar byte = QChar((int)buffer.mid(percentpos+1, 2).toInt(&ok, 16));
+        int byte = buffer.mid(percentpos+1, 2).toInt(&ok, 16);
         if (ok) {
             buffer.remove(percentpos,3);
             buffer.insert(percentpos, byte);
             }
         percentpos = buffer.indexOf('%', percentpos+1);
         }
-    return buffer;
+    return QString::fromUtf8(buffer);
 }
 
 

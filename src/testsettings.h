@@ -1,3 +1,8 @@
+/**
+ * @file
+ *
+ * @author Petr Bravenec <petr.bravenec@hobrasoft.cz>
+ */
 #ifndef __GCC_SETTINGS_H__
 #define __GCC_SETTINGS_H__
 
