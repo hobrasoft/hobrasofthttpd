@@ -12,7 +12,7 @@
 
 namespace HobrasoftHttpd {
 
-/*
+/**
 @brief Configuration of the http server instance
 
 Default configuration is read from current QSettings. Before you start your HttpServer you have to set
