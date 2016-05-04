@@ -51,7 +51,14 @@ class HttpTcpServer : public QTcpServer {
 
     const HttpSettings   *m_settings;
 
+    /**
+     * @brief Verified status of each socket
+     */
     QHash<QTcpSocket *, bool>   m_verified;
+
+    /**
+     * @brief Peer's certificate of each socket
+     */
     QHash<QTcpSocket *, QSslCertificate>   m_peerCert;
 
 };

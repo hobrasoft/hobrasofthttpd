@@ -1,3 +1,4 @@
+/**
 
 @mainpage hhttp Hobrasoft httpd server
 
@@ -101,4 +102,4 @@ class MyHttpd : public HttpServer {
 ~~~~~~~~~~~~~~~~~
 
 
-
+*/
