@@ -132,12 +132,18 @@ bool HttpTcpServer::verified(QTcpSocket *socket) const {
 }
 
 
+/**
+ * @brief Returns peer's certificate
+ */
 QSslCertificate HttpTcpServer::peerCertificate(QTcpSocket *socket) const {
     if (!m_peerCert.contains(socket)) { return QSslCertificate(); }
     return m_peerCert[socket];
 }
 
 
+/**
+ * @brief Slot is invoked when the peer's certificate is not verified
+ */
 void HttpTcpServer::slotPeerVerifyError(const QSslError& error) {
     Q_UNUSED(error);
     QSslSocket *socket = qobject_cast<QSslSocket *>(sender());
