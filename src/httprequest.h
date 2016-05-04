@@ -132,9 +132,22 @@ class HttpRequest {
 
     /**
      * @brief Returns temporary file with uploaded file from html form
+     *
+     * If the returned file is closed, then the file is deleted.
+     * If you want to reuse the file, do not close it.
      */
     QTemporaryFile *uploadedFile(const QString& fieldName) { return m_uploadedFiles.value(fieldName); }
 
+    /**
+     * @brief Returns list of uploaded files
+     *
+     * Returned map:
+     * - Key: name of the field
+     * - Value: opened temporary file
+     *
+     * If the returned file is closed, then the file is deleted.
+     * If you want to reuse the file, do not close it.
+     */
     const QMap<QString, QTemporaryFile *>&  uploadedFiles() const { return m_uploadedFiles; }
 
   private:
@@ -153,6 +166,7 @@ class HttpRequest {
     int                                 m_expectedBodySize;
     QString                             m_currentHeader;
     QTemporaryFile                      m_tempFile;
+    HttpConnection                     *m_connection;
     #endif
 
     void    parseMultiPartFile();
@@ -167,7 +181,6 @@ class HttpRequest {
 
     void    extractCookies();
 
-    HttpConnection  *m_connection;
 };
 
 }

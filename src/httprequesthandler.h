@@ -116,6 +116,9 @@ class HttpRequestHandler : public QObject {
     HttpConnection *connection() const { return m_connection; }
 
 
+    /**
+     * @brief Returns pointer to HttpSettings used in the HttpServer
+     */
     const HttpSettings *settings() const;
 
   private:

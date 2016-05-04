@@ -52,7 +52,9 @@ class ShtmlController : public HttpRequestHandler {
      */
     QByteArray readFile(const QString& path, HttpResponse *response, int depth);
 
+    #ifndef DOXYGEN_SHOULD_SKIP_THIS
     HttpConnection  *m_parent;
+    #endif
 
 };
 

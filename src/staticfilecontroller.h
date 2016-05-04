@@ -55,10 +55,14 @@ class StaticFileController : public HttpRequestHandler {
 
 
   private:
+    /**
+     * @brief Returs pointer to HttpSettings used in the HttpServer
+     */
     const HttpSettings *settings() const;
 
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     static QHash<QString, QString> m_mimetypes;
+    HttpConnection  *m_parent;
     #endif
 
     /**
@@ -66,7 +70,6 @@ class StaticFileController : public HttpRequestHandler {
      */
     void setContentType(const QString& file, HttpResponse *response) const;
 
-    HttpConnection  *m_parent;
 
 };
 

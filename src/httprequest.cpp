@@ -52,6 +52,12 @@ void HttpRequest::readFromSocket(QTcpSocket *socket) {
 }
 
 
+/**
+ * @brief Reads request from socket
+ *
+ * Parses first line of the request and stores the method (GET, PUT, POST...)
+ * the path (/path-to-request), version (HTTP/1.1) to class instance.
+ */
 void HttpRequest::readRequest(QTcpSocket *socket) {
     int toRead = m_connection->settings()->maxRequestSize() - m_currentSize + 1;
     QByteArray newdata = socket->readLine(toRead).trimmed();
@@ -76,20 +82,23 @@ void HttpRequest::readRequest(QTcpSocket *socket) {
 }
 
 
+/**
+ * @brief Reads HTTP headers of the request
+ */
 void HttpRequest::readHeader(QTcpSocket *socket) {
     int toRead = m_connection->settings()->maxRequestSize() - m_currentSize + 1;
     QByteArray newdata = socket->readLine(toRead).trimmed();
     m_currentSize += newdata.size();
 
     int colonpos = newdata.indexOf(':');
-    if (colonpos > 0) { // nová hlavička
+    if (colonpos > 0) { // new header
         m_currentHeader = QString::fromUtf8(newdata.left(colonpos));
         QString value   = QString::fromUtf8(newdata.mid(colonpos+1).trimmed());
         m_headers.insert(m_currentHeader,value);
         return;
         }
 
-    if (colonpos <= 0 && !newdata.isEmpty()) { // pokračování hlavičky
+    if (colonpos <= 0 && !newdata.isEmpty()) { // header continues
         m_headers.insert(
                 m_currentHeader, 
                 m_headers.value(m_currentHeader) + QString(" ") + QString::fromUtf8(newdata)
@@ -97,7 +106,7 @@ void HttpRequest::readHeader(QTcpSocket *socket) {
         return;
         }
 
-    if (newdata.isEmpty()) { // Prázdný řádek, konec hlaviček
+    if (newdata.isEmpty()) { // Empty line, end of headers
         QString contentType = header("Content-Type");
 
         if (contentType.startsWith("multipart/form-data", Qt::CaseInsensitive)) {
@@ -132,6 +141,9 @@ void HttpRequest::readHeader(QTcpSocket *socket) {
 }
 
 
+/**
+ * @brief Reads body of the request
+ */
 void HttpRequest::readBody(QTcpSocket *socket) {
     // normal body, no multipart
     if (m_boundary.isEmpty()) {
@@ -175,6 +187,9 @@ void HttpRequest::readBody(QTcpSocket *socket) {
 }
 
 
+/**
+ * @brief Parses parameters of the URL
+ */
 void HttpRequest::decodeRequestParams() {
     QString rawParameters;
     if (header("Content-Type").toLower() == "application/x-www-form-urlencoded") {
@@ -206,6 +221,9 @@ void HttpRequest::decodeRequestParams() {
 }
 
 
+/**
+ * @brief Parses cookies 
+ */
 void HttpRequest::extractCookies() {
     QStringList cookies = headers("Cookie");
     for (int i=0; i<cookies.size(); i++) {
@@ -233,6 +251,9 @@ void HttpRequest::extractCookies() {
 }
 
 
+/**
+ * @brief Dedodes % encoding used in URL
+ */
 QString HttpRequest::urlDecode(const QString& text) {
     QByteArray buffer(text.toUtf8());
     buffer.replace('+',' ');
@@ -251,6 +272,9 @@ QString HttpRequest::urlDecode(const QString& text) {
 }
 
 
+/**
+ * @brief Parses the mime multipart request
+ */
 void HttpRequest::parseMultiPartFile() {
     m_tempFile.seek(0);
     bool finished=false;

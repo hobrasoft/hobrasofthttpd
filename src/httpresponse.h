@@ -128,6 +128,9 @@ class HttpResponse {
     bool containsHeader(const QString& name) { return m_headers.contains(name); }
 
 
+    /**
+     * @brief Returns true if the http connection is in connected state
+     */
     bool isConnected() const;
 
   private:
