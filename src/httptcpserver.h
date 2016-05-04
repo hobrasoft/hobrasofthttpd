@@ -24,7 +24,10 @@ class HttpSettings;
 #endif
 
 /**
- * @brief
+ * @brief Listens for incoming TCP connections, supports plain and ssl connections
+ *
+ * Class stores information of each connection - 
+ * its verification status and peer's certificate.
  */
 class HttpTcpServer : public QTcpServer {
     Q_OBJECT
