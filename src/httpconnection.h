@@ -83,7 +83,9 @@ class HttpConnection : public QObject {
     void setVerified(bool x) { m_verified = x; }
 
     /**
-     * @brief  
+     * @brief Sets peer's certificate
+     *
+     * Certificate is taken from HttpTcpServer class
      */
     void setPeerCertificate(const QSslCertificate&);
 
@@ -97,6 +99,9 @@ class HttpConnection : public QObject {
      */
     const QSslCertificate peerCertificate() const { return m_peerCertificate; }
 
+    /**
+     * @brief Returns true if the connection is in connected state
+     */
     bool isConnected() const { return m_connected; }
 
 
