@@ -142,16 +142,22 @@ QSslCertificate HttpTcpServer::peerCertificate(QTcpSocket *socket) const {
 
 
 /**
- * @brief Slot is invoked when the peer's certificate is not verified
+ * @brief Slot is called when the peer's certificate is not verified
  */
 void HttpTcpServer::slotPeerVerifyError(const QSslError& error) {
     Q_UNUSED(error);
     QSslSocket *socket = qobject_cast<QSslSocket *>(sender());
-//  qDebug() << "sslError" << error.errorString();
     m_verified[socket] = false;
 }
 
 
+/**
+ * @brief Slot is called when an SSL error occured
+ *
+ * FIX:
+ * This function should better recognize some
+ * type of SSL errors and see configuration what to do
+ */
 void HttpTcpServer::slotSslErrors(const QList<QSslError>& errors) {
     /*
     for (int i=0; i<errors.size(); i++) {
