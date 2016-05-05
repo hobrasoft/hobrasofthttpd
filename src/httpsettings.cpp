@@ -65,6 +65,10 @@
  * @}
  */
 
+int qHash(const QSslError error) {
+    return qHash(error.error());
+}
+
 using namespace HobrasoftHttpd;
 
 

@@ -12,6 +12,8 @@
 #include <QSslError>
 #include <QSet>
 
+int qHash(const QSslError error);
+
 namespace HobrasoftHttpd {
 
 /**

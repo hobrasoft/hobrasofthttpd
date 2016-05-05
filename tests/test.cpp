@@ -372,7 +372,9 @@ void Test::httpserverHttpServiceShtmlInclude() {
     QTimer::singleShot(1000, &loop, SLOT(quit()));
     loop.exec();
     QVERIFY(reply->isFinished());
+    #if QT_VERSION > 0x050000
     QVERIFY(reply->error() == QNetworkReply::InternalServerError);
+    #endif
     file2.remove();
 
 }
