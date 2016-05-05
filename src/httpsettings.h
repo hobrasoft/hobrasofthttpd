@@ -9,6 +9,8 @@
 
 #include <QHostAddress>
 #include <QSettings>
+#include <QSslError>
+#include <QSet>
 
 namespace HobrasoftHttpd {
 
@@ -101,6 +103,8 @@ class HttpSettings : public QObject {
     const QString&  sslCaCrt() const { return m_sslCaCrt; }                                 ///< Returns SSL CA certificate
     void            setSslCaCrt(const QString& x) { m_sslCaCrt = x; }                       ///< Set SSL CA certificate
 
+    bool            ignoreSslError(QSslError error) const;                                  ///< Returns true if the error should be ignored, default true
+
     /**
      * @brief Read settings from configuration file. 
      *
@@ -158,6 +162,8 @@ class HttpSettings : public QObject {
     QString         m_sslKey;
     QString         m_sslCrt;
     QString         m_sslCaCrt;
+    QSet<QSslError> m_sslErrors;
+    bool            m_ignoreAllSslErrors;
     #endif
 
 

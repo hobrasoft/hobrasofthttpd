@@ -32,6 +32,36 @@
  * - __httpd/sslCrt__  - path to SSL certificate file in PEM format
  * - __httpd/sslCaCrt__  - path to SSL CA certificate file in PEM format
  *
+ * SSL errors
+ * ----------
+ * All parameters has default value false except IgnoreAllSslErrors
+ * - __IgnoreAllSslErrors__  - default true
+ * - __IgnoreUnableToGetIssuerCertificate__
+ * - __IgnoreUnableToDecryptCertificateSignature__
+ * - __IgnoreUnableToDecodeIssuerPublicKey__
+ * - __IgnoreCertificateSignatureFailed__
+ * - __IgnoreCertificateNotYetValid__
+ * - __IgnoreCertificateExpired__
+ * - __IgnoreInvalidNotBeforeField__
+ * - __IgnoreInvalidNotAfterField__
+ * - __IgnoreSelfSignedCertificate__
+ * - __IgnoreSelfSignedCertificateInChain__
+ * - __IgnoreUnableToGetLocalIssuerCertificate__
+ * - __IgnoreUnableToVerifyFirstCertificate__
+ * - __IgnoreCertificateRevoked__
+ * - __IgnoreInvalidCaCertificate__
+ * - __IgnorePathLengthExceeded__
+ * - __IgnoreInvalidPurpose__
+ * - __IgnoreCertificateUntrusted__
+ * - __IgnoreCertificateRejected__
+ * - __IgnoreSubjectIssuerMismatch__
+ * - __IgnoreAuthorityIssuerSerialNumberMismatch__
+ * - __IgnoreNoPeerCertificate__
+ * - __IgnoreHostNameMismatch__
+ * - __IgnoreUnspecifiedError__
+ * - __IgnoreNoSslSupport__
+ * - __IgnoreCertificateBlacklisted__
+ *
  * @}
  */
 
@@ -91,6 +121,41 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
                               settings->value(m_section2 + "/sslCrt",                "")).toString();
     m_sslCaCrt              = settings->value(  section  + "/sslCaCrt",
                               settings->value(m_section2 + "/sslCaCrt",              "")).toString();
+    m_ignoreAllSslErrors    = settings->value(  section  + "/IgnoreAllSslErrors",
+                              settings->value(m_section2 + "/IgnoreAllSslErrors",    true)).toBool();
+
+    #define SSLERROR(x) { if (settings->value(  section  + "/Ignore" + #x, \
+                              settings->value(m_section2 + "/Ignore" + #x, false)).toBool()) { \
+                                m_sslErrors << QSslError::x; \
+                                } \
+                        }
+
+    SSLERROR(UnableToGetIssuerCertificate);
+    SSLERROR(UnableToDecryptCertificateSignature);
+    SSLERROR(UnableToDecodeIssuerPublicKey);
+    SSLERROR(CertificateSignatureFailed);
+    SSLERROR(CertificateNotYetValid);
+    SSLERROR(CertificateExpired);
+    SSLERROR(InvalidNotBeforeField);
+    SSLERROR(InvalidNotAfterField);
+    SSLERROR(SelfSignedCertificate);
+    SSLERROR(SelfSignedCertificateInChain);
+    SSLERROR(UnableToGetLocalIssuerCertificate);
+    SSLERROR(UnableToVerifyFirstCertificate);
+    SSLERROR(CertificateRevoked);
+    SSLERROR(InvalidCaCertificate);
+    SSLERROR(PathLengthExceeded);
+    SSLERROR(InvalidPurpose);
+    SSLERROR(CertificateUntrusted);
+    SSLERROR(CertificateRejected);
+    SSLERROR(SubjectIssuerMismatch);
+    SSLERROR(AuthorityIssuerSerialNumberMismatch);
+    SSLERROR(NoPeerCertificate);
+    SSLERROR(HostNameMismatch);
+    SSLERROR(UnspecifiedError);
+    SSLERROR(NoSslSupport);
+    SSLERROR(CertificateBlacklisted);
+
 }
 
 
@@ -105,5 +170,12 @@ HttpSettings::HttpSettings(const QSettings *settings, QObject *parent) : QObject
     readSettings(settings, "http");
 }
 
+
+bool HttpSettings::ignoreSslError(QSslError error) const {
+    if (m_ignoreAllSslErrors) { 
+        return true;
+        }
+    return m_sslErrors.contains(error);
+}
 
 

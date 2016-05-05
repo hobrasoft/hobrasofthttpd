@@ -159,13 +159,18 @@ void HttpTcpServer::slotPeerVerifyError(const QSslError& error) {
  * type of SSL errors and see configuration what to do
  */
 void HttpTcpServer::slotSslErrors(const QList<QSslError>& errors) {
-    /*
+    QList<QSslError> ignoreList;
     for (int i=0; i<errors.size(); i++) {
+        if (m_settings->ignoreSslError(errors[i])) {
+            ignoreList << errors[i];
+            continue;
+            }
         qDebug() << "sslError" << errors[i].errorString();
         }
-    */
+
     QSslSocket *socket = qobject_cast<QSslSocket *>(sender());
-    socket->ignoreSslErrors(errors);
+    socket->ignoreSslErrors(ignoreList);
+
 }
 
 
