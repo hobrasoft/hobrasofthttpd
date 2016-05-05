@@ -153,10 +153,6 @@ void HttpTcpServer::slotPeerVerifyError(const QSslError& error) {
 
 /**
  * @brief Slot is called when an SSL error occured
- *
- * FIX:
- * This function should better recognize some
- * type of SSL errors and see configuration what to do
  */
 void HttpTcpServer::slotSslErrors(const QList<QSslError>& errors) {
     QList<QSslError> ignoreList;

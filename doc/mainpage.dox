@@ -1,6 +1,6 @@
 /**
 
-@mainpage hhttp Hobrasoft httpd server
+@mainpage Hobrasoft httpd server
 
 @author Petr Bravenec <petr.bravenec@hobrasoft.cz>
 
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 }
 ~~~~~~~~~~~~~~~~~
 
-The configuration of the server can be set in configuration file (@ref konfigurace)
+The configuration of the server can be set in configuration file (@ref configuration)
 ~~~~~~~~~~~~~~~~~
 #include <QCoreApplication>
 #include <QSettings>

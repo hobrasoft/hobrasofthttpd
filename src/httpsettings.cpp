@@ -8,7 +8,7 @@
 #include <QSettings>
 
 /**
- * @addtogroup konfigurace
+ * @addtogroup configuration
  * @{
  *
  * Configuration HobrasoftHttpd::HttpServer

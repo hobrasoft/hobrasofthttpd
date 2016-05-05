@@ -6,8 +6,8 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "Hobrasoft httpd server"
 PROJECT_NUMBER         =
-PROJECT_BRIEF          = "HTTP server"
-PROJECT_LOGO           = 
+PROJECT_BRIEF          = "Embedded HTTP server for Qt and C++"
+PROJECT_LOGO           = hobrasoft.svg
 OUTPUT_DIRECTORY       = doc
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
