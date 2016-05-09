@@ -158,7 +158,9 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
     SSLERROR(HostNameMismatch);
     SSLERROR(UnspecifiedError);
     SSLERROR(NoSslSupport);
+    #if QT_VERSION > 0x040700
     SSLERROR(CertificateBlacklisted);
+    #endif
 
 }
 
