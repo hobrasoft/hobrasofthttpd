@@ -35,32 +35,32 @@
  * SSL errors
  * ----------
  * All parameters has default value false except IgnoreAllSslErrors
- * - __IgnoreAllSslErrors__  - default true
- * - __IgnoreUnableToGetIssuerCertificate__
- * - __IgnoreUnableToDecryptCertificateSignature__
- * - __IgnoreUnableToDecodeIssuerPublicKey__
- * - __IgnoreCertificateSignatureFailed__
- * - __IgnoreCertificateNotYetValid__
- * - __IgnoreCertificateExpired__
- * - __IgnoreInvalidNotBeforeField__
- * - __IgnoreInvalidNotAfterField__
- * - __IgnoreSelfSignedCertificate__
- * - __IgnoreSelfSignedCertificateInChain__
- * - __IgnoreUnableToGetLocalIssuerCertificate__
- * - __IgnoreUnableToVerifyFirstCertificate__
- * - __IgnoreCertificateRevoked__
- * - __IgnoreInvalidCaCertificate__
- * - __IgnorePathLengthExceeded__
- * - __IgnoreInvalidPurpose__
- * - __IgnoreCertificateUntrusted__
- * - __IgnoreCertificateRejected__
- * - __IgnoreSubjectIssuerMismatch__
- * - __IgnoreAuthorityIssuerSerialNumberMismatch__
- * - __IgnoreNoPeerCertificate__
- * - __IgnoreHostNameMismatch__
- * - __IgnoreUnspecifiedError__
- * - __IgnoreNoSslSupport__
- * - __IgnoreCertificateBlacklisted__
+ * - __httpd/IgnoreAllSslErrors__  - default true
+ * - __httpd/IgnoreUnableToGetIssuerCertificate__
+ * - __httpd/IgnoreUnableToDecryptCertificateSignature__
+ * - __httpd/IgnoreUnableToDecodeIssuerPublicKey__
+ * - __httpd/IgnoreCertificateSignatureFailed__
+ * - __httpd/IgnoreCertificateNotYetValid__
+ * - __httpd/IgnoreCertificateExpired__
+ * - __httpd/IgnoreInvalidNotBeforeField__
+ * - __httpd/IgnoreInvalidNotAfterField__
+ * - __httpd/IgnoreSelfSignedCertificate__
+ * - __httpd/IgnoreSelfSignedCertificateInChain__
+ * - __httpd/IgnoreUnableToGetLocalIssuerCertificate__
+ * - __httpd/IgnoreUnableToVerifyFirstCertificate__
+ * - __httpd/IgnoreCertificateRevoked__
+ * - __httpd/IgnoreInvalidCaCertificate__
+ * - __httpd/IgnorePathLengthExceeded__
+ * - __httpd/IgnoreInvalidPurpose__
+ * - __httpd/IgnoreCertificateUntrusted__
+ * - __httpd/IgnoreCertificateRejected__
+ * - __httpd/IgnoreSubjectIssuerMismatch__
+ * - __httpd/IgnoreAuthorityIssuerSerialNumberMismatch__
+ * - __httpd/IgnoreNoPeerCertificate__
+ * - __httpd/IgnoreHostNameMismatch__
+ * - __httpd/IgnoreUnspecifiedError__
+ * - __httpd/IgnoreNoSslSupport__
+ * - __httpd/IgnoreCertificateBlacklisted__
  *
  * @}
  */

@@ -135,10 +135,10 @@ void Test::requestUrlDecode() {
     QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%%") == "%%");      // Nedefinované, ale je potřeba otestovat
     QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%%%") == "%%%");    // Nedefinované, ale je potřeba otestovat
     // UTF-8
-    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%C5%BD") == "Ž");
+    QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode("%C5%BD") == QString::fromUtf8("Ž"));
     QVERIFY(HobrasoftHttpd::HttpRequest::urlDecode(
        "p%C5%99%C3%ADli%C5%A1%20%C5%BElu%C5%A5ou%C4%8Dk%C3%BD%20k%C5%AF%C5%88%20%C3%BAp%C4%9Bl%20%C4%8F%C3%A1belsk%C3%A9%20%C3%B3dy" 
-       ) == "příliš žluťoučký kůň úpěl ďábelské ódy");
+       ) == QString::fromUtf8("příliš žluťoučký kůň úpěl ďábelské ódy"));
 
 }
 
@@ -416,6 +416,7 @@ Httpd *Httpd::createSSL(QObject *parent, const QHostAddress& address, int port) 
     q.setValue("http/sslKey",   "://localhost.key");
     q.setValue("http/sslCrt",   "://localhost.crt");
     q.setValue("http/sslCaCrt", "://testCA.crt");
+    q.setValue("http/IgnoreAllSslErrors", true);
     q.sync();
     HttpSettings *hq = new HttpSettings(&q,parent);
     return new Httpd(hq,parent);
@@ -564,10 +565,15 @@ void Test::httpServiceCookie() {
 
 
 void Test::slotServiceUpload(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
+    QByteArray load;
+    for (int i=0; i<380000; i++) {
+        load += i%256;
+        }
+
     QVERIFY(request->uploadedFile("file1") != NULL);
     QTemporaryFile *file1 = request->uploadedFile("file1");
     QVERIFY(file1 != NULL);
-    QVERIFY(file1->readAll() == "ABCD");
+    QVERIFY(file1->readAll() == load);
     file1->close();
     file1->deleteLater();
 
@@ -592,11 +598,18 @@ void Test::httpServiceUpload() {
     connect(server, SIGNAL( sigService      (HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)),
             this,     SLOT(slotServiceUpload(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *)));
 
+    // QByteArray abcd = "abcdefghijklmnopqrstuvwxyz0123457890\r\n";
+    QByteArray load;
+    for (int i=0; i<380000; i++) {
+        load += i%256;
+        // load += abcd[i%38];
+        }
+
     QByteArray data;
     data += "--BOUNDARY\r\n";
     data += "Content-Disposition: form-data; name=\"file1\"; filename=\"file1.txt\"\r\n";
     data += "Content-Type: text/text\r\n\r\n";
-    data += "ABCD\r\n";
+    data += load + "\r\n";
     data += "--BOUNDARY\r\n";
     data += "Content-Disposition: form-data; name=\"file2\"; filename=\"file2.txt\"\r\n";
     data += "Content-Type: text/text\r\n\r\n";
