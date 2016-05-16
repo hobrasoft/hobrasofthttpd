@@ -112,7 +112,7 @@ void HttpRequest::readHeader(QTcpSocket *socket) {
         if (contentType.startsWith("multipart/form-data", Qt::CaseInsensitive)) {
             int pos  = contentType.indexOf("boundary=", 0, Qt::CaseInsensitive);
             if (pos >= 0) {
-                m_boundary = contentType.mid(pos+9);
+                m_boundary = contentType.mid(pos+9).toUtf8();
                 }
             }
 
@@ -306,8 +306,8 @@ void HttpRequest::parseMultiPartFile() {
         QTemporaryFile* uploadedFile=0;
         QByteArray fieldValue;
         while (!m_tempFile.atEnd() && !finished && !m_tempFile.error()) {
-            QString line = QString::fromUtf8(m_tempFile.readLine(65536));
-            if (line.startsWith("--"+m_boundary.toUtf8())) {
+            QByteArray line = m_tempFile.readLine(65536);
+            if (line.startsWith("--"+m_boundary)) {
                 // Boundary found. Until now we have collected 2 bytes too much,
                 // so remove them from the last result
                 if (fileName.isEmpty() && !fieldName.isEmpty()) {
@@ -323,7 +323,7 @@ void HttpRequest::parseMultiPartFile() {
                     m_parameters.insert(fieldName,fileName);
                     m_uploadedFiles.insert(fieldName,uploadedFile);
                     }
-                if (line.contains(m_boundary.toUtf8()+"--")) {
+                if (line.contains(m_boundary+"--")) {
                     finished=true;
                     }
                 break;
@@ -339,7 +339,7 @@ void HttpRequest::parseMultiPartFile() {
                         uploadedFile=new QTemporaryFile();
                         uploadedFile->open();
                         }
-                    uploadedFile->write(line.toUtf8());
+                    uploadedFile->write(line);
                     if (uploadedFile->error()) {
                         qCritical("HttpRequest: error writing temp file, %s",qPrintable(uploadedFile->errorString()));
                         }

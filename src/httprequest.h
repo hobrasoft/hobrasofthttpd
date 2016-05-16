@@ -161,7 +161,7 @@ class HttpRequest {
     QString                             m_path;
     QString                             m_version;
     Status                              m_status;
-    QString                             m_boundary;
+    QByteArray                          m_boundary;
     int                                 m_currentSize;
     int                                 m_expectedBodySize;
     QString                             m_currentHeader;
