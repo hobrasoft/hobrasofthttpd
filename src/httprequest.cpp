@@ -282,22 +282,27 @@ void HttpRequest::parseMultiPartFile() {
 
         QString fieldName;
         QString fileName;
+        QString contentType;
         while (!m_tempFile.atEnd() && !finished && !m_tempFile.error()) {
             QString line = QString::fromUtf8(m_tempFile.readLine(65536).trimmed());
             if (line.isEmpty()) { break; }
-            if (!line.startsWith("Content-Disposition:", Qt::CaseInsensitive)) { continue; }
-            if (line.contains("form-data", Qt::CaseInsensitive)) {
-                int start=line.indexOf(" name=\"", 0, Qt::CaseInsensitive);
-                int end=line.indexOf("\"",start+7);
-                if (start>=0 && end>=start) {
-                    fieldName=line.mid(start+7,end-start-7);
+            if (line.startsWith("Content-Disposition:", Qt::CaseInsensitive)) { 
+                if (line.contains("form-data", Qt::CaseInsensitive)) {
+                    int start=line.indexOf(" name=\"", 0, Qt::CaseInsensitive);
+                    int end=line.indexOf("\"",start+7);
+                    if (start>=0 && end>=start) {
+                        fieldName=line.mid(start+7,end-start-7);
+                        }
+                    start=line.indexOf(" filename=\"", 0, Qt::CaseInsensitive);
+                    end=line.indexOf("\"",start+11);
+                    if (start>=0 && end>=start) {
+                        fileName=line.mid(start+11,end-start-11);
+                        }
+                    continue;
                     }
-                start=line.indexOf(" filename=\"", 0, Qt::CaseInsensitive);
-                end=line.indexOf("\"",start+11);
-                if (start>=0 && end>=start) {
-                    fileName=line.mid(start+11,end-start-11);
-                    }
-                continue;
+                }
+            if (line.startsWith("Content-Type:", Qt::CaseInsensitive)) { 
+                contentType = line.remove(QRegExp("^Content-Type:\\s*", Qt::CaseInsensitive));
                 }
 
             qDebug() << "HttpRequest: ignoring unsupported content part" << line;
@@ -322,6 +327,7 @@ void HttpRequest::parseMultiPartFile() {
                     uploadedFile->seek(0);
                     m_parameters.insert(fieldName,fileName);
                     m_uploadedFiles.insert(fieldName,uploadedFile);
+                    m_contentTypes.insert(fieldName,contentType);
                     }
                 if (line.contains(m_boundary+"--")) {
                     finished=true;

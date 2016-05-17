@@ -150,11 +150,29 @@ class HttpRequest {
      */
     const QMap<QString, QTemporaryFile *>&  uploadedFiles() const { return m_uploadedFiles; }
 
+
+    /**
+     * @brief Returns list of content types of uploaded files
+     * 
+     * Returned map:
+     * - Key: name of the fiels
+     * - Value: content type
+     */
+    const QMap<QString, QString>& contentTypes() const { return m_contentTypes; }
+
+
+    /**
+     * @brief Returns content type of uploaded file
+     */
+    QString contentType(const QString& fieldName) const { return m_contentTypes.value(fieldName); }
+
+
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     QMultiMap<QString, QString>         m_headers;
     QMultiMap<QString, QString>         m_parameters;
     QMap<QString, QTemporaryFile *>     m_uploadedFiles;
+    QMap<QString, QString>              m_contentTypes;
     QMap<QString, QString>              m_cookies;
     QByteArray                          m_bodyData;
     QString                             m_method;
