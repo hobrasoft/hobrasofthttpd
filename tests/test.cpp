@@ -571,6 +571,7 @@ void Test::slotServiceUpload(HobrasoftHttpd::HttpRequest *request, HobrasoftHttp
         }
 
     QVERIFY(request->uploadedFile("file1") != NULL);
+    QVERIFY(request->contentType("file1") == "application/binary-test");
     QTemporaryFile *file1 = request->uploadedFile("file1");
     QVERIFY(file1 != NULL);
     QVERIFY(file1->readAll() == load);
@@ -578,6 +579,7 @@ void Test::slotServiceUpload(HobrasoftHttpd::HttpRequest *request, HobrasoftHttp
     file1->deleteLater();
 
     QVERIFY(request->uploadedFile("file2") != NULL);
+    QVERIFY(request->contentType("file2") == "text/text");
     QTemporaryFile *file2 = request->uploadedFile("file2");
     QVERIFY(file2 != NULL);
     QVERIFY(file2->readAll() == "XYZ");
@@ -608,7 +610,7 @@ void Test::httpServiceUpload() {
     QByteArray data;
     data += "--BOUNDARY\r\n";
     data += "Content-Disposition: form-data; name=\"file1\"; filename=\"file1.txt\"\r\n";
-    data += "Content-Type: text/text\r\n\r\n";
+    data += "Content-Type: application/binary-test\r\n\r\n";
     data += load + "\r\n";
     data += "--BOUNDARY\r\n";
     data += "Content-Disposition: form-data; name=\"file2\"; filename=\"file2.txt\"\r\n";

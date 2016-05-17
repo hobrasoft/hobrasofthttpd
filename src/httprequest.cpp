@@ -285,6 +285,7 @@ void HttpRequest::parseMultiPartFile() {
         QString contentType;
         while (!m_tempFile.atEnd() && !finished && !m_tempFile.error()) {
             QString line = QString::fromUtf8(m_tempFile.readLine(65536).trimmed());
+            if (line.startsWith("--"+m_boundary)) { continue; }
             if (line.isEmpty()) { break; }
             if (line.startsWith("Content-Disposition:", Qt::CaseInsensitive)) { 
                 if (line.contains("form-data", Qt::CaseInsensitive)) {
@@ -303,6 +304,7 @@ void HttpRequest::parseMultiPartFile() {
                 }
             if (line.startsWith("Content-Type:", Qt::CaseInsensitive)) { 
                 contentType = line.remove(QRegExp("^Content-Type:\\s*", Qt::CaseInsensitive));
+                continue;
                 }
 
             qDebug() << "HttpRequest: ignoring unsupported content part" << line;
