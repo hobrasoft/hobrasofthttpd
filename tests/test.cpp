@@ -1178,14 +1178,18 @@ void Test::httpSSLselfsigned() {
     loop.exec();
     QVERIFY(reply->isFinished());
     QVERIFY(reply->error() == QNetworkReply::SslHandshakeFailedError);
+    reply->deleteLater();
 
+    QEventLoop loop2;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop2, SLOT(quit()));
     connect(&manager, SIGNAL(    sslErrors(QNetworkReply *, QList<QSslError>)),
             this,       SLOT(slotSslErrors(QNetworkReply *, QList<QSslError>)));
     reply = manager.get(request);
-    QTimer::singleShot(1000, &loop, SLOT(quit()));
-    loop.exec();
-    QVERIFY(reply->isFinished());
+    QTimer::singleShot(10000, &loop2, SLOT(quit()));
+    loop2.exec();
     QVERIFY(reply->error() == QNetworkReply::NoError);
+    QVERIFY(reply->isRunning() == false);
+    QVERIFY(reply->isFinished());
 
 }
 
