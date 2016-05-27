@@ -18,9 +18,9 @@ Start the example:
     cd example/htdocs
     ../bin/example
 
-Example should listen on port 8080. Start web browser and load url http://localhost:8080/.
+Example should listen on port 8080. 
 It is important to change current directory to htdocs else the program could not be able to
-find its web content.
+find its web content. Then start web browser and load url http://localhost:8080/.
 
 
 # Using hobrasoft httpd in your own code
@@ -52,6 +52,15 @@ and reimplement the HttpServer::requestHandler()
         Q_OBJECT
       public:
         RequestMapper(HttpConnection *parent);
+
+        /*
+           The service method is called every time when some request arrived.
+           It should create new controller for each request and 
+           pass the control to its service() method.
+
+           If you want to server json content, you can derive your controllers
+           from AbstractController class (see below)
+         */
         void service(HttpRequest *request, HttpResponse *response) {
             if (request->path().startsWith("/my-function")) {
                 HttpRequestHandler controller = new ControllerExample(connection());
