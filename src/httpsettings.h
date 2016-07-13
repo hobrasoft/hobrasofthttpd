@@ -59,51 +59,67 @@ class HttpSettings : public QObject {
 
     const QHostAddress&  address() const { return m_address; }                              ///< Returns the bind address
     void            setAddress(const QHostAddress& x) { m_address = x; }                    ///< Sets the bind address
+    void            setDefaultAddress(const QString& x) { m_default_address = x; }          ///< Sets the defailt bind address
 
     int             port() const { return m_port; }                                         ///< Returns the port number 
     void            setPort(int x) { m_port = x; }                                          ///< Sets the port number
+    void            setDefaultPort(int x) { m_default_port = x; }                           ///< Sets the default port number
 
     int             timeout() const { return m_timeout; }                                   ///< Returns timeout for opened connection from clients 
     void            setTimeout(int x) { m_timeout = x; }                                    ///< Sets timeout for opened connection from clients
+    void            setDefaultTimeout(int x) { m_default_timeout = x; }                     ///< Sets default timeout for opened connection from clients
 
     int             maxAge() const { return m_maxAge; }                                     ///< Returns the max age for cacheing proxy  objects 
     void            setMaxAge(int x) { m_maxAge = x; }                                      ///< Sets the max age cacheing proxy  objects
+    void            setDefaultMaxAge(int x) { m_default_maxAge = x; }                       ///< Sets the default max age cacheing proxy  objects
 
     const QString&  encoding() const { return m_encoding; }                                 ///< Returns the encoding in COntent-type header
     void            setEncoding(const QString& x) { m_encoding = x; }                       ///< Sets the encoding in COntent-type header
+    void            setDefaultEncoding(const QString& x) { m_default_encoding = x; }        ///< Sets the default encoding in COntent-type header
 
     const QString&  docroot() const { return m_docroot; }                                   ///< Returns path to document root 
     void            setDocroot(const QString& x) { m_docroot = x; }                         ///< Sets path to document root
+    void            setDefaultDocroot(const QString& x) { m_default_docroot = x; }          ///< Sets default path to document root
 
     const QString&  indexFile() const { return m_indexFile; }                               ///< Returns name of index file in directory (index.html) 
     void            setIndexFile(const QString& x) { m_indexFile = x; }                     ///< Sets name of index file in directory (index.html)
+    void            setDefaultIndexFile(const QString& x) { m_default_indexFile = x; }      ///< Sets default name of index file in directory (index.html)
 
     int             sessionExpirationTime() const { return m_sessionExpirationTime; }       ///< Returns maximum expiration time for the session
     void            setExpirationTime(int x) { m_sessionExpirationTime = x; }               ///< Sets maximum expiration time for the session
+    void            setDefaultExpirationTime(int x) { m_default_sessionExpirationTime = x;} ///< Sets default maximum expiration time for the session
 
     const QString&  sessionCookieName() const { return m_sessionCookieName; }               ///< Returns session cookie name 
-    void            setSessionCookieName(const QString& x) { m_sessionCookieName = x; }     ///< Sets session cookie name
+    void            setSessionCookieName(const QString& x) { m_sessionCookieName = x; }     ///< Sets default session cookie name
+    void            setDefaultSessionCookieName(const QString& x) { m_default_sessionCookieName = x; }     ///< Sets session cookie name
 
     int             maxRequestSize() const { return m_maxRequestSize; }                     ///< Returns maximum request size 
     void            setMaxRequestSize(int x) { m_maxRequestSize = x; }                      ///< Sets maximum request size
+    void            setDefaultMaxRequestSize(int x) { m_default_maxRequestSize = x; }       ///< Sets default maximum request size
 
     int             maxMultiPartSize() const { return m_maxMultiPartSize; }                 ///< Returns maximum request size in multipart requests 
     void            setMaxMultiPartSize(int x) { m_maxMultiPartSize = x; }                  ///< Sets maximum request size in multipart requests
+    void            setDefaultMaxMultiPartSize(int x) { m_default_maxMultiPartSize = x; }   ///< Sets default maximum request size in multipart requests
 
     const QString&  tempDir() const { return m_tempDir; }                                   ///< Returns path to temporary directory
     void            setTempDir(const QString& x) { m_tempDir = x; }                         ///< Sets path to temporary directory
+    void            setDefaultTempDir(const QString& x) { m_default_tempDir = x; }          ///< Sets default path to temporary directory
 
     bool            useSSL() const { return m_useSSL; }                                     ///< Returns status of SSL connections
     void            setUseSSL(bool x) { m_useSSL = x; }                                     ///< Set status of SSL connections
+    void            setDefaultUseSSL(bool x) { m_default_useSSL = x; }                      ///< Set default status of SSL connections
 
     const QString&  sslKey() const { return m_sslKey; }                                     ///< Returns SSL key
     void            setSslKey(const QString& x) { m_sslKey = x; }                           ///< Set SSL key
+    void            setDefaultSslKey(const QString& x) { m_default_sslKey = x; }            ///< Set default SSL key
 
     const QString&  sslCrt() const { return m_sslCrt; }                                     ///< Returns SSL certificate
     void            setSslCrt(const QString& x) { m_sslCrt = x; }                           ///< Set SSL certificate
+    void            setDefaultSslCrt(const QString& x) { m_default_sslCrt = x; }            ///< Set default SSL certificate
 
     const QString&  sslCaCrt() const { return m_sslCaCrt; }                                 ///< Returns SSL CA certificate
     void            setSslCaCrt(const QString& x) { m_sslCaCrt = x; }                       ///< Set SSL CA certificate
+    void            setDefaultSslCaCrt(const QString& x) { m_default_sslCaCrt = x; }        ///< Set default SSL CA certificate
 
     bool            ignoreSslError(QSslError error) const;                                  ///< Returns true if the error should be ignored, default true
 
@@ -166,8 +182,30 @@ class HttpSettings : public QObject {
     QString         m_sslCaCrt;
     QSet<QSslError> m_sslErrors;
     bool            m_ignoreAllSslErrors;
+
+    // Default values
+    QString         m_default_section2;
+    int             m_default_port;
+    QString         m_default_address;
+    int             m_default_timeout;
+    int             m_default_maxAge;
+    QString         m_default_encoding;
+    QString         m_default_docroot;
+    QString         m_default_indexFile;
+    QString         m_default_sessionCookieName;
+    int             m_default_sessionExpirationTime;
+    int             m_default_maxRequestSize;
+    int             m_default_maxMultiPartSize;
+    QString         m_default_tempDir;
+    bool            m_default_useSSL;
+    QString         m_default_sslKey;
+    QString         m_default_sslCrt;
+    QString         m_default_sslCaCrt;
+    bool            m_default_ignoreAllSslErrors;
     #endif
 
+  private:
+    void            setDefaultValues();
 
 };
 
