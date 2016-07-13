@@ -130,13 +130,13 @@ class HttpSettings : public QObject {
         ~~~~~~~~~~
 
      */
-    void            readSettings(const QSettings* settings, const QString& section, const QString& section2);
+    virtual void    readSettings(const QSettings* settings, const QString& section, const QString& section2);
 
 
     /**
      * @brief Read settings from configuration file. 
      */
-    void            readSettings(const QSettings* settings, const QString& section);
+    virtual void    readSettings(const QSettings* settings, const QString& section);
 
     /**
      * @brief Sets the name for the second section
@@ -145,7 +145,7 @@ class HttpSettings : public QObject {
      */
     void            setSection2(const QString& section) { m_section2 = section; }
 
-  private:
+  protected:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     QString         m_section2;
     int             m_port;
