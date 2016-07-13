@@ -130,13 +130,13 @@ class HttpSettings : public QObject {
         ~~~~~~~~~~
 
      */
-    virtual void    readSettings(const QSettings* settings, const QString& section, const QString& section2);
+    void    readSettings(const QSettings* settings, const QString& section, const QString& section2);
 
 
     /**
      * @brief Read settings from configuration file. 
      */
-    virtual void    readSettings(const QSettings* settings, const QString& section);
+    void    readSettings(const QSettings* settings, const QString& section);
 
     /**
      * @brief Sets the name for the second section
