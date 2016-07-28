@@ -17,6 +17,7 @@ using namespace HobrasoftHttpd;
 
 
 HttpRequest::HttpRequest(HttpConnection *parent) {
+    m_datetime = QDateTime::currentDateTime();
     m_status = StatusWaitForRequest;
     m_currentSize = 0;
     m_expectedBodySize = 0;
@@ -382,5 +383,17 @@ QList<QString>  HttpRequest::headers(const QString& name) const {
             }
         }
     return QList<QString>();
+}
+
+QString HttpRequest::statusString() const {
+    QString text;
+    switch (m_status) {
+        case StatusWaitForRequest: text="Wait for Request"; break;
+        case StatusWaitForHeader: text="Wait for Header"; break;
+        case StatusWaitForBody: text="Wait for Body"; break;
+        case StatusComplete: text="Complete"; break;
+        case StatusAbort: text="Abort"; break;
+        }
+    return text;
 }
 

@@ -17,11 +17,13 @@ using namespace HobrasoftHttpd;
 
 HttpConnection::~HttpConnection() {
     close();
+    for (int i=0; i<m_requests.size(); i++) {
+        delete m_requests[i];
+        }
 }
 
 
 HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject(parent) {
-    m_datetime = QDateTime::currentDateTime();
     m_socket = socket;
     m_request = NULL;
     m_handler = parent->requestHandler(this);
@@ -74,8 +76,7 @@ QString HttpConnection::commonName() const {
 void HttpConnection::close() {
     if (!isConnected()) { return; }
     if (m_socket) { m_socket->disconnectFromHost(); }
-    if (m_request) { delete m_request; }
-    m_request = NULL;
+    deleteRequest();
 
 }
 
@@ -87,16 +88,14 @@ void HttpConnection::slotTimeout() {
     m_socket->write("\r\n");
     m_socket->write("408 request timeout\r\n");
     m_socket->disconnectFromHost();
-    if (m_request) { delete m_request; }
-    m_request = NULL;
+    deleteRequest();
 }
 
 
 void HttpConnection::slotDisconnected() {
     m_connected = false;
     m_socket->close();
-    if (m_request) { delete m_request; }
-    m_request = NULL;
+    deleteRequest();
     m_timeout->stop();
     QTimer::singleShot( (m_inService) ? 30000 : 3000, this, SLOT(deleteLater()));
 }
@@ -113,6 +112,7 @@ void HttpConnection::slotRead() {
     m_timeout->start();
     if (m_request == NULL) {
         m_request = new HttpRequest(this);
+        m_requests << m_request;
         }
 
     while (m_socket->bytesAvailable() 
@@ -131,8 +131,7 @@ void HttpConnection::slotRead() {
         m_socket->write("413 entity too large\r\n");
         m_socket->disconnectFromHost();
         m_timeout->stop();
-        if (m_request) { delete m_request; }
-        m_request = NULL;
+        deleteRequest();
         return;
         }
     
@@ -155,19 +154,31 @@ void HttpConnection::slotRead() {
             m_timeout->start();
             }
 
-        if (m_request) { delete m_request; }
-        m_request = NULL;
+        deleteRequest();
         }
 
 }
 
 
+void HttpConnection::deleteRequest() {
+    m_request = NULL;
+}
+
+
 QVariant HttpConnection::webStatus() const {
-    QVariantMap data;
-    data["path"] = m_request->path();
-    data["time"] = m_datetime;
-    data["status"] = (isConnected()) ? "connected" : "disconnected";
-    return data;
+    QVariantList list;
+    for (int i=0; i<m_requests.size(); i++) {
+        const HttpRequest *request = m_requests[i];
+        QVariantMap data;
+        data["object"]      = QString("0x%1").arg((quint64)this, 8, 16, QChar('0'));
+        data["path"]        = (request!=NULL) ? request->path() : QVariant();
+        data["time"]        = (request!=NULL) ? request->datetime() : QVariant();
+        data["method"]      = (request!=NULL) ? request->method() : QVariant();
+        data["status"]      = (request!=NULL) ? request->statusString() : QVariant();
+        data["connection"]  = (isConnected()) ? "connected" : "disconnected";
+        list << data;
+        }
+    return list;
 }
 
 

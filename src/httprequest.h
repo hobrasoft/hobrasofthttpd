@@ -9,6 +9,7 @@
 #define _HttpRequest_H_
 
 #include <QTemporaryFile>
+#include <QDateTime>
 #include <QTcpSocket>
 #include <QString>
 
@@ -54,6 +55,11 @@ class HttpRequest {
      * @brief Returns current status of the request
      */
     Status status() const { return m_status; }
+
+    /**
+     * @brief Returns current status of the request as a string
+     */
+    QString statusString() const;
 
     /**
      * @brief Returns used HTTP method of the request (GET, PUT, POST or DELETE)
@@ -167,6 +173,12 @@ class HttpRequest {
     QString contentType(const QString& fieldName) const { return m_contentTypes.value(fieldName); }
 
 
+    /**
+     * @brief Returns date and time of the request
+     */
+    const QDateTime& datetime() const { return m_datetime; }
+
+
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     QMultiMap<QString, QString>         m_headers;
@@ -185,6 +197,7 @@ class HttpRequest {
     QString                             m_currentHeader;
     QTemporaryFile                      m_tempFile;
     HttpConnection                     *m_connection;
+    QDateTime                           m_datetime;
     #endif
 
     void    parseMultiPartFile();

@@ -85,7 +85,7 @@ QVariant HttpServer::webStatus() const {
             continue;
             }
         const HttpConnection *connection = qobject_cast<const HttpConnection *>(qobject);
-        objectlist << connection->webStatus();
+        objectlist += connection->webStatus().toList();
         }
 
     return objectlist;

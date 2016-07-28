@@ -123,13 +123,14 @@ class HttpConnection : public QObject {
     void        slotDisconnected();
 
   private:
+    void                 deleteRequest();
     QTcpSocket          *m_socket;
     QTimer              *m_timeout;
     HttpRequest         *m_request;
+    QList<HttpRequest *> m_requests;
     HttpRequestHandler  *m_handler;
     HttpServer          *m_parent;
     QSslCertificate      m_peerCertificate;
-    QDateTime            m_datetime;
     bool                 m_connected;
     bool                 m_inService;
     bool                 m_verified;
