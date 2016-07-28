@@ -75,3 +75,19 @@ void HttpServer::slotNewConnection() {
 }
 
 
+QVariant HttpServer::webStatus() const {
+    QVariantList objectlist;
+    QObjectList list = children();
+    for (int i=0; i<list.size(); i++) {
+        const QObject *qobject = list[i];
+        QString classname = qobject->metaObject()->className();
+        if (classname != "HobrasoftHttpd::HttpConnection") {
+            continue;
+            }
+        const HttpConnection *connection = qobject_cast<const HttpConnection *>(qobject);
+        objectlist << connection->webStatus();
+        }
+
+    return objectlist;
+}
+

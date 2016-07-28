@@ -118,6 +118,8 @@ class HttpServer : public QObject {
      */
     const HttpSettings *settings() const { return m_settings; }
 
+    QVariant webStatus() const;
+
   protected:
 
     /**

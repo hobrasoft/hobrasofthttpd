@@ -21,6 +21,7 @@ HttpConnection::~HttpConnection() {
 
 
 HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject(parent) {
+    m_datetime = QDateTime::currentDateTime();
     m_socket = socket;
     m_request = NULL;
     m_handler = parent->requestHandler(this);
@@ -97,9 +98,7 @@ void HttpConnection::slotDisconnected() {
     if (m_request) { delete m_request; }
     m_request = NULL;
     m_timeout->stop();
-    if (!m_inService) {
-        deleteLater();
-        }
+    QTimer::singleShot( (m_inService) ? 30000 : 3000, this, SLOT(deleteLater()));
 }
 
 
@@ -160,6 +159,15 @@ void HttpConnection::slotRead() {
         m_request = NULL;
         }
 
+}
+
+
+QVariant HttpConnection::webStatus() const {
+    QVariantMap data;
+    data["path"] = m_request->path();
+    data["time"] = m_datetime;
+    data["status"] = (isConnected()) ? "connected" : "disconnected";
+    return data;
 }
 
 
