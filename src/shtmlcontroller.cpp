@@ -38,6 +38,7 @@ void ShtmlController::service(HttpRequest *request, HttpResponse *response) {
         }
     response->setHeader("Content-Type", "text/html; charset=" + settings()->encoding());
     response->write(data);
+    response->flush();
 
 }
 

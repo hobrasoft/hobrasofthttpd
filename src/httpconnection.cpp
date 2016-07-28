@@ -103,9 +103,9 @@ void HttpConnection::slotDisconnected() {
 }
 
 
-HttpResponse HttpConnection::response() {
+HttpResponse *HttpConnection::response() {
     m_timeout->start();
-    return HttpResponse(this);
+    return new HttpResponse(this);
 }
 
 
@@ -140,22 +140,17 @@ void HttpConnection::slotRead() {
     if (m_request->status() == HttpRequest::StatusComplete) {
         bool disconnect = (m_request->header("Connection").toLower() == "close");
         m_timeout->stop();
-        HttpResponse response(this);
+        HttpResponse *response = new HttpResponse(this);
         m_inService = true;
-        m_handler->service(m_request, &response);
+        m_handler->service(m_request, response);
         m_inService = false;
 
         if (!isConnected()) { 
             deleteLater();
             return; 
             }
-        response.flushSocket();
 
         if (disconnect) {
-            if (!response.hasSentLastPart()) {
-                response.flush();
-                }
-
             if (isConnected()) { m_socket->disconnectFromHost(); }
           } else {
             m_timeout->start();

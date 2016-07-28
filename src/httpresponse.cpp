@@ -9,15 +9,30 @@
 #include "httpconnection.h"
 #include <QStringList>
 
+#include <QDebug>
+
 using namespace HobrasoftHttpd;
 
-HttpResponse::HttpResponse(HttpConnection *connection) {
+
+HttpResponse::~HttpResponse() {
+}
+
+
+HttpResponse::HttpResponse(HttpConnection *connection) : QObject(connection) {
     m_connection = connection;
     m_socket = m_connection->socket();
     m_statusCode = 200;
     m_statusText = "OK";
     m_sentHeaders = false;
-    m_sentLastPart = false;
+    m_dataBodyPointer = 0;
+    m_dataHeadersPointer = 0;
+    m_canWriteToSocket = false;
+    m_closeAfterFlush = false;
+    m_writerTimer = new QTimer(this);
+    m_writerTimer->setInterval(100);
+    m_writerTimer->setSingleShot(true);
+    connect (m_writerTimer, SIGNAL(timeout()),
+             this,            SLOT(slotWrite()));
 }
 
 
@@ -27,13 +42,13 @@ bool HttpResponse::isConnected() const {
 
 
 void HttpResponse::setHeader(const QString& name, const QString& value) {
-    if (m_sentHeaders) return;
+    if (m_sentHeaders) { return; }
     m_headers[name] = value;
 }
 
 
 void HttpResponse::setHeader(const QString& name, int value) {
-    if (m_sentHeaders) return;
+    if (m_sentHeaders) { return; }
     m_headers[name] = QString("%1").arg(value);
 }
 
@@ -55,31 +70,29 @@ void HttpResponse::setStatus(int statusCode, const QString& statusText) {
 
 
 void HttpResponse::writeHeaders() {
-    if (m_sentHeaders) return;
-    QByteArray buffer;
-    buffer += "HTTP/1.1 ";
-    buffer += QByteArray::number(m_statusCode);
-    buffer += " ";
-    buffer += m_statusText;
-    buffer += "\r\n";
+    if (m_sentHeaders) { return; }
+    m_dataHeaders += "HTTP/1.1 ";
+    m_dataHeaders += QByteArray::number(m_statusCode);
+    m_dataHeaders += " ";
+    m_dataHeaders += m_statusText;
+    m_dataHeaders += "\r\n";
 
     QStringList keys = m_headers.keys();
     for (int i=0; i<keys.size(); i++) {
-        buffer += keys[i].toUtf8();
-        buffer += ": ";
-        buffer += m_headers[keys[i]].toUtf8();
-        buffer += "\r\n";
+        m_dataHeaders += keys[i].toUtf8();
+        m_dataHeaders += ": ";
+        m_dataHeaders += m_headers[keys[i]].toUtf8();
+        m_dataHeaders += "\r\n";
         }
 
     keys = m_cookies.keys();
     for (int i=0; i<keys.size(); i++) {
-        buffer += "Set-Cookie: ";
-        buffer += m_cookies[keys[i]].toByteArray();
-        buffer += "\r\n";
+        m_dataHeaders += "Set-Cookie: ";
+        m_dataHeaders += m_cookies[keys[i]].toByteArray();
+        m_dataHeaders += "\r\n";
         }
 
-    buffer += "\r\n";
-    writeToSocket(buffer);
+    m_dataHeaders += "\r\n";
     m_sentHeaders = true;
 
 }
@@ -91,93 +104,101 @@ void HttpResponse::setCookie(const HttpCookie& cookie) {
 }
 
 
-void HttpResponse::writeToSocket(const QByteArray& data) {
-    int remaining = data.size();
-    const char *ptr = data.data();
-    if (!isConnected()) { 
-        return;
-        }
-    if (m_socket->isOpen() && !m_socket->isWritable()) {
-        return;
-        }
-    while (m_socket->isOpen() && m_socket->isWritable() && remaining>0) {
-        int written = m_socket->write(data);
-//      m_socket->waitForBytesWritten(3000);
-        ptr += written;
-        remaining -= written;
-        }
-}
-
-
-void HttpResponse::flush() {
-    if (!isConnected()) { return; }
-    write(QByteArray(), true);
-    m_socket->flush();
-}
-
-
 void HttpResponse::flushSocket() {
     if (!isConnected()) { return; }
-    write(QByteArray(), false);
+    slotWrite();
     m_socket->flush();
+    return;
 }
 
 
 void HttpResponse::close() {
     if (!isConnected()) { return; }
+    bool chunked = m_headers.value("Transfer-Encoding").toLower() == "chunked" ;
+    if (chunked) {
+        m_socket->write("0\r\n\r\n");
+        }
+    m_socket->flush();
+    m_socket->waitForBytesWritten(10000);
     m_socket->disconnectFromHost();
 }
 
 
 void HttpResponse::write(const QByteArray& data) {
-    write(data, false);
-}
-
-
-void HttpResponse::write(const QByteArray& data, bool lastPart) {
-    if (m_sentLastPart) {
-        return;
-        }
-    if (!m_sentHeaders) {
-        QString connectionMode = m_headers.value("Connection");
-        if (!m_headers.contains("Content-Length") &&
-            !m_headers.contains("Transfer-Encoding") &&
-            connectionMode.toLower() != "close") {
-            if (lastPart) {
-                m_headers["Transfer-Encoding"] = "chunked";
-              } else {
-                m_headers["Content-Length"] = QString("%1").arg(data.size());
-                }
-            }
-        writeHeaders();
-        }
-
     bool chunked = m_headers.value("Transfer-Encoding").toLower() == "chunked" ;
     if (chunked && data.size() > 0) {
-        writeToSocket( QByteArray::number(data.size(),16) );
-        writeToSocket( "\r\n" );
-        writeToSocket( data );
-        writeToSocket( "\r\n" );
+        if (!m_sentHeaders) {
+            writeHeaders();
+            }
+        m_dataBody += QByteArray::number(data.size(),16) ;
+        m_dataBody += "\r\n";
+        m_dataBody += data;
+        m_dataBody += "\r\n";
+        m_canWriteToSocket = true;
+        m_writerTimer->setInterval(0);
+        m_writerTimer->start();
+        return;
         }
 
     if (!chunked) {
-        writeToSocket(data);
-        }
-
-    if (lastPart) {
-        m_sentLastPart = true;
-
-        if (chunked) {
-            writeToSocket("0\r\n\r\n");
-            m_connection->close();
-            }
-
-        if (!m_headers.contains("Content-Length")) {
-//          m_socket->disconnectFromHost();
-            m_connection->close();
-            }
-
+        m_closeAfterFlush = true;
+        m_dataBody += data;
         }
 
 }
+
+
+void HttpResponse::flush() {
+    if (!isConnected()) { return; }
+    if (!m_sentHeaders) { 
+        m_headers["Content-Length"] = QString("%1").arg(m_dataBody.size());
+        writeHeaders();
+        m_sentHeaders = true;
+        }
+    m_canWriteToSocket = true;
+    m_writerTimer->setInterval(0);
+    m_writerTimer->start();
+}
+
+
+void HttpResponse::flushAndClose() {
+    m_closeAfterFlush = true;
+    flush();
+}
+
+
+void HttpResponse::slotWrite() {
+    if (m_headers.size() > 0 && !m_sentHeaders) {
+        m_canWriteToSocket = true;
+        writeHeaders();
+        }
+    if (!m_canWriteToSocket) { goto konec; }
+    if (m_socket->bytesToWrite() > 0) { goto konec; }
+    if (!isConnected()) { goto konec; }
+    if (m_socket->isOpen() != true) { goto konec; }
+    if (m_socket->isWritable() != true) { goto konec; }
+    if (m_dataHeaders.size() > m_dataHeadersPointer) {
+        m_dataHeadersPointer += m_socket->write(m_dataHeaders.mid(m_dataHeadersPointer));
+        if (m_dataHeaders.size() > m_dataHeadersPointer) { goto konec; }
+        }
+
+    if (m_dataBody.size() > m_dataBodyPointer) {
+        m_dataBodyPointer += m_socket->write(m_dataBody.mid(m_dataBodyPointer));
+        if (m_dataBody.size() > m_dataBodyPointer) { goto konec; }
+        }
+
+    if (m_dataHeaders.size() <= m_dataHeadersPointer &&
+        m_dataBody.size() <= m_dataBodyPointer &&
+        m_closeAfterFlush) {
+        m_socket->flush();
+        m_writerTimer->stop();
+        close();
+        return;
+        }
+
+  konec:
+    m_writerTimer->setInterval(100);
+    m_writerTimer->start();
+}
+
 

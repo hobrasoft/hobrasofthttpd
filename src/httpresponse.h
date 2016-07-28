@@ -9,8 +9,10 @@
 #define _HttpResponse_H_
 
 #include <QMap>
+#include <QObject>
 #include <QString>
 #include <QTcpSocket>
+#include <QTimer>
 #include "httpcookie.h"
 
 namespace HobrasoftHttpd {
@@ -25,8 +27,10 @@ class HttpCookie;
  * It is possible to send more responses to one request. In fact, this is the common practice
  * when using HTML5 event streams. 
  */
-class HttpResponse {
+class HttpResponse : public QObject {
+    Q_OBJECT
   public:
+   ~HttpResponse();
 
     /**
      * @brief Constructor sets default values for headers (status 200, OK)
@@ -97,12 +101,6 @@ class HttpResponse {
 
 
     /**
-     * @brief Closes socket and destroys connection
-     */
-    void close();
-
-
-    /**
      * @brief Writes last part of the response and closes the socket when possible
      *
      * When sending chunked response the last chunk is written (zero length), in
@@ -112,10 +110,6 @@ class HttpResponse {
      */
     void flush();
 
-    /**
-     * @brief Returns true if last part of the response was written to socket
-     */
-    bool hasSentLastPart() const { return m_sentLastPart; }
 
     /**
      * @brief Sets a cookie
@@ -133,6 +127,20 @@ class HttpResponse {
      */
     bool isConnected() const;
 
+    void flushAndClose();
+
+
+  private:
+    /**
+     * @brief Closes socket and destroys connection. Should by called only when "chunked" transport is choosen
+     *
+     * Call flush() befor the close;
+     */
+    void close();
+
+  private slots:
+    void    slotWrite();
+
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     QTcpSocket *m_socket;
@@ -144,12 +152,19 @@ class HttpResponse {
     int m_statusCode;
     QString m_statusText;
 
-    bool    m_sentHeaders;;
-    bool    m_sentLastPart;
+    bool    m_sentHeaders;
 
     void    writeToSocket(const QByteArray& data); /// blocks!!! ??
     void    writeHeaders();
-    void    write(const QByteArray& data, bool lastPart);
+
+    QTimer     *m_writerTimer;
+
+    QByteArray  m_dataBody;
+    QByteArray  m_dataHeaders;
+    int         m_dataBodyPointer;
+    int         m_dataHeadersPointer;
+    bool        m_canWriteToSocket;
+    bool        m_closeAfterFlush;
     #endif
 };
 

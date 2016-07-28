@@ -50,7 +50,7 @@ class HttpConnection : public QObject {
      * @see HttpRequestHandler::response()
      *
      */
-    HttpResponse response();
+    HttpResponse *response();
 
     /**
      * @brief Returns pointer to settings used in the class

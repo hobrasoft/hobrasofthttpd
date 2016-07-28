@@ -713,8 +713,6 @@ void Test::slotServiceResponse(HobrasoftHttpd::HttpRequest *request, HobrasoftHt
     response->write("test");
     response->flush();
 
-    response->close();
-    QVERIFY(response->isConnected() == false);
 }
 
 
@@ -764,11 +762,10 @@ void Test::slotServiceResponseChunked(HobrasoftHttpd::HttpRequest *request, Hobr
     for (int i=0; i<10; i++) {
         QString chunk = QString("%1").arg(i);
         response->write(chunk.toUtf8());
-        response->flushSocket();
+        response->flush();
         }
 
-    response->flush();
-    response->close();
+    response->flushAndClose();
 }
 
 
@@ -783,6 +780,7 @@ void Test::httpServiceResponseChunked() {
     QNetworkAccessManager manager(this);
     QNetworkRequest rq(url);
     QNetworkReply *reply = manager.get(rq);
+
     WAITFORREPLY();
     QVERIFY(reply->readAll() == "0123456789"); 
 
@@ -808,6 +806,7 @@ void Test::slotServiceSession(HobrasoftHttpd::HttpRequest *request, HobrasoftHtt
         QVERIFY(session.contains("B") == true);
         QVERIFY(session.value("B") == "2");
         }
+    response->flush();
 }
 
 
@@ -887,24 +886,24 @@ void Test::httpServiceAbort() {
 
 
 void Test::slotStaticFileController(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
-    StaticFileController sfc(request->connection());
-    sfc.addMimeType("tiff", "image/tiff");
-    QVERIFY(sfc.m_mimetypes["png"]   == "image/png");
-    QVERIFY(sfc.m_mimetypes["jpeg"]  == "image/jpeg");
-    QVERIFY(sfc.m_mimetypes["jpg"]   == "image/jpeg");
-    QVERIFY(sfc.m_mimetypes["gif"]   == "image/gif");
-    QVERIFY(sfc.m_mimetypes["tiff"]  == "image/tiff");
-    QVERIFY(sfc.m_mimetypes["txt"]   == "text/plain");
-    QVERIFY(sfc.m_mimetypes["html"]  == "text/html");
-    QVERIFY(sfc.m_mimetypes["xhtml"] == "text/html");
-    QVERIFY(sfc.m_mimetypes["htm"]   == "text/html");
-    QVERIFY(sfc.m_mimetypes["css"]   == "text/css");
-    QVERIFY(sfc.m_mimetypes["json"]  == "application/json");
-    QVERIFY(sfc.m_mimetypes["js"]    == "application/javascript");
+    StaticFileController *sfc = new StaticFileController(request->connection());
+    sfc->addMimeType("tiff", "image/tiff");
+    QVERIFY(sfc->m_mimetypes["png"]   == "image/png");
+    QVERIFY(sfc->m_mimetypes["jpeg"]  == "image/jpeg");
+    QVERIFY(sfc->m_mimetypes["jpg"]   == "image/jpeg");
+    QVERIFY(sfc->m_mimetypes["gif"]   == "image/gif");
+    QVERIFY(sfc->m_mimetypes["tiff"]  == "image/tiff");
+    QVERIFY(sfc->m_mimetypes["txt"]   == "text/plain");
+    QVERIFY(sfc->m_mimetypes["html"]  == "text/html");
+    QVERIFY(sfc->m_mimetypes["xhtml"] == "text/html");
+    QVERIFY(sfc->m_mimetypes["htm"]   == "text/html");
+    QVERIFY(sfc->m_mimetypes["css"]   == "text/css");
+    QVERIFY(sfc->m_mimetypes["json"]  == "application/json");
+    QVERIFY(sfc->m_mimetypes["js"]    == "application/javascript");
 
-    QVERIFY(sfc.settings() == request->connection()->settings());
+    QVERIFY(sfc->settings() == request->connection()->settings());
 
-    sfc.service(request, response);
+    sfc->service(request, response);
 
 }
 
@@ -984,7 +983,6 @@ void Test::slotHttpSSL(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::Htt
 
     response->write("test");
     response->flush();
-    response->close();
 }
 
 
@@ -1090,7 +1088,6 @@ void Test::slotHttpSSLselfsigned(HobrasoftHttpd::HttpRequest *request, Hobrasoft
 
     response->write("test");
     response->flush();
-    response->close();
 }
 
 

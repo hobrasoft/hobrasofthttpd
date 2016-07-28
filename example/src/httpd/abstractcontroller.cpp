@@ -195,11 +195,11 @@ void AbstractController::serviceEvent (
     Q_UNUSED(request);
     Q_UNUSED(response);
 
-    HobrasoftHttpd::HttpResponse lresponse = HttpRequestHandler::response();
-    lresponse.setHeader("Transfer-Encoding", "chunked");
-    lresponse.setHeader("Content-Type",      "text/event-stream");
-    lresponse.setHeader("Cache-Control",     "no-cache,public");
-    lresponse.setSendHeaders(false);
+    HobrasoftHttpd::HttpResponse *lresponse = connection()->response();
+    lresponse->setHeader("Transfer-Encoding", "chunked");
+    lresponse->setHeader("Content-Type",      "text/event-stream");
+    lresponse->setHeader("Cache-Control",     "no-cache,public");
+    lresponse->setSendHeaders(false);
     
     QByteArray datagram;
     datagram += "event: status\n";
@@ -207,8 +207,8 @@ void AbstractController::serviceEvent (
     datagram += JSON::json(data);
     datagram += "\n";
     datagram += "\n";
-    lresponse.write(datagram);
-    lresponse.flushSocket();
+    lresponse->write(datagram);
+    lresponse->flushSocket();
 
 }
 

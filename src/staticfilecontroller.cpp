@@ -89,7 +89,6 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
     response->setHeader("Cache-Control", QString("max-age=") + QString("%1").arg(settings()->maxAge()) );
     response->write( file.readAll() );
     response->flush();
-    file.close();
 }
 
 

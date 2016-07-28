@@ -33,7 +33,7 @@ void HttpRequestHandler::service(HttpRequest *request, HttpResponse *response) {
 }
 
 
-HttpResponse HttpRequestHandler::response() {
+HttpResponse *HttpRequestHandler::response() {
     return m_connection->response();
 }
 

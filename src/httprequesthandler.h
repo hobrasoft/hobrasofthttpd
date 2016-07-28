@@ -107,7 +107,7 @@ class HttpRequestHandler : public QObject {
      * Volá HttpConnection::response().
      *
      */
-    HttpResponse response();
+    HttpResponse *response();
 
   protected:
     /**
