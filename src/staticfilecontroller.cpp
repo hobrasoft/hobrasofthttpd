@@ -87,8 +87,50 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
 
     setContentType(path, response);
     response->setHeader("Cache-Control", QString("max-age=") + QString("%1").arg(settings()->maxAge()) );
+    response->setHeader("Expires", toGMTString(QDateTime::currentDateTime().addSecs(settings()->maxAge()).toUTC()) );
     response->write( file.readAll() );
     response->flush();
+}
+
+
+QString StaticFileController::toGMTString(const QDateTime& x) {
+    QString dayname;
+    switch (x.date().dayOfWeek()) {
+        case 1: dayname = "Mon"; break;
+        case 2: dayname = "Tue"; break;
+        case 3: dayname = "Wed"; break;
+        case 4: dayname = "Thu"; break;
+        case 5: dayname = "Fri"; break;
+        case 6: dayname = "Sat"; break;
+        case 7: dayname = "Sun"; break;
+        }
+
+    QString monthname;
+    switch (x.date().month()) {
+        case  1: monthname = "Jan"; break;
+        case  2: monthname = "Feb"; break;
+        case  3: monthname = "Mar"; break;
+        case  4: monthname = "Apr"; break;
+        case  5: monthname = "May"; break;
+        case  6: monthname = "Jun"; break;
+        case  7: monthname = "Jul"; break;
+        case  8: monthname = "Aug"; break;
+        case  9: monthname = "Sep"; break;
+        case 10: monthname = "Oct"; break;
+        case 11: monthname = "Nov"; break;
+        case 12: monthname = "Dec"; break;
+        }
+
+    QString string = QString("%1, %2 %3 %4 %5:%6:%7 GMT")
+                        .arg(dayname)
+                        .arg(x.date().day())
+                        .arg(monthname)
+                        .arg(x.date().year())
+                        .arg(x.time().hour())
+                        .arg(x.time().minute())
+                        .arg(x.time().second())
+                        ;
+    return string;
 }
 
 

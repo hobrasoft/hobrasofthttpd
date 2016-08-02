@@ -11,6 +11,7 @@
 #include <QObject>
 #include <QCache>
 #include <QHash>
+#include <QDateTime>
 #include "httprequesthandler.h"
 #include "testsettings.h"
 
@@ -52,6 +53,8 @@ class StaticFileController : public HttpRequestHandler {
      * These suffixes are recognized by default: png, jpg, jpeg, gif, txt, html, xhtml, htm, css, json, js
      */
     void addMimeType(const QString& fileSuffix, const QString& mimetype);
+
+    static QString toGMTString(const QDateTime&);
 
 
   private:
