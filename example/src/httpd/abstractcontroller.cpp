@@ -166,7 +166,6 @@ void AbstractController::serviceError(
     response->setStatus(code, reason);
     response->write( JSON::json(data) );
     response->flush();
-    connection()->deleteLater();
 }
 
 
@@ -209,6 +208,7 @@ void AbstractController::serviceEvent (
     datagram += "\n";
     lresponse->write(datagram);
     lresponse->flushSocket();
+    lresponse->flushAndClose();
 
 }
 

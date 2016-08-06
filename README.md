@@ -111,3 +111,11 @@ Extend the AbstractController class to serve your requests:
 
     };
 
+
+## Changes 1.0 -> 1.1
+If you have your application based on 1.0 version, you should modify your code when upgrading to 1.1 version:
+- method HttpResponse::write() can be called repeatedly. Data are appended to buffer.
+- method HttpResponse::write() writes the data to socket when the 
+  flush() method was called. Flush is non-blocking and the HttpReponse object is deleted automatically when
+  all data are written to the socket.
+
