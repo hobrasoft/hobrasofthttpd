@@ -209,7 +209,7 @@ void AbstractController::serviceEvent (
     datagram += "\n";
     lresponse->write(datagram);
     lresponse->flushSocket();
-
+    lresponse->flushAndDelete();
 }
 
 void AbstractController::serviceList      (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
