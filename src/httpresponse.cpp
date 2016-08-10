@@ -28,6 +28,7 @@ HttpResponse::HttpResponse(HttpConnection *connection) : QObject(connection) {
     m_dataHeadersPointer = 0;
     m_canWriteToSocket = false;
     m_closeAfterFlush = false;
+    m_deleteAfterFlush = false;
     m_writerTimer = new QTimer(this);
     m_writerTimer->setInterval(100);
     m_writerTimer->setSingleShot(true);
@@ -167,6 +168,12 @@ void HttpResponse::flushAndClose() {
 }
 
 
+void HttpResponse::flushAndDelete() {
+    m_deleteAfterFlush = true;
+    flush();
+}
+
+
 void HttpResponse::slotWrite() {
     if (m_headers.size() > 0 && !m_sentHeaders) {
         m_canWriteToSocket = true;
@@ -193,6 +200,15 @@ void HttpResponse::slotWrite() {
         m_socket->flush();
         m_writerTimer->stop();
         close();
+        return;
+        }
+
+    if (m_dataHeaders.size() <= m_dataHeadersPointer &&
+        m_dataBody.size() <= m_dataBodyPointer &&
+        m_deleteAfterFlush) {
+        m_socket->flush();
+        m_writerTimer->stop();
+        deleteLater();
         return;
         }
 

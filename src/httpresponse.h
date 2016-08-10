@@ -129,8 +129,8 @@ class HttpResponse : public QObject {
 
     void flushAndClose();
 
+    void flushAndDelete();
 
-  private:
     /**
      * @brief Closes socket and destroys connection. Should by called only when "chunked" transport is choosen
      *
@@ -165,6 +165,7 @@ class HttpResponse : public QObject {
     int         m_dataHeadersPointer;
     bool        m_canWriteToSocket;
     bool        m_closeAfterFlush;
+    bool        m_deleteAfterFlush;
     #endif
 };
 
