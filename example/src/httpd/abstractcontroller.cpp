@@ -166,7 +166,6 @@ void AbstractController::serviceError(
     response->setStatus(code, reason);
     response->write( JSON::json(data) );
     response->flush();
-    connection()->deleteLater();
 }
 
 
