@@ -30,9 +30,11 @@ HttpResponse::HttpResponse(HttpConnection *connection) : QObject(connection) {
     m_closeAfterFlush = false;
     m_deleteAfterFlush = false;
     m_writerTimer = new QTimer(this);
-    m_writerTimer->setInterval(100);
+    m_writerTimer->setInterval(1000);
     m_writerTimer->setSingleShot(true);
     connect (m_writerTimer, SIGNAL(timeout()),
+             this,            SLOT(slotWrite()));
+    connect (m_socket, SIGNAL(bytesWritten(qint64)),
              this,            SLOT(slotWrite()));
 }
 
