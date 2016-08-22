@@ -105,6 +105,8 @@ class HttpConnection : public QObject {
      */
     bool isConnected() const { return m_connected; }
 
+    void setTimeout(int x) { m_timeout->setInterval(x); startTimeout(); }
+
 
     QVariant webStatus() const;
 
@@ -124,6 +126,7 @@ class HttpConnection : public QObject {
 
   private:
     void                 deleteRequest();
+    void                 startTimeout();
     QTcpSocket          *m_socket;
     QTimer              *m_timeout;
     HttpRequest         *m_request;

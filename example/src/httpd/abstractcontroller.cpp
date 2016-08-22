@@ -194,6 +194,7 @@ void AbstractController::serviceEvent (
     Q_UNUSED(request);
     Q_UNUSED(response);
 
+    connection()->setTimeout(0);
     HobrasoftHttpd::HttpResponse *lresponse = connection()->response();
     lresponse->setHeader("Transfer-Encoding", "chunked");
     lresponse->setHeader("Content-Type",      "text/event-stream");

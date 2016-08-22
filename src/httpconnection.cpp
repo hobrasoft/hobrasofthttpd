@@ -36,7 +36,7 @@ HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject
     m_timeout = new QTimer(this);
     m_timeout->setInterval(timeout);
     m_timeout->setSingleShot(true);
-    m_timeout->start();
+    startTimeout();
     connect (m_timeout, SIGNAL(timeout()),
              this,        SLOT(slotTimeout()));
 
@@ -49,6 +49,15 @@ HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject
 
 const HttpSettings *HttpConnection::settings() const { 
     return m_parent->settings(); 
+}
+
+
+void HttpConnection::startTimeout() {
+    if (m_timeout->interval() == 0) {
+        m_timeout->stop();
+        return;
+        }
+    m_timeout->start();
 }
 
 
@@ -102,14 +111,14 @@ void HttpConnection::slotDisconnected() {
 
 
 HttpResponse *HttpConnection::response() {
-    m_timeout->start();
+    startTimeout();
     return new HttpResponse(this);
 }
 
 
 void HttpConnection::slotRead() {
     if (!isConnected()) { return; }
-    m_timeout->start();
+    startTimeout();
     if (m_request == NULL) {
         m_request = new HttpRequest(this);
         m_requests << m_request;
@@ -120,7 +129,7 @@ void HttpConnection::slotRead() {
             && m_request->status() != HttpRequest::StatusAbort) {
         m_request->readFromSocket(m_socket);
         if (m_request->status() == HttpRequest::StatusWaitForBody) {
-            m_timeout->start();
+            startTimeout();
             }
         }
 
@@ -151,7 +160,7 @@ void HttpConnection::slotRead() {
         if (disconnect) {
             if (isConnected()) { m_socket->disconnectFromHost(); }
           } else {
-            m_timeout->start();
+            startTimeout();
             }
 
         deleteRequest();
