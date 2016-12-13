@@ -106,7 +106,11 @@ void HttpConnection::slotDisconnected() {
     m_socket->close();
     deleteRequest();
     m_timeout->stop();
-    QTimer::singleShot( (m_inService) ? 30000 : 3000, this, SLOT(deleteLater()));
+    if (m_inService) {
+        QTimer::singleShot(3000, this, SLOT(deleteLater()));
+      } else {
+        deleteLater();
+        }
 }
 
 
