@@ -26,12 +26,12 @@ HttpConnection::~HttpConnection() {
 HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject(parent) {
     m_socket = socket;
     m_request = NULL;
-    m_handler = parent->requestHandler(this);
     m_parent  = parent;
+    m_handler = parent->requestHandler(this);
     m_connected = true;
     m_inService = true;
 
-    int timeout = parent->settings()->timeout() * 1000;
+    int timeout = settings()->timeout() * 1000;
 
     m_timeout = new QTimer(this);
     m_timeout->setInterval(timeout);

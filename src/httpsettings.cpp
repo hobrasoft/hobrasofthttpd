@@ -30,6 +30,7 @@
  * - __httpd/sslKey__  - path to SSL key file in PEM format
  * - __httpd/sslCrt__  - path to SSL certificate file in PEM format
  * - __httpd/sslCaCrt__  - path to SSL CA certificate file in PEM format
+ * - __httpd/threads__  - when true then new thread is started for each connection
  *
  * SSL errors
  * ----------
@@ -89,6 +90,7 @@ void HttpSettings::setDefaultValues() {
     m_maxRequestSize        = 16384;
     m_maxMultiPartSize      = 16728064;
     m_useSSL                = false;
+    m_threads               = false;
 
     m_default_section2 = "http";
     m_default_port = 8080;
@@ -107,6 +109,7 @@ void HttpSettings::setDefaultValues() {
     m_default_sslCrt = "";
     m_default_sslCaCrt = "";
     m_default_ignoreAllSslErrors = true;
+    m_default_threads = true;
 }
 
 
@@ -149,6 +152,8 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
                               settings->value(m_section2 + "/sslCaCrt",              m_default_sslCaCrt)).toString();
     m_ignoreAllSslErrors    = settings->value(  section  + "/IgnoreAllSslErrors",
                               settings->value(m_section2 + "/IgnoreAllSslErrors",    m_default_ignoreAllSslErrors)).toBool();
+    m_threads               = settings->value(  section  + "/threads",              
+                              settings->value(m_section2 + "/threads",               m_default_threads)).toBool();
 
     #define SSLERROR(x) { if (settings->value(  section  + "/Ignore" + #x, \
                               settings->value(m_section2 + "/Ignore" + #x, false)).toBool()) { \

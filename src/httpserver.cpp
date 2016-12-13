@@ -10,6 +10,7 @@
 #include "httprequesthandler.h"
 #include "httptcpserver.h"
 #include <QSslSocket>
+#include <QThread>
 
 using namespace HobrasoftHttpd;
 
@@ -65,12 +66,24 @@ HttpRequestHandler *HttpServer::requestHandler(HttpConnection *parent) {
 
 
 void HttpServer::slotNewConnection() {
+    bool threads = m_settings->threads();
     while (m_server->hasPendingConnections()) {
         QTcpSocket *socket = m_server->nextPendingConnection();
         HttpConnection *connection = new HttpConnection(this, socket);
         socket->setParent(connection);
         connection->setPeerCertificate(m_server->peerCertificate(socket));
         connection->setVerified(m_server->verified(socket));
+
+        if (threads) {
+            QThread *thread = new QThread(this);
+            thread->start();
+            connection->setParent(0);
+            connection->moveToThread(thread);
+            connect(connection, SIGNAL(destroyed(QObject *)),
+                    thread,       SLOT(quit()));
+            connect(thread, SIGNAL(finished()),
+                    thread,   SLOT(deleteLater()));
+            }
         }
 }
 
