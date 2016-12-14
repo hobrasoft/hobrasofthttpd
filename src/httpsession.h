@@ -12,6 +12,8 @@
 #include <QByteArray>
 #include <QVariant>
 #include <QHash>
+#include <QMutex>
+#include <QMutexLocker>
 
 namespace HobrasoftHttpd {
 
@@ -44,7 +46,8 @@ class HttpSession {
     /**
      * @brief Returns session ID
      */
-    QByteArray id() const { 
+    QByteArray id() { 
+        QMutexLocker locker(&m_mutex);
         return (m_data == NULL) ? QByteArray() : m_data->id; 
         }
 
@@ -59,7 +62,8 @@ class HttpSession {
     /**
      * @brief Returns true if the session contains key
      */
-    bool contains(const QString& key) const {
+    bool contains(const QString& key) {
+        QMutexLocker locker(&m_mutex);
         if (m_data != NULL) {
             return m_data->values.contains(key);
             }
@@ -70,6 +74,7 @@ class HttpSession {
      * @brief Adds an item to the session
      */
     void add(const QString& key, const QVariant& value) { 
+        QMutexLocker locker(&m_mutex);
         if (m_data != NULL) {
             m_data->values[key] = value; 
             }
@@ -79,6 +84,7 @@ class HttpSession {
      * @brief Removes an item from the session
      */
     void remove(const QString& key) { 
+        QMutexLocker locker(&m_mutex);
         if (m_data != NULL) { 
             m_data->values.remove(key); 
             } 
@@ -87,14 +93,16 @@ class HttpSession {
     /**
      * @brief Returns an item from the session
      */
-    QVariant value(const QString& key) const { 
+    QVariant value(const QString& key) { 
+        QMutexLocker locker(&m_mutex);
         return (m_data == NULL) ? QVariant() : m_data->values.value(key); 
         }
 
     /**
      * @brief Return time of last access to the session
      */
-    qint64 lastAccess() const { 
+    qint64 lastAccess() { 
+        QMutexLocker locker(&m_mutex);
         return (m_data == NULL) ? 0 : m_data->lastAccess; 
         }
 
@@ -102,6 +110,7 @@ class HttpSession {
      * @brief Sets time of last access to the session
      */
     void setLastAccess() { 
+        QMutexLocker locker(&m_mutex);
         if (m_data != NULL) {
             m_data->lastAccess = QDateTime::currentDateTime().toTime_t()*1000; 
             }
@@ -120,6 +129,7 @@ class HttpSession {
 
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     HttpSessionData *m_data;
+    QMutex           m_mutex;
     #endif
 };
 

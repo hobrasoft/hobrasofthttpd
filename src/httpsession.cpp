@@ -37,6 +37,9 @@ HttpSession::HttpSession(const HttpSession& other) {
 
 
 HttpSession& HttpSession::operator= (const HttpSession& other) {
+    QMutexLocker locker1(&m_mutex);
+//  QMutexLocker locker2(&other.m_mutex);
+
     m_data = other.m_data;
     if (m_data) {
         m_data->refCount++;
