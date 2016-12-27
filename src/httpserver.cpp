@@ -93,6 +93,7 @@ void HttpServer::slotNewConnection() {
 
 
 void HttpServer::slotConnectionClosed(QObject *object) {
+    Q_UNUSED(object);
     // QPointer<HttpConnection> connection = qobject_cast<HobrasoftHttpd::HttpConnection*>(object);
     // HttpConnection *connection = qobject_cast<HobrasoftHttpd::HttpConnection*>(object);
     // m_connections.removeAll(connection);
