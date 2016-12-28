@@ -21,7 +21,7 @@
  * - __httpd/maxRequestSize__ - maximum size of request (16384)
  * - __httpd/maxMultiPartSize__ - maximum size of multipart request (1048576)
  * - __httpd/sessionExpirationTime__ - session timeout (3600 sec)
- * - __httpd/sessionIdName__ - session cookie name (sessionid)
+ * - __httpd/sessionCookieName__ - session cookie name (sessionid)
  * - __httpd/encoding__ - encoding set in headers (UTF-8)
  * - __httpd/root__ - document root directory (.)
  * - __httpd/cacheMaxAge__ - maximum age of objects in cache (3600 sec)

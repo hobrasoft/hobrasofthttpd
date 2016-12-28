@@ -72,9 +72,7 @@ HttpSession HttpSessionStore::session(HttpRequest *request, HttpResponse *respon
                 sessionCookieName(),
                 session.id(),
                 m_settings->sessionExpirationTime(),
-                QByteArray(),
-                QByteArray(),
-                QByteArray()
+                "/"
                 )
             );
     return session;
