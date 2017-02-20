@@ -52,10 +52,15 @@ void HttpServer::start() {
     m_server->listen(address, port);
 
     if (!m_server->isListening()) {
-        qWarning("HttpServer: cannot bind on %s:%i : %s", 
+        qWarning("HttpServer cannot bind on %s:%i : %s", 
                     qPrintable(address.toString()), 
                     port, 
                     qPrintable(m_server->errorString())
+                    );
+      } else {
+        qDebug("HttpServer listening on %s port %i",
+                    qPrintable(address.toString()), 
+                    port
                     );
         }
 }

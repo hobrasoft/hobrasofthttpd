@@ -59,7 +59,7 @@ class HttpSettings : public QObject {
 
     const QHostAddress&  address() const { return m_address; }                              ///< Returns the bind address
     void            setAddress(const QHostAddress& x) { m_address = x; }                    ///< Sets the bind address
-    void            setDefaultAddress(const QString& x) { m_default_address = x; }          ///< Sets the defailt bind address
+    void            setDefaultAddress(const QHostAddress& x) { m_default_address = x; }     ///< Sets the defailt bind address
 
     int             port() const { return m_port; }                                         ///< Returns the port number 
     void            setPort(int x) { m_port = x; }                                          ///< Sets the port number
@@ -192,7 +192,7 @@ class HttpSettings : public QObject {
     // Default values
     QString         m_default_section2;
     int             m_default_port;
-    QString         m_default_address;
+    QHostAddress    m_default_address;
     int             m_default_timeout;
     int             m_default_maxAge;
     QString         m_default_encoding;
