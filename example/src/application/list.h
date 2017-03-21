@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @author Petr Bravenec <petr.bravenec@hobrasoft.cz>
+ */
 #ifndef _List_H_
 #define _List_H_
 

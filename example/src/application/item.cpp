@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @author Petr Bravenec <petr.bravenec@hobrasoft.cz>
+ */
 #include "item.h"
 
 #include <QObject>

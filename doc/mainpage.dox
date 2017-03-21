@@ -8,13 +8,14 @@
 
 @section hhttp-features Features
 
-- __C++, Qt__ - server is writen in C++ and Qt
-- __embedded__ - you can link the server to your own application, no need for server like Apache
-- __simple__ - configuration is very simple. For basic use you need no configuration at all.
-- __single threaded__ - server runs in one thread, no need for locking, mutexes etc.
-- __event driven__ - server is not blocking your application, it is event driver.
-- __unlimited number of connection__ - your application is not limited to preconfigured pool of connections
-- __server side includes__ - html files can include other html files - usefull for headers, footers etc.
+- __C++, Qt__ – server is writen in C++ and Qt, both Qt4 and Qt5
+- __embedded__ – you can link the server to your own application, no need for server like Apache
+- __simple__ – configuration is very simple. For basic use you need no configuration at all.
+- __single threaded__ – server runs in one thread, no need for locking, mutexes etc.
+- __multi threaded__ – it is simple to switch the server to use multiple threads
+- __event driven__ – server is not blocking your application, it is event driver.
+- __unlimited number of connection__ – your application is not limited to preconfigured pool of connections
+- __server side includes__ – html files can include other html files - usefull for headers, footers etc.
 
 @section hhttp-licence Licence
 
@@ -60,8 +61,9 @@ int main(int argc, char *argv[]) {
 
 @subsection http-usage-dynamic Dynamicaly generated pages
 
-If you want to generate your web pages dynamicaly in your application, you have to 
-extend the class HttpServer and reimplement the HttpServer::requestHandler()
+If you want to generate your web pages dynamicaly in your application, you have to:
+- Extend the class HttpServer and reimplement the requestHandler() method
+- Extend HttpRequestHandler and reimplement the service() method
 
 ~~~~~~~~~~~~~~~~~
 #include "httpserver.h"
@@ -70,6 +72,9 @@ extend the class HttpServer and reimplement the HttpServer::requestHandler()
 
 using namespace HobrasoftHttpd;
 
+/*
+ * Extended HttpRequestHandler, default service() method is replace with own implementation
+ */
 class RequestMapper : public HttpRequestHandler {
     Q_OBJECT
   public:
@@ -87,6 +92,10 @@ class RequestMapper : public HttpRequestHandler {
         }
 };
 
+
+/*
+ * Extended HttpServer, default requestHandler() is replaced with own implementation
+ */
 class MyHttpd : public HttpServer {
     Q_OBJECT
   public:

@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @author Petr Bravenec <petr.bravenec@hobrasoft.cz>
+ */
 #include "list.h"
 #include "item.h"
 

@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @author Petr Bravenec <petr.bravenec@hobrasoft.cz>
+ */
 #ifndef _JSON_H_
 #define _JSON_H_
 
