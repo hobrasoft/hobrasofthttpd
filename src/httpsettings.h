@@ -59,7 +59,7 @@ class HttpSettings : public QObject {
 
     const QHostAddress&  address() const { return m_address; }                              ///< Returns the bind address
     void            setAddress(const QHostAddress& x) { m_address = x; }                    ///< Sets the bind address
-    void            setDefaultAddress(const QString& x) { m_default_address = x; }          ///< Sets the defailt bind address
+    void            setDefaultAddress(const QHostAddress& x) { m_default_address = x; }     ///< Sets the defailt bind address
 
     int             port() const { return m_port; }                                         ///< Returns the port number 
     void            setPort(int x) { m_port = x; }                                          ///< Sets the port number
@@ -109,6 +109,10 @@ class HttpSettings : public QObject {
     void            setUseSSL(bool x) { m_useSSL = x; }                                     ///< Set status of SSL connections
     void            setDefaultUseSSL(bool x) { m_default_useSSL = x; }                      ///< Set default status of SSL connections
 
+    bool            threads() const { return m_threads; }                                   ///< Returns true if server starts new thread for each connection
+    void            setThreads(bool x) { m_threads = x; }                                   ///< Set starting new thread for each connection
+    void            setDefaultThreads(bool x) { m_default_threads = x; }                    ///< Set default value for starting new thread for each connection
+
     const QString&  sslKey() const { return m_sslKey; }                                     ///< Returns SSL key
     void            setSslKey(const QString& x) { m_sslKey = x; }                           ///< Set SSL key
     void            setDefaultSslKey(const QString& x) { m_default_sslKey = x; }            ///< Set default SSL key
@@ -120,6 +124,7 @@ class HttpSettings : public QObject {
     const QString&  sslCaCrt() const { return m_sslCaCrt; }                                 ///< Returns SSL CA certificate
     void            setSslCaCrt(const QString& x) { m_sslCaCrt = x; }                       ///< Set SSL CA certificate
     void            setDefaultSslCaCrt(const QString& x) { m_default_sslCaCrt = x; }        ///< Set default SSL CA certificate
+
 
     bool            ignoreSslError(QSslError error) const;                                  ///< Returns true if the error should be ignored, default true
 
@@ -182,11 +187,12 @@ class HttpSettings : public QObject {
     QString         m_sslCaCrt;
     QSet<QSslError> m_sslErrors;
     bool            m_ignoreAllSslErrors;
+    bool            m_threads;
 
     // Default values
     QString         m_default_section2;
     int             m_default_port;
-    QString         m_default_address;
+    QHostAddress    m_default_address;
     int             m_default_timeout;
     int             m_default_maxAge;
     QString         m_default_encoding;
@@ -202,6 +208,7 @@ class HttpSettings : public QObject {
     QString         m_default_sslCrt;
     QString         m_default_sslCaCrt;
     bool            m_default_ignoreAllSslErrors;
+    bool            m_default_threads;
     #endif
 
   private:

@@ -72,6 +72,11 @@ class HttpRequest {
     QString    path() const { return urlDecode(m_path); }
 
     /**
+     * @brief Returns full path of the request (/files/index.html) including parameters
+     */
+    QString    fullPath() const { return urlDecode(m_fullpath); }
+
+    /**
      * @brief Returns version of HTTP protocol (HTTP/1.1)
      */
     QString    version() const { return m_version; }
@@ -189,6 +194,7 @@ class HttpRequest {
     QByteArray                          m_bodyData;
     QString                             m_method;
     QString                             m_path;
+    QString                             m_fullpath;
     QString                             m_version;
     Status                              m_status;
     QByteArray                          m_boundary;

@@ -12,8 +12,9 @@
 #include <QTcpServer>
 #include <QHostAddress>
 #include <QString>
-#include <QList>
 #include <QSslError>
+#include <QSet>
+#include <QPointer>
 #include "testsettings.h"
 
 namespace HobrasoftHttpd {
@@ -120,6 +121,8 @@ class HttpServer : public QObject {
 
     QVariant webStatus() const;
 
+    QList<QPointer<HobrasoftHttpd::HttpConnection> >   connections() const { return m_connections; }
+
   protected:
 
     /**
@@ -136,10 +139,14 @@ class HttpServer : public QObject {
      */
     void            slotNewConnection();
 
+
+    void            slotConnectionClosed(QObject *);
+
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     HttpTcpServer       *m_server;
     const HttpSettings  *m_settings;
+    QList<QPointer<HobrasoftHttpd::HttpConnection> > m_connections;
     #endif
 
 };

@@ -21,7 +21,7 @@
  * - __httpd/maxRequestSize__ - maximum size of request (16384)
  * - __httpd/maxMultiPartSize__ - maximum size of multipart request (1048576)
  * - __httpd/sessionExpirationTime__ - session timeout (3600 sec)
- * - __httpd/sessionIdName__ - session cookie name (sessionid)
+ * - __httpd/sessionCookieName__ - session cookie name (sessionid)
  * - __httpd/encoding__ - encoding set in headers (UTF-8)
  * - __httpd/root__ - document root directory (.)
  * - __httpd/cacheMaxAge__ - maximum age of objects in cache (3600 sec)
@@ -30,6 +30,7 @@
  * - __httpd/sslKey__  - path to SSL key file in PEM format
  * - __httpd/sslCrt__  - path to SSL certificate file in PEM format
  * - __httpd/sslCaCrt__  - path to SSL CA certificate file in PEM format
+ * - __httpd/threads__  - when true then new thread is started for each connection
  *
  * SSL errors
  * ----------
@@ -78,7 +79,7 @@ HttpSettings::HttpSettings(QObject *parent) : QObject(parent) {
 
 void HttpSettings::setDefaultValues() {
     m_port                  = 8080;
-    m_address               = QHostAddress::AnyIPv6;
+    m_address               = QHostAddress::Any;
     m_timeout               = 600;
     m_maxAge                = 3600;
     m_encoding              = "UTF-8";
@@ -89,10 +90,11 @@ void HttpSettings::setDefaultValues() {
     m_maxRequestSize        = 16384;
     m_maxMultiPartSize      = 16728064;
     m_useSSL                = false;
+    m_threads               = false;
 
     m_default_section2 = "http";
     m_default_port = 8080;
-    m_default_address = "::";
+    m_default_address = QHostAddress::Any;
     m_default_timeout = 600;
     m_default_maxAge = 3600;
     m_default_encoding = "UTF-8";
@@ -107,6 +109,7 @@ void HttpSettings::setDefaultValues() {
     m_default_sslCrt = "";
     m_default_sslCaCrt = "";
     m_default_ignoreAllSslErrors = true;
+    m_default_threads = true;
 }
 
 
@@ -119,8 +122,16 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
 void HttpSettings::readSettings(const QSettings *settings, const QString& section) {
     m_port                  = settings->value(  section  + "/port",
                               settings->value(m_section2 + "/port",                  m_default_port)).toInt();
-    m_address               = settings->value(  section  + "/address",
-                              settings->value(m_section2 + "/address",               m_default_address)).toString();
+    if (settings->contains(section+"/address")) {
+        m_address = settings->value(section+"/address").toString();
+        qDebug() << "obsahuje sekce 1, nastavuji" << settings->value(section+"/address").toString();
+    } else if (settings->contains(m_section2+"/address")) {
+        m_address = settings->value(m_section2+"/address").toString();
+        qDebug() << "obsahuje sekce 2, nastavuji" << settings->value(section+"/address").toString();
+    } else { 
+        qDebug() << "neobsahuje, nastavuji" << m_default_address;
+        m_address = m_default_address; 
+        }
     m_timeout               = settings->value(  section  + "/timeout",
                               settings->value(m_section2 + "/timeout",               m_default_timeout)).toInt();
     m_maxAge                = settings->value(  section  + "/maxAge", 
@@ -149,6 +160,8 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
                               settings->value(m_section2 + "/sslCaCrt",              m_default_sslCaCrt)).toString();
     m_ignoreAllSslErrors    = settings->value(  section  + "/IgnoreAllSslErrors",
                               settings->value(m_section2 + "/IgnoreAllSslErrors",    m_default_ignoreAllSslErrors)).toBool();
+    m_threads               = settings->value(  section  + "/threads",              
+                              settings->value(m_section2 + "/threads",               m_default_threads)).toBool();
 
     #define SSLERROR(x) { if (settings->value(  section  + "/Ignore" + #x, \
                               settings->value(m_section2 + "/Ignore" + #x, false)).toBool()) { \

@@ -79,6 +79,7 @@ void HttpRequest::readRequest(QTcpSocket *socket) {
     m_path    = list[1];
     m_version = list[2];
     m_status  = StatusWaitForHeader;
+    m_fullpath = m_path;
     m_connection->setObjectName(m_path);
 }
 

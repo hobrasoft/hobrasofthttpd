@@ -951,7 +951,7 @@ void Test::staticFileController() {
     QVERIFY(reply->readAll() == "test");
     QVERIFY(reply->header(QNetworkRequest::ContentTypeHeader) == "text/html");
     QVERIFY(reply->hasRawHeader("Cache-Control") == true);
-    QVERIFY(reply->rawHeader("Cache-Control") == "max-age=3000");
+    QVERIFY(reply->rawHeader("Cache-Control") == "Public,max-age=3000");
 
     reply = manager.get(QNetworkRequest(QURL("../hobrasofthttpd.test.html")));
     QTimer::singleShot(1000, &loop, SLOT(quit()));
