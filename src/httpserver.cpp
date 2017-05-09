@@ -82,6 +82,7 @@ void HttpServer::slotNewConnection() {
 
         if (threads) {
             QThread *thread = new QThread(this);
+            thread->setObjectName("Http connection");
             thread->start();
             m_connections << connection;
             connection->setParent(0);

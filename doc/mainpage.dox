@@ -21,6 +21,9 @@
 
 LGPL
 
+@section hhttp-source Source code
+https://dev.hobrasoft.cz/diffusion/HTTPD/
+
 @section hhttp-usage Usage
 
 @subsection hhttp-usage-static Static contents server
