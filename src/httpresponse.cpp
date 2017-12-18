@@ -7,6 +7,7 @@
 
 #include "httpresponse.h"
 #include "httpconnection.h"
+#include "httpgzipcompression.h"
 #include <QStringList>
 
 #include <QDebug>
@@ -21,6 +22,7 @@ HttpResponse::~HttpResponse() {
 HttpResponse::HttpResponse(HttpConnection *connection) : QObject(connection) {
     m_connection = connection;
     m_socket = m_connection->socket();
+    m_flushed = false;
     m_statusCode = 200;
     m_statusText = "OK";
     m_sentHeaders = false;
@@ -144,6 +146,10 @@ void HttpResponse::write(const QByteArray& data) {
         }
 
     if (!chunked) {
+        if (m_flushed) {
+            qDebug() << "You could not write to HttpRespose when the response is flushed. Data written are ignored.";
+            return;
+            }
         m_closeAfterFlush = true;
         m_dataBody += data;
         }
@@ -152,6 +158,7 @@ void HttpResponse::write(const QByteArray& data) {
 
 
 void HttpResponse::flush() {
+    m_flushed = true;
     if (!isConnected()) { return; }
     if (!m_sentHeaders) { 
         m_headers["Content-Length"] = QString("%1").arg(m_dataBody.size());
@@ -189,6 +196,11 @@ void HttpResponse::slotWrite() {
     if (m_dataHeaders.size() > m_dataHeadersPointer) {
         m_dataHeadersPointer += m_socket->write(m_dataHeaders.mid(m_dataHeadersPointer));
         if (m_dataHeaders.size() > m_dataHeadersPointer) { goto konec; }
+        }
+
+    if (m_dataBodyPointer == 0 && !m_gzipped && m_headers.value("Content-Encoding").toLower() == "gzip") {
+        m_dataBody = HttpGZipCompression::compressData(m_dataBody);
+        m_gzipped = true;
         }
 
     if (m_dataBody.size() > m_dataBodyPointer) {

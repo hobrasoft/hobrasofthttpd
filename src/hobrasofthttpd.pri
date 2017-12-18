@@ -15,6 +15,7 @@ HEADERS += \
  $$PWD/httpsessionstore.h \
  $$PWD/httpsettings.h \
  $$PWD/httptcpserver.h \
+ $$PWD/httpgzipcompression.h \
  $$PWD/testsettings.h \
 
 
@@ -30,5 +31,6 @@ SOURCES += \
  $$PWD/httpsession.cpp \
  $$PWD/httpsessionstore.cpp \
  $$PWD/httpsettings.cpp \
+ $$PWD/httpgzipcompression.cpp \
  $$PWD/httptcpserver.cpp \
 
