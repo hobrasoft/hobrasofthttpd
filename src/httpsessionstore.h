@@ -71,6 +71,15 @@ class HttpSessionStore : public QObject {
      */
     const QString& sessionCookieName() const;
 
+    bool contains(const QByteArray& id) const { return m_sessions.contains(id); }
+
+  signals:
+
+    /**
+     * @brief Signal is emited when a session is about to remove from storage
+     */
+    void aboutToRemove(const HttpSession& session) const;
+
   private slots:
 
     /**

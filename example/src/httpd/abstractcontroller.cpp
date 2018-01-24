@@ -117,6 +117,7 @@ void AbstractController::service(HobrasoftHttpd::HttpRequest *request, Hobrasoft
                     return;
                     }
                 }
+            break;
 
         case 3:
             if (parts[1] == "events" || parts[2] != "events") {
