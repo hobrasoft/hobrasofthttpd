@@ -13,6 +13,7 @@
 #include <QSslCertificate>
 #include <QTimer>
 #include <QDateTime>
+#include <QHostAddress>
 
 namespace HobrasoftHttpd {
 
@@ -107,6 +108,11 @@ class HttpConnection : public QObject {
 
     void setTimeout(int x) { m_timeout->setInterval(x); startTimeout(); }
 
+    /**
+     * @brief Returns peer's host address
+     */
+    QHostAddress peerAddress() const { return m_peerAddress; }
+
 
     QVariant webStatus() const;
 
@@ -134,6 +140,7 @@ class HttpConnection : public QObject {
     HttpRequestHandler  *m_handler;
     HttpServer          *m_parent;
     QSslCertificate      m_peerCertificate;
+    QHostAddress         m_peerAddress;
     bool                 m_connected;
     bool                 m_inService;
     bool                 m_verified;

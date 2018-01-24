@@ -12,10 +12,9 @@
 #include <QDateTime>
 #include <QTcpSocket>
 #include <QString>
+#include "httpconnection.h"
 
 namespace HobrasoftHttpd {
-
-class HttpConnection;
 
 
 /**
@@ -43,6 +42,13 @@ class HttpRequest {
      * @brief Returns HttpConnection of the request
      */
     HttpConnection *connection() const { return m_connection; }
+
+
+    /**
+     * @brief Returns peer's host address
+     */
+    QHostAddress peerAddress() const { return m_connection->peerAddress(); }
+
 
     /**
      * @brief Reads data from socket.
