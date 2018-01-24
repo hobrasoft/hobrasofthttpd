@@ -41,3 +41,4 @@ quint32 HttpGZipCompression::crc32(const QByteArray& data)
     return ~std::accumulate(data.begin(), data.end(), quint32(0xFFFFFFFF),
                             [=](quint32 oldcrc32, char buf){return updateCRC32(buf, oldcrc32);});
 }
+

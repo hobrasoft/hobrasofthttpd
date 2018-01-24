@@ -6,6 +6,7 @@
  */
 
 #include "httpresponse.h"
+#include "httprequest.h"
 #include "httpconnection.h"
 #include "httpgzipcompression.h"
 #include <QStringList>
@@ -76,6 +77,27 @@ void HttpResponse::setStatus(int statusCode, const QString& statusText) {
 
 void HttpResponse::writeHeaders() {
     if (m_sentHeaders) { return; }
+
+    QString contentType = m_headers.value("Content-Encoding").toLower();
+    bool cancompress = (
+        contentType == "text/plain" ||
+        contentType == "text/html" ||
+        contentType == "text/css" ||
+        contentType == "application/json" ||
+        contentType == "application/javascript"
+        );
+
+    bool requestGzip = (
+        m_connection->request() != NULL &&
+        m_connection->request()->header("Accept-Encoding").contains("gzip")
+        );
+
+    bool chunked = m_headers.value("Transfer-Encoding").toLower() == "chunked" ;
+
+    if (cancompress && requestGzip && !chunked) {
+        setHeader("Content-Encoding", "gzip");
+        }
+
     m_dataHeaders += "HTTP/1.1 ";
     m_dataHeaders += QByteArray::number(m_statusCode);
     m_dataHeaders += " ";
@@ -198,7 +220,7 @@ void HttpResponse::slotWrite() {
         if (m_dataHeaders.size() > m_dataHeadersPointer) { goto konec; }
         }
 
-    if (m_dataBodyPointer == 0 && !m_gzipped && m_headers.value("Content-Encoding").toLower() == "gzip") {
+    if (m_dataBodyPointer == 0 && !m_gzipped && m_headers.value("Content-Encoding").toLower() == "gzip" ) {
         m_dataBody = HttpGZipCompression::compressData(m_dataBody);
         m_gzipped = true;
         }

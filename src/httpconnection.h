@@ -113,6 +113,8 @@ class HttpConnection : public QObject {
      */
     QHostAddress peerAddress() const { return m_peerAddress; }
 
+    HttpRequest *request() const { return m_request; }
+
 
     QVariant webStatus() const;
 
