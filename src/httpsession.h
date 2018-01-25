@@ -105,10 +105,10 @@ class HttpSession {
     /**
      * @brief Return time of last access to the session
      */
-    qint64 lastAccess() { 
+    QDateTime lastAccess() { 
         QMutex &mutex = const_cast<QMutex &>(m_mutex);
         QMutexLocker locker(&mutex);
-        return (m_data == NULL) ? 0 : m_data->lastAccess; 
+        return (m_data == NULL) ? QDateTime() : m_data->lastAccess; 
         }
 
     /**
@@ -117,7 +117,7 @@ class HttpSession {
     void setLastAccess() { 
         QMutexLocker locker(&m_mutex);
         if (m_data != NULL) {
-            m_data->lastAccess = QDateTime::currentDateTime().toTime_t()*1000; 
+            m_data->lastAccess = QDateTime::currentDateTime();
             }
         }
 
@@ -145,7 +145,7 @@ class HttpSession {
      */
     struct HttpSessionData {
         QByteArray  id;                     ///< Session ID
-        qint64      lastAccess;             ///< Time of last access
+        QDateTime   lastAccess;             ///< Time of last access
         int         refCount;               ///< Reference use counter
         QHash<QString, QVariant> values;    ///< List of values
         };

@@ -88,13 +88,13 @@ HttpSession HttpSessionStore::session(const QByteArray& id) {
 
 
 void HttpSessionStore::slotCleaner() {
-    qint64 now = QDateTime::currentDateTime().toTime_t()*1000;
+    QDateTime now = QDateTime::currentDateTime();
     QHash<QByteArray, HttpSession>::iterator i = m_sessions.begin() ;
     while (i != m_sessions.end()) {
         QHash<QByteArray, HttpSession>::iterator prev = i;
         i++;
         HttpSession session = prev.value();
-        if (now - session.lastAccess() > m_settings->sessionExpirationTime()*1000) {
+        if (!session.lastAccess().isValid() || session.lastAccess().addSecs(m_settings->sessionExpirationTime()) < now) {
             emit aboutToRemove(session);
             m_sessions.erase(prev);
             }

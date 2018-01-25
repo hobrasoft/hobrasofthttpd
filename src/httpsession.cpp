@@ -23,7 +23,7 @@ HttpSession::~HttpSession() {
 HttpSession::HttpSession() {
     m_data = new HttpSessionData();
     m_data->refCount=1;
-    m_data->lastAccess = QDateTime::currentDateTime().toTime_t()*1000;
+    m_data->lastAccess = QDateTime::currentDateTime();
     m_data->id = QUuid::createUuid().toString().toUtf8();
 }
 
@@ -43,7 +43,7 @@ HttpSession& HttpSession::operator= (const HttpSession& other) {
     m_data = other.m_data;
     if (m_data) {
         m_data->refCount++;
-        m_data->lastAccess = QDateTime::currentDateTime().toTime_t()*1000;
+        m_data->lastAccess = QDateTime::currentDateTime();
         }
 
     return *this;
