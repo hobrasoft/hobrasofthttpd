@@ -92,6 +92,7 @@ class HttpSessionStore : public QObject {
     QHash<QByteArray, HttpSession> m_sessions;  ///< List of stored sessions
     QString             m_sessionCookieName;    ///< The name of the session cookie
     const HttpSettings *m_settings;             ///< Pointer to http server settings
+    void init();
 
 };
 

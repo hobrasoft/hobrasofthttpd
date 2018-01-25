@@ -16,22 +16,23 @@ using namespace HobrasoftHttpd;
 
 
 HttpSessionStore::HttpSessionStore(const HttpSettings* settings, QObject *parent) : QObject(parent) {
-    m_cleaner = new QTimer(this);
-    m_cleaner->setInterval(30000);
-    m_cleaner->setSingleShot(false);
-    m_cleaner->start();
-    connect(m_cleaner, SIGNAL(timeout()), this, SLOT(slotCleaner()));
     m_settings = settings;
+    init();
 }
 
 
 HttpSessionStore::HttpSessionStore(HttpServer *server) : QObject(server) {
+    m_settings = server->settings();
+    init();
+}
+
+
+void HttpSessionStore::init() {
     m_cleaner = new QTimer(this);
     m_cleaner->setInterval(30000);
     m_cleaner->setSingleShot(false);
     m_cleaner->start();
     connect(m_cleaner, SIGNAL(timeout()), this, SLOT(slotCleaner()));
-    m_settings = server->settings();
 }
 
 

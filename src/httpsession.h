@@ -14,6 +14,7 @@
 #include <QHash>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QStringList>
 
 namespace HobrasoftHttpd {
 
@@ -46,8 +47,9 @@ class HttpSession {
     /**
      * @brief Returns session ID
      */
-    QByteArray id() { 
-        QMutexLocker locker(&m_mutex);
+    QByteArray id() const { 
+        QMutex &mutex = const_cast<QMutex &>(m_mutex);
+        QMutexLocker locker(&mutex);
         return (m_data == NULL) ? QByteArray() : m_data->id; 
         }
 
@@ -62,8 +64,9 @@ class HttpSession {
     /**
      * @brief Returns true if the session contains key
      */
-    bool contains(const QString& key) {
-        QMutexLocker locker(&m_mutex);
+    bool contains(const QString& key) const {
+        QMutex &mutex = const_cast<QMutex &>(m_mutex);
+        QMutexLocker locker(&mutex);
         if (m_data != NULL) {
             return m_data->values.contains(key);
             }
@@ -93,8 +96,9 @@ class HttpSession {
     /**
      * @brief Returns an item from the session
      */
-    QVariant value(const QString& key) { 
-        QMutexLocker locker(&m_mutex);
+    QVariant value(const QString& key) const { 
+        QMutex &mutex = const_cast<QMutex &>(m_mutex);
+        QMutexLocker locker(&mutex);
         return (m_data == NULL) ? QVariant() : m_data->values.value(key); 
         }
 
@@ -102,7 +106,8 @@ class HttpSession {
      * @brief Return time of last access to the session
      */
     qint64 lastAccess() { 
-        QMutexLocker locker(&m_mutex);
+        QMutex &mutex = const_cast<QMutex &>(m_mutex);
+        QMutexLocker locker(&mutex);
         return (m_data == NULL) ? 0 : m_data->lastAccess; 
         }
 
@@ -114,6 +119,24 @@ class HttpSession {
         if (m_data != NULL) {
             m_data->lastAccess = QDateTime::currentDateTime().toTime_t()*1000; 
             }
+        }
+
+    QStringList keys() const {
+        QStringList list;
+        if (m_data != NULL) {
+            QHashIterator<QString, QVariant> iterator(m_data->values);
+            while (iterator.hasNext()) {
+                iterator.next();
+                list << iterator.key();
+                }
+            }
+        return list;
+        }
+
+
+    QVariantHash variantHash() const {
+        if (m_data == NULL) { return QVariantHash(); }
+        return m_data->values;
         }
 
   private:

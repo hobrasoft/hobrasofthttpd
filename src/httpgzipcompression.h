@@ -58,7 +58,7 @@ class HttpGZipCompression : public QObject
     Q_OBJECT
 
     public:
-        explicit HttpGZipCompression(QObject * = nullptr) {}
+        explicit HttpGZipCompression(QObject * = NULL) {}
         static QByteArray compressData(const QByteArray &data);
 
     private:
