@@ -14,7 +14,6 @@
 #include <QDir>
 #include <QDateTime>
 #include <QFile>
-#include <QFileInfo>
 #include <QDir>
 #include <QDateTime>
 #include <QDebug>
@@ -34,6 +33,7 @@ StaticFileController::StaticFileController(HttpConnection *parent) : HttpRequest
         addMimeType("txt",   "text/plain");
         addMimeType("html",  "text/html");
         addMimeType("xhtml", "text/html");
+        addMimeType("shtml", "text/html");
         addMimeType("htm",   "text/html");
         addMimeType("css",   "text/css");
         addMimeType("json",  "application/json");
@@ -66,7 +66,8 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
         }
 
     QString filename = rootpath + path;
-    if (QFileInfo(filename).isDir()) {
+    QFileInfo fileinfo(filename);
+    if (fileinfo.isDir()) {
         filename += "/" + settings()->indexFile();
         }
 
@@ -85,7 +86,11 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
         return;
         }
 
-    setContentType(path, response);
+    QString suffix = fileinfo.suffix();
+    if (!suffix.isEmpty() && m_mimetypes.contains(suffix)) {
+        response->setHeader("Content-Type", m_mimetypes[suffix]);
+        }
+
     response->setHeader("Cache-Control", QString("Public,max-age=") + QString("%1").arg(settings()->maxAge()) );
     response->setHeader("Expires", toGMTString(QDateTime::currentDateTime().addSecs(settings()->maxAge()).toUTC()) );
     response->write( file.readAll() );
@@ -133,14 +138,4 @@ QString StaticFileController::toGMTString(const QDateTime& x) {
     return string;
 }
 
-
-void StaticFileController::setContentType(const QString& filename, HttpResponse *response) const {
-    QString koncovka = QString(filename).replace(QRegExp("^.*\\."), "").toLower();;
-    if (koncovka.isEmpty()) return;
-    if (!m_mimetypes.contains(koncovka)) return;
-
-    QString type = m_mimetypes[koncovka];
-    response->setHeader("Content-Type", type);
-
-}
 

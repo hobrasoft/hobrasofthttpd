@@ -78,13 +78,12 @@ void HttpResponse::setStatus(int statusCode, const QString& statusText) {
 void HttpResponse::writeHeaders() {
     if (m_sentHeaders) { return; }
 
-    QString contentType = m_headers.value("Content-Encoding").toLower();
+    QString contentType = m_headers.value("Content-Type").toLower();
     bool cancompress = (
-        contentType == "text/plain" ||
-        contentType == "text/html" ||
-        contentType == "text/css" ||
-        contentType == "application/json" ||
-        contentType == "application/javascript"
+        contentType.startsWith("text/plain") ||
+        contentType.startsWith("text/html") ||
+        contentType.startsWith("text/css") ||
+        contentType.startsWith("application/javascript")
         );
 
     bool requestGzip = (
@@ -94,7 +93,9 @@ void HttpResponse::writeHeaders() {
 
     bool chunked = m_headers.value("Transfer-Encoding").toLower() == "chunked" ;
 
-    if (cancompress && requestGzip && !chunked) {
+    bool c200 = (m_statusCode == 200);
+
+    if (cancompress && requestGzip && !chunked && c200) {
         setHeader("Content-Encoding", "gzip");
         }
 
