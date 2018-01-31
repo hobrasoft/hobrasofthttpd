@@ -68,12 +68,6 @@ class StaticFileController : public HttpRequestHandler {
     HttpConnection  *m_parent;
     #endif
 
-    /**
-     * @brief Sets the content type of the file in HttpResponse headers
-     */
-    void setContentType(const QString& file, HttpResponse *response) const;
-
-
 };
 
 }
