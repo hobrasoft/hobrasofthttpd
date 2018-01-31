@@ -1,5 +1,6 @@
 /**
  * @file
+ * @author Sergey Alikin alikin.sergey@gmail.com
  */
 
 #ifndef HTTPGZIPCOMPRESSION_H
