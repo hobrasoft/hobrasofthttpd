@@ -167,7 +167,6 @@ class HttpResponse : public QObject {
     bool        m_closeAfterFlush;
     bool        m_deleteAfterFlush;
     bool        m_flushed;
-    bool        m_gzipped;
     #endif
 };
 

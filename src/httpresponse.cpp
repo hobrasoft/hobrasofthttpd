@@ -78,7 +78,7 @@ void HttpResponse::setStatus(int statusCode, const QString& statusText) {
 void HttpResponse::writeHeaders() {
     if (m_sentHeaders) { return; }
 
-    QString contentType = m_headers.value("Content-Encoding").toLower();
+    QString contentType = m_headers.value("Content-Type").toLower();
     bool cancompress = (
         contentType == "text/plain" ||
         contentType == "text/html" ||
@@ -97,6 +97,20 @@ void HttpResponse::writeHeaders() {
     if (cancompress && requestGzip && !chunked) {
         setHeader("Content-Encoding", "gzip");
         }
+
+    // int dbs = m_dataBody.size();
+    if (m_headers.value("Content-Encoding").toLower() == "gzip" ) {
+        m_dataBody = HttpGZipCompression::compressData(m_dataBody);
+        }
+
+    m_headers["Content-Length"] = QString("%1").arg(m_dataBody.size());
+    /*
+    qDebug() << "gzip" << cancompress << requestGzip << !chunked << m_headers.value("Content-Type") << dbs << m_dataBody.size()
+            << ( (m_connection->request() != NULL) ? m_connection->request()->path() : "") 
+            << ( (m_connection->request() != NULL) ? m_connection->request()->header("Accept-Encoding") : "") 
+            << contentType
+            ;
+    */
 
     m_dataHeaders += "HTTP/1.1 ";
     m_dataHeaders += QByteArray::number(m_statusCode);
@@ -182,11 +196,6 @@ void HttpResponse::write(const QByteArray& data) {
 void HttpResponse::flush() {
     m_flushed = true;
     if (!isConnected()) { return; }
-    if (!m_sentHeaders) { 
-        m_headers["Content-Length"] = QString("%1").arg(m_dataBody.size());
-        writeHeaders();
-        m_sentHeaders = true;
-        }
     m_canWriteToSocket = true;
     m_writerTimer->setInterval(0);
     m_writerTimer->start();
@@ -218,11 +227,6 @@ void HttpResponse::slotWrite() {
     if (m_dataHeaders.size() > m_dataHeadersPointer) {
         m_dataHeadersPointer += m_socket->write(m_dataHeaders.mid(m_dataHeadersPointer));
         if (m_dataHeaders.size() > m_dataHeadersPointer) { goto konec; }
-        }
-
-    if (m_dataBodyPointer == 0 && !m_gzipped && m_headers.value("Content-Encoding").toLower() == "gzip" ) {
-        m_dataBody = HttpGZipCompression::compressData(m_dataBody);
-        m_gzipped = true;
         }
 
     if (m_dataBody.size() > m_dataBodyPointer) {

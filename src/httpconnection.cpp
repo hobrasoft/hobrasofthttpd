@@ -163,12 +163,14 @@ void HttpConnection::slotRead() {
             }
 
         if (disconnect) {
-            if (isConnected()) { m_socket->disconnectFromHost(); }
+            if (isConnected()) { 
+                m_socket->disconnectFromHost(); 
+                deleteRequest();
+                }
           } else {
             startTimeout();
             }
 
-        deleteRequest();
         }
 
 }
