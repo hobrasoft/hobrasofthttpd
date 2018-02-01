@@ -22,6 +22,12 @@ class HttpSessionStore;
 
 /**
  * @brief Information about one session
+ *
+ * Please, do not use constructors. The session should be created calling HttpSessionStore functions only, otherwise 
+ * the session data will be never deleted.
+ *
+ * It is complicated to make constructors private and there is no warranty that the private constructor will
+ * work accross Qt versions.
  */
 class HttpSession {
   public:
