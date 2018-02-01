@@ -29,7 +29,6 @@ HttpSession::HttpSession(const HttpSession& other) {
 }
 
 
-/*
 HttpSession& HttpSession::operator= (const HttpSession& other) {
     QMutexLocker locker1(&m_mutex);
     m_data = other.m_data;
@@ -38,4 +37,4 @@ HttpSession& HttpSession::operator= (const HttpSession& other) {
         }
     return *this;
 }
-*/
+
