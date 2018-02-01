@@ -18,31 +18,13 @@
 
 namespace HobrasoftHttpd {
 
+class HttpSessionStore;
+
 /**
  * @brief Information about one session
  */
 class HttpSession {
   public:
-
-    /**
-     * @brief Destruktor
-     */
-    virtual ~HttpSession();
-
-    /**
-     * @brief Construktor
-     */
-    HttpSession();
-
-    /**
-     * @brief Copy constructor
-     */
-    HttpSession(const HttpSession& other);
-
-    /**
-     * @brief Operator=
-     */
-    HttpSession& operator= (const HttpSession& other);
 
     /**
      * @brief Returns session ID
@@ -139,6 +121,14 @@ class HttpSession {
         return m_data->values;
         }
 
+
+    /**
+     * @brief Calls delete to free data of session. Called after the session is removed from session store
+     */
+    void freeData() {
+        delete m_data;
+        }
+
   private:
     /**
      * @brief Data of the session
@@ -146,7 +136,6 @@ class HttpSession {
     struct HttpSessionData {
         QByteArray  id;                     ///< Session ID
         QDateTime   lastAccess;             ///< Time of last access
-        int         refCount;               ///< Reference use counter
         QHash<QString, QVariant> values;    ///< List of values
         };
 
@@ -154,6 +143,24 @@ class HttpSession {
     HttpSessionData *m_data;
     QMutex           m_mutex;
     #endif
+
+
+  public:
+    /**
+     * @brief Constructor, should be private. Do not use in your code
+     */
+    HttpSession();
+
+    /**
+     * @brief Copy constructor, should be private. Do not use in your code
+     */
+    HttpSession(const HttpSession& other);
+
+    /**
+     * @brief Operator=(), should be private. Do not use in your code
+     */
+    HttpSession& operator= (const HttpSession& other);
+
 };
 
 }

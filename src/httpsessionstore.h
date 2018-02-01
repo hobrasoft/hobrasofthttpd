@@ -16,6 +16,7 @@
 
 namespace HobrasoftHttpd {
 
+class HttpSession;
 class HttpServer;
 class HttpRequest;
 class HttpResponse;

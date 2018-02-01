@@ -61,7 +61,7 @@ QByteArray HttpSessionStore::sessionId(HttpRequest *request, HttpResponse *respo
 HttpSession HttpSessionStore::session(HttpRequest *request, HttpResponse *response) {
     QByteArray id = sessionId(request, response);
     if (!id.isEmpty()) {
-        HttpSession session = m_sessions.value(id);
+        HttpSession session(m_sessions.value(id));
         session.setLastAccess();
         return session;
         }
@@ -81,7 +81,7 @@ HttpSession HttpSessionStore::session(HttpRequest *request, HttpResponse *respon
 
 
 HttpSession HttpSessionStore::session(const QByteArray& id) {
-    HttpSession session = m_sessions.value(id);
+    HttpSession session = m_sessions.value(id, HttpSession());
     session.setLastAccess();
     return session;
 }
@@ -105,6 +105,7 @@ void HttpSessionStore::slotCleaner() {
 void HttpSessionStore::remove(HttpSession session) {
     emit aboutToRemove(session);
     m_sessions.remove(session.id());
+    session.freeData();
 }
 
 
