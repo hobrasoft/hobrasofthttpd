@@ -94,6 +94,7 @@ void HttpSessionStore::slotCleaner() {
         i++;
         HttpSession session = prev.value();
         if (now - session.lastAccess() > m_settings->sessionExpirationTime()*1000) {
+            emit aboutToRemove(session);
             m_sessions.erase(prev);
             }
         }
@@ -101,6 +102,7 @@ void HttpSessionStore::slotCleaner() {
 
 
 void HttpSessionStore::remove(HttpSession session) {
+    emit aboutToRemove(session);
     m_sessions.remove(session.id());
 }
 

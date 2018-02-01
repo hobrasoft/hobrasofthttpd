@@ -5,7 +5,7 @@ DESTDIR = ../bin
 INCLUDEPATH += ..
 
 CONFIG -= stl
-CONFIG += qt warn_on thread
+CONFIG += qt warn_on thread qtestlib
 
 equals(QT_ARCH, arm) {
   DEFINES += ARM

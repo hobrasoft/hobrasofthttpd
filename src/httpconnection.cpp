@@ -24,6 +24,7 @@ HttpConnection::~HttpConnection() {
 
 
 HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject(parent) {
+    m_peerAddress = socket->peerAddress();
     m_socket = socket;
     m_request = NULL;
     m_parent  = parent;
