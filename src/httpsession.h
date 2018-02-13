@@ -18,31 +18,19 @@
 
 namespace HobrasoftHttpd {
 
+class HttpSessionStore;
+
 /**
  * @brief Information about one session
+ *
+ * Please, do not use constructors. The session should be created calling HttpSessionStore functions only, otherwise 
+ * the session data will be never deleted.
+ *
+ * It is complicated to make constructors private and there is no warranty that the private constructor will
+ * work accross Qt versions.
  */
 class HttpSession {
   public:
-
-    /**
-     * @brief Destruktor
-     */
-    virtual ~HttpSession();
-
-    /**
-     * @brief Construktor
-     */
-    HttpSession();
-
-    /**
-     * @brief Copy constructor
-     */
-    HttpSession(const HttpSession& other);
-
-    /**
-     * @brief Operator=
-     */
-    HttpSession& operator= (const HttpSession& other);
 
     /**
      * @brief Returns session ID
@@ -139,6 +127,14 @@ class HttpSession {
         return m_data->values;
         }
 
+
+    /**
+     * @brief Calls delete to free data of session. Called after the session is removed from session store
+     */
+    void freeData() {
+        delete m_data;
+        }
+
   private:
     /**
      * @brief Data of the session
@@ -146,7 +142,6 @@ class HttpSession {
     struct HttpSessionData {
         QByteArray  id;                     ///< Session ID
         QDateTime   lastAccess;             ///< Time of last access
-        int         refCount;               ///< Reference use counter
         QHash<QString, QVariant> values;    ///< List of values
         };
 
@@ -154,6 +149,24 @@ class HttpSession {
     HttpSessionData *m_data;
     QMutex           m_mutex;
     #endif
+
+
+  public:
+    /**
+     * @brief Constructor, should be private. Do not use in your code
+     */
+    HttpSession();
+
+    /**
+     * @brief Copy constructor, should be private. Do not use in your code
+     */
+    HttpSession(const HttpSession& other);
+
+    /**
+     * @brief Operator=(), should be private. Do not use in your code
+     */
+    HttpSession& operator= (const HttpSession& other);
+
 };
 
 }
