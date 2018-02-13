@@ -1,5 +1,6 @@
 /**
  * @file
+ * @author Sergey Alikin alikin.sergey@gmail.com
  */
 #include "httpgzipcompression.h"
 #include <QDataStream>

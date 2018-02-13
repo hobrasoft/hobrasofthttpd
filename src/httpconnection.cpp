@@ -124,7 +124,7 @@ HttpResponse *HttpConnection::response() {
 void HttpConnection::slotRead() {
     if (!isConnected()) { return; }
     startTimeout();
-    if (m_request == NULL) {
+    if (m_request == NULL || (m_request != NULL && m_request->status() == HttpRequest::StatusComplete)) {
         m_request = new HttpRequest(this);
         m_requests << m_request;
         }
