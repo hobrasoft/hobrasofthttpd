@@ -36,8 +36,7 @@ class HttpSession {
      * @brief Returns session ID
      */
     QByteArray id() const { 
-        QMutex &mutex = const_cast<QMutex &>(m_mutex);
-        QMutexLocker locker(&mutex);
+        QMutexLocker locker(&m_mutex);
         return (m_data == NULL) ? QByteArray() : m_data->id; 
         }
 
@@ -53,8 +52,7 @@ class HttpSession {
      * @brief Returns true if the session contains key
      */
     bool contains(const QString& key) const {
-        QMutex &mutex = const_cast<QMutex &>(m_mutex);
-        QMutexLocker locker(&mutex);
+        QMutexLocker locker(&m_mutex);
         if (m_data != NULL) {
             return m_data->values.contains(key);
             }
@@ -85,8 +83,7 @@ class HttpSession {
      * @brief Returns an item from the session
      */
     QVariant value(const QString& key) const { 
-        QMutex &mutex = const_cast<QMutex &>(m_mutex);
-        QMutexLocker locker(&mutex);
+        QMutexLocker locker(&m_mutex);
         return (m_data == NULL) ? QVariant() : m_data->values.value(key); 
         }
 
@@ -94,8 +91,7 @@ class HttpSession {
      * @brief Return time of last access to the session
      */
     QDateTime lastAccess() { 
-        QMutex &mutex = const_cast<QMutex &>(m_mutex);
-        QMutexLocker locker(&mutex);
+        QMutexLocker locker(&m_mutex);
         return (m_data == NULL) ? QDateTime() : m_data->lastAccess; 
         }
 
@@ -147,7 +143,7 @@ class HttpSession {
 
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     HttpSessionData *m_data;
-    QMutex           m_mutex;
+    mutable QMutex   m_mutex;
     #endif
 
 
