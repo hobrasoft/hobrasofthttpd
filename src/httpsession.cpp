@@ -14,7 +14,7 @@ using namespace HobrasoftHttpd;
 
 
 HttpSession::HttpSession() {
-    m_data = new HttpSessionData();
+    m_data = QSharedPointer<HttpSessionData>(new HttpSessionData());
     m_data->lastAccess = QDateTime::currentDateTime();
     m_data->id = QUuid::createUuid().toString().toUtf8();
 }

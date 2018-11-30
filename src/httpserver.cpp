@@ -58,10 +58,12 @@ void HttpServer::start() {
                     qPrintable(m_server->errorString())
                     );
       } else {
+        /*
         qDebug("HttpServer listening on %s port %i",
                     qPrintable(address.toString()), 
                     port
                     );
+        */
         }
 }
 

@@ -6,7 +6,7 @@
 #ifndef HTTPGZIPCOMPRESSION_H
 #define HTTPGZIPCOMPRESSION_H
 
-#include <QObject>
+#include <QByteArray>
 
 static const quint32 crc_32_tab[] = {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
@@ -54,12 +54,8 @@ static const quint32 crc_32_tab[] = {
     0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-class HttpGZipCompression : public QObject
-{
-    Q_OBJECT
-
+class HttpGZipCompression {
     public:
-        explicit HttpGZipCompression(QObject * = NULL) {}
         static QByteArray compressData(const QByteArray &data);
 
     private:

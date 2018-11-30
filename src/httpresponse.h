@@ -123,6 +123,12 @@ class HttpResponse : public QObject {
 
 
     /**
+     * @brief Returns true if the trasport mode is chunked
+     */
+    bool chunked();
+
+
+    /**
      * @brief Returns true if the http connection is in connected state
      */
     bool isConnected() const;
@@ -139,7 +145,9 @@ class HttpResponse : public QObject {
     void close();
 
   private slots:
-    void    slotWrite();
+    void    slotWrite(bool startTimer = true);
+    void	socketDisconnected();
+    void	socketError(QAbstractSocket::SocketError);
 
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -167,6 +175,7 @@ class HttpResponse : public QObject {
     bool        m_closeAfterFlush;
     bool        m_deleteAfterFlush;
     bool        m_flushed;
+    bool        m_chunked;
     #endif
 };
 

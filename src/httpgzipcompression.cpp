@@ -4,6 +4,7 @@
  */
 #include "httpgzipcompression.h"
 #include <QDataStream>
+#include <QDebug>
 
 
 QByteArray HttpGZipCompression::compressData(const QByteArray &data) {

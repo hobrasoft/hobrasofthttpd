@@ -68,6 +68,7 @@ void Test::initTestCase() {
         m_ipv6 = true;
         // m_localhost = QHostAddress::LocalHostIPv6;
         }
+
 }
 
 
@@ -80,7 +81,8 @@ void Test::cleanupTestCase() {
 void Test::settingsDefaultValues() {
     HttpSettings s(0);
     QVERIFY(s.port()                    == 8080);
-    QVERIFY(s.address()                 == QHostAddress::AnyIPv6);
+    QVERIFY(s.address()                 == QHostAddress::AnyIPv6 ||
+            s.address()                 == QHostAddress::Any);
     QVERIFY(s.timeout()                 == 600);
     QVERIFY(s.maxAge()                  == 3600);
     QVERIFY(s.encoding()                == "UTF-8");
@@ -255,12 +257,14 @@ void Test::httpCookie() {
 }
 
 
-HobrasoftHttpd::HttpServer *Test::createServer(QObject *parent, const QHostAddress& address) {
+HobrasoftHttpd::HttpServer *Test::createServer(QObject *parent, const QHostAddress& address, bool gzip) {
     QSettings q;
     q.clear();
     q.setValue("http/address", address.toString());
     q.setValue("http/port",    m_port); 
     q.setValue("http/root",    "."); 
+    q.setValue("http/threads", false);
+    q.setValue("http/gzip",    gzip);
     q.sync();
     HttpSettings *hq = new HttpSettings(&q,parent);
     HttpServer    *s = new HttpServer(hq,parent);
@@ -309,21 +313,48 @@ void Test::httpserverHttpService() {
     loop.exec();
     QVERIFY(reply->isFinished());
     QVERIFY(reply->error() == QNetworkReply::NoError);
-    QVERIFY(reply->readAll()  == "test");
+    QVERIFY(reply->readAll() == "test");
     file.remove();
 
 }
+
+
+void Test::httpserverHttpServiceGzip() {
+    QObject qobject(0);
+    createServer(&qobject, QHostAddress::LocalHost, true);
+
+    QByteArray text = "test test test test test test test test test test test test test test test test test test test \n";
+    QFile file("./hobrasofthttpd.test.html");
+    file.open(QIODevice::WriteOnly);
+    file.write(text);
+    file.close();
+
+    QNetworkAccessManager manager(this);
+    QNetworkRequest rq(QURL("hobrasofthttpd.test.html"));
+    QNetworkReply *reply = manager.get(rq);
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
+    QTimer::singleShot(1000, &loop, SLOT(quit()));
+    loop.exec();
+    QVERIFY(reply->isFinished());
+qDebug() << reply->error();
+    QVERIFY(reply->error() == QNetworkReply::NoError);
+    QVERIFY(reply->readAll() == text);
+    file.remove();
+
+}
+
 
 
 void Test::httpserverHttpService404() {
     QObject qobject(0);
     createServer(&qobject);
 
-    QFile file("./hobrasofthttpd.test.html");
+    QFile file("./hobrasofthttpd.test404.html");
     file.remove();
 
     QNetworkAccessManager manager(this);
-    QNetworkRequest rq(QURL("hobrasofthttpd.test.html"));
+    QNetworkRequest rq(QURL("hobrasofthttpd.test404.html"));
     QNetworkReply *reply = manager.get(rq);
     QEventLoop loop;
     connect(&manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
@@ -399,6 +430,8 @@ Httpd *Httpd::create(QObject *parent, const QHostAddress& address, int port) {
     q.setValue("http/port",    port); 
     q.setValue("http/root",    "."); 
     q.setValue("http/sessionCookieName", "sessionid"); 
+    q.setValue("http/threads", false);
+    q.setValue("http/gzip",    false);
     q.sync();
     HttpSettings *hq = new HttpSettings(&q,parent);
     return new Httpd(hq,parent);
@@ -417,6 +450,8 @@ Httpd *Httpd::createSSL(QObject *parent, const QHostAddress& address, int port) 
     q.setValue("http/sslCrt",   "://localhost.crt");
     q.setValue("http/sslCaCrt", "://testCA.crt");
     q.setValue("http/IgnoreAllSslErrors", true);
+    q.setValue("http/threads",  false);
+    q.setValue("http/gzip",     false);
     q.sync();
     HttpSettings *hq = new HttpSettings(&q,parent);
     return new Httpd(hq,parent);
@@ -843,16 +878,13 @@ void Test::httpServiceSession() {
 void Test::slotServiceAbort(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
     Q_UNUSED(request);
     Q_UNUSED(response);
-    qDebug() << "slotServiceAbort(); -- start";
     QTest::qWait(200);
-    qDebug() << "slotServiceAbort(); -- finished";
     response->write("abcd");
     response->flush();
 }
 
 
 void TestWorker::start() {
-    qDebug() << "TestWorker::start() -- start";
     QNetworkAccessManager manager(this);
     QNetworkReply *reply = manager.get(QNetworkRequest(QURL("ServiceAbort")));
     QEventLoop loop;
@@ -860,7 +892,6 @@ void TestWorker::start() {
     QTimer::singleShot(100, &loop, SLOT(quit()));
     loop.exec();
     reply->abort();
-    qDebug() << "TestWorker::start() -- finished";
 }
 
 
@@ -936,7 +967,11 @@ void Test::staticFileController() {
     QTimer::singleShot(1000, &loop, SLOT(quit()));
     loop.exec();
     QVERIFY(reply->isFinished());
+    #if QT_VERSION > 0x050000
+    QVERIFY(reply->error() == QNetworkReply::ContentAccessDenied);
+    #else
     QVERIFY(reply->error() == QNetworkReply::ContentOperationNotPermittedError);
+    #endif
 
     #if QT_VERSION > 0x050000
     QVERIFY(file.setPermissions(QFileDevice::WriteUser|QFileDevice::ReadUser) == true);
@@ -957,7 +992,11 @@ void Test::staticFileController() {
     QTimer::singleShot(1000, &loop, SLOT(quit()));
     loop.exec();
     QVERIFY(reply->isFinished());
+    #if QT_VERSION > 0x050000
+    QVERIFY(reply->error() == QNetworkReply::ContentAccessDenied);
+    #else
     QVERIFY(reply->error() == QNetworkReply::ContentOperationNotPermittedError);
+    #endif
 
     QUrl url = QURL("hobrasofthttpd.test.html");
     #if QT_VERSION > 0x050000

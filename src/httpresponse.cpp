@@ -8,6 +8,7 @@
 #include "httpresponse.h"
 #include "httprequest.h"
 #include "httpconnection.h"
+#include "httpsettings.h"
 #include "httpgzipcompression.h"
 #include <QStringList>
 
@@ -27,6 +28,7 @@ HttpResponse::HttpResponse(HttpConnection *connection) : QObject(connection) {
     m_statusCode = 200;
     m_statusText = "OK";
     m_sentHeaders = false;
+    m_chunked = false;
     m_dataBodyPointer = 0;
     m_dataHeadersPointer = 0;
     m_canWriteToSocket = false;
@@ -39,11 +41,25 @@ HttpResponse::HttpResponse(HttpConnection *connection) : QObject(connection) {
              this,            SLOT(slotWrite()));
     connect (m_socket, SIGNAL(bytesWritten(qint64)),
              this,            SLOT(slotWrite()));
+    connect (m_socket, SIGNAL(disconnected()),
+             this,       SLOT(socketDisconnected()));
+
+    connect (m_socket, SIGNAL(error(QAbstractSocket::SocketError)), 
+            this,  SLOT(socketError(QAbstractSocket::SocketError)));
+}
+
+
+void HttpResponse::socketError(QAbstractSocket::SocketError error) {
+    qDebug() << "socketError" << error;
 }
 
 
 bool HttpResponse::isConnected() const {
     return m_connection->isConnected();
+}
+
+
+void HttpResponse::socketDisconnected() {
 }
 
 
@@ -70,20 +86,32 @@ void HttpResponse::clearHeaders() {
 
 
 void HttpResponse::setStatus(int statusCode, const QString& statusText) {
+    Q_ASSERT(m_sentHeaders == false);
     m_statusCode = statusCode;
     m_statusText = statusText;
 }
 
 
+bool HttpResponse::chunked() {
+    if (m_chunked) { return true; }
+    if (m_headers.value("Transfer-Encoding").toLower() == "chunked") {
+        m_chunked = true;
+        return true;
+        }
+    return false;
+}
+
+
 void HttpResponse::writeHeaders() {
+    Q_ASSERT(m_sentHeaders == false);
     if (m_sentHeaders) { return; }
 
     QString contentType = m_headers.value("Content-Type").toLower();
-    bool cancompress = (
+    bool cancompress = (m_connection->settings()->gzip() && !chunked() && (
         contentType.startsWith("text/plain") ||
         contentType.startsWith("text/html") ||
         contentType.startsWith("text/css") ||
-        contentType.startsWith("application/javascript")
+        contentType.startsWith("application/javascript"))
         );
 
     bool requestGzip = (
@@ -91,12 +119,14 @@ void HttpResponse::writeHeaders() {
         m_connection->request()->header("Accept-Encoding").contains("gzip")
         );
 
-    bool chunked = m_headers.value("Transfer-Encoding").toLower() == "chunked" ;
-
     bool c200 = (m_statusCode == 200);
 
-    if (cancompress && requestGzip && !chunked && c200) {
+    if (cancompress && requestGzip && !chunked() && c200) {
         setHeader("Content-Encoding", "gzip");
+        }
+
+    if (!cancompress) {
+        m_headers.remove("Content-Length");
         }
 
     // int dbs = m_dataBody.size();
@@ -104,7 +134,9 @@ void HttpResponse::writeHeaders() {
         m_dataBody = HttpGZipCompression::compressData(m_dataBody);
         }
 
-    m_headers["Content-Length"] = QString("%1").arg(m_dataBody.size());
+    if (!chunked()) {
+        m_headers["Content-Length"] = QString("%1").arg(m_dataBody.size());
+        }
     /*
     qDebug() << "gzip" << cancompress << requestGzip << !chunked << m_headers.value("Content-Type") << dbs << m_dataBody.size()
             << ( (m_connection->request() != NULL) ? m_connection->request()->path() : "") 
@@ -156,33 +188,40 @@ void HttpResponse::flushSocket() {
 
 void HttpResponse::close() {
     if (!isConnected()) { return; }
-    bool chunked = m_headers.value("Transfer-Encoding").toLower() == "chunked" ;
-    if (chunked) {
+    if (chunked()) {
         m_socket->write("0\r\n\r\n");
         }
     m_socket->flush();
+    if (!isConnected()) { return; }
     m_socket->waitForBytesWritten(10000);
     m_socket->disconnectFromHost();
 }
 
 
 void HttpResponse::write(const QByteArray& data) {
-    bool chunked = m_headers.value("Transfer-Encoding").toLower() == "chunked" ;
-    if (chunked && data.size() > 0) {
+    if (!isConnected()) { return; }
+    if (chunked() && data.size() > 0) {
         if (!m_sentHeaders) {
             writeHeaders();
             }
+        m_canWriteToSocket = true;
+        m_closeAfterFlush = false;
+        m_dataBody.clear();
+        m_dataBodyPointer = 0;
         m_dataBody += QByteArray::number(data.size(),16) ;
         m_dataBody += "\r\n";
         m_dataBody += data;
         m_dataBody += "\r\n";
-        m_canWriteToSocket = true;
-        m_writerTimer->setInterval(0);
-        m_writerTimer->start();
+        while (isConnected() && m_dataBody.size() > m_dataBodyPointer) {
+            slotWrite(false);
+            m_socket->flush();
+            }
+        // m_writerTimer->setInterval(0);
+        // m_writerTimer->start();
         return;
         }
 
-    if (!chunked) {
+    if (!chunked()) {
         if (m_flushed) {
             qDebug() << "You could not write to HttpRespose when the response is flushed. Data written are ignored.";
             return;
@@ -215,8 +254,8 @@ void HttpResponse::flushAndDelete() {
 }
 
 
-void HttpResponse::slotWrite() {
-    if (m_headers.size() > 0 && !m_sentHeaders) {
+void HttpResponse::slotWrite(bool startTimer) {
+    if (!m_sentHeaders) {
         m_canWriteToSocket = true;
         writeHeaders();
         }
@@ -254,8 +293,10 @@ void HttpResponse::slotWrite() {
         }
 
   konec:
-    m_writerTimer->setInterval(100);
-    m_writerTimer->start();
+    if (startTimer) {
+        m_writerTimer->setInterval(100);
+        m_writerTimer->start();
+        }
 }
 
 

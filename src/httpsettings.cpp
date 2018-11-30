@@ -110,6 +110,7 @@ void HttpSettings::setDefaultValues() {
     m_default_sslCaCrt = "";
     m_default_ignoreAllSslErrors = true;
     m_default_threads = true;
+    m_default_gzip = true;
 }
 
 
@@ -124,12 +125,12 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
                               settings->value(m_section2 + "/port",                  m_default_port)).toInt();
     if (settings->contains(section+"/address")) {
         m_address = settings->value(section+"/address").toString();
-        qDebug() << "obsahuje sekce 1, nastavuji" << settings->value(section+"/address").toString();
+        // qDebug() << "obsahuje sekce 1, nastavuji" << settings->value(section+"/address").toString();
     } else if (settings->contains(m_section2+"/address")) {
         m_address = settings->value(m_section2+"/address").toString();
-        qDebug() << "obsahuje sekce 2, nastavuji" << settings->value(section+"/address").toString();
+        // qDebug() << "obsahuje sekce 2, nastavuji" << settings->value(section+"/address").toString();
     } else { 
-        qDebug() << "neobsahuje, nastavuji" << m_default_address;
+        // qDebug() << "neobsahuje, nastavuji" << m_default_address;
         m_address = m_default_address; 
         }
     m_timeout               = settings->value(  section  + "/timeout",
@@ -162,6 +163,8 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
                               settings->value(m_section2 + "/IgnoreAllSslErrors",    m_default_ignoreAllSslErrors)).toBool();
     m_threads               = settings->value(  section  + "/threads",              
                               settings->value(m_section2 + "/threads",               m_default_threads)).toBool();
+    m_gzip                  = settings->value(  section  + "/gzip",              
+                              settings->value(m_section2 + "/gzip",                  m_default_gzip)).toBool();
 
     #define SSLERROR(x) { if (settings->value(  section  + "/Ignore" + #x, \
                               settings->value(m_section2 + "/Ignore" + #x, false)).toBool()) { \

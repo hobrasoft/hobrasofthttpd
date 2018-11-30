@@ -15,6 +15,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QStringList>
+#include <QSharedPointer>
 
 namespace HobrasoftHttpd {
 
@@ -123,14 +124,6 @@ class HttpSession {
         return m_data->values;
         }
 
-
-    /**
-     * @brief Calls delete to free data of session. Called after the session is removed from session store
-     */
-    void freeData() {
-        delete m_data;
-        }
-
   private:
     /**
      * @brief Data of the session
@@ -142,7 +135,7 @@ class HttpSession {
         };
 
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
-    HttpSessionData *m_data;
+    QSharedPointer<HttpSessionData> m_data;
     mutable QMutex   m_mutex;
     #endif
 

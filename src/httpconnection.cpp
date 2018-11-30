@@ -84,8 +84,12 @@ QString HttpConnection::commonName() const {
 
 
 void HttpConnection::close() {
-    if (!isConnected()) { return; }
-    if (m_socket) { m_socket->disconnectFromHost(); }
+    if (!isConnected()) { 
+        return; 
+        }
+    if (m_socket) { 
+        m_socket->disconnectFromHost(); 
+        }
     deleteRequest();
 
 }

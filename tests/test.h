@@ -88,6 +88,7 @@ class Test : public QObject {
     void    httpserverStartIPv4();
     void    httpserverStartIPv6();
     void    httpserverHttpService();
+    void    httpserverHttpServiceGzip();
     void    httpserverHttpService404();
     void    httpserverHttpServiceShtmlInclude();
     void    httpServiceGet();
@@ -121,7 +122,7 @@ class Test : public QObject {
 
   private:
     void    httpserverStartIP(const QHostAddress&);
-    HobrasoftHttpd::HttpServer *createServer(QObject *parent, const QHostAddress& address = QHostAddress::LocalHost);
+    HobrasoftHttpd::HttpServer *createServer(QObject *parent, const QHostAddress& address = QHostAddress::LocalHost, bool gzip = false);
     HobrasoftHttpd::HttpSessionStore *m_sessionStore;
 
     QHostAddress m_localhost;

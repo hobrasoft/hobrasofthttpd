@@ -113,6 +113,10 @@ class HttpSettings : public QObject {
     void            setThreads(bool x) { m_threads = x; }                                   ///< Set starting new thread for each connection
     void            setDefaultThreads(bool x) { m_default_threads = x; }                    ///< Set default value for starting new thread for each connection
 
+    bool            gzip() const { return m_gzip; }                                         ///< Returns true if server can use gzip compression
+    void            setGzip(bool x) { m_gzip = x; }                                         ///< Enable gzip compression
+    void            setDefaultGzip(bool x) { m_default_gzip = x; }                          ///< Set default value for gzip compression
+
     const QString&  sslKey() const { return m_sslKey; }                                     ///< Returns SSL key
     void            setSslKey(const QString& x) { m_sslKey = x; }                           ///< Set SSL key
     void            setDefaultSslKey(const QString& x) { m_default_sslKey = x; }            ///< Set default SSL key
@@ -188,6 +192,7 @@ class HttpSettings : public QObject {
     QSet<QSslError> m_sslErrors;
     bool            m_ignoreAllSslErrors;
     bool            m_threads;
+    bool            m_gzip;
 
     // Default values
     QString         m_default_section2;
@@ -209,6 +214,7 @@ class HttpSettings : public QObject {
     QString         m_default_sslCaCrt;
     bool            m_default_ignoreAllSslErrors;
     bool            m_default_threads;
+    bool            m_default_gzip;
     #endif
 
   private:

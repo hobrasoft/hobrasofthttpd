@@ -105,7 +105,6 @@ void HttpSessionStore::slotCleaner() {
 void HttpSessionStore::remove(HttpSession session) {
     emit aboutToRemove(session);
     m_sessions.remove(session.id());
-    session.freeData();
 }
 
 
