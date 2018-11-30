@@ -65,13 +65,14 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
         return;
         }
 
-    QString filename = rootpath + path;
+    QString filename = QDir::fromNativeSeparators(rootpath + path);
     QFileInfo fileinfo(filename);
     if (fileinfo.isDir()) {
-        filename += "/" + settings()->indexFile();
+        filename += "/" + QDir::fromNativeSeparators(settings()->indexFile());
+        fileinfo.setFile(filename);
         }
 
-    QFile file(QDir::toNativeSeparators(filename));
+    QFile file(fileinfo.canonicalFilePath());
     if (!file.exists()) {
         response->setStatus(404, "Not found");
         response->write("404 Not found");

@@ -337,7 +337,6 @@ void Test::httpserverHttpServiceGzip() {
     QTimer::singleShot(1000, &loop, SLOT(quit()));
     loop.exec();
     QVERIFY(reply->isFinished());
-qDebug() << reply->error();
     QVERIFY(reply->error() == QNetworkReply::NoError);
     QVERIFY(reply->readAll() == text);
     file.remove();
