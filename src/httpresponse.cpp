@@ -108,9 +108,8 @@ void HttpResponse::writeHeaders() {
 
     QString contentType = m_headers.value("Content-Type").toLower();
     bool cancompress = (m_connection->settings()->gzip() && !chunked() && (
-        contentType.startsWith("text/plain") ||
-        contentType.startsWith("text/html") ||
-        contentType.startsWith("text/css") ||
+        contentType.startsWith("text/") ||
+        contentType.startsWith("application/json") ||
         contentType.startsWith("application/javascript"))
         );
 
