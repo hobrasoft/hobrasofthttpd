@@ -88,6 +88,7 @@ class Test : public QObject {
     void    httpserverStartIPv4();
     void    httpserverStartIPv6();
     void    httpserverHttpService();
+    void    crc32();
     void    httpserverHttpServiceGzip();
     void    httpserverHttpService404();
     void    httpserverHttpServiceShtmlInclude();

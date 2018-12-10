@@ -6,6 +6,7 @@
 #ifndef HTTPGZIPCOMPRESSION_H
 #define HTTPGZIPCOMPRESSION_H
 
+#include "testsettings.h"
 #include <QByteArray>
 
 static const quint32 crc_32_tab[] = {
@@ -55,6 +56,7 @@ static const quint32 crc_32_tab[] = {
 };
 
 class HttpGZipCompression {
+        FRIEND_CLASS_TEST
     public:
         static QByteArray compressData(const QByteArray &data);
 

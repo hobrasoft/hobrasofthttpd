@@ -11,6 +11,7 @@
 #include "httprequest.h"
 #include "httpresponse.h"
 #include "httpsessionstore.h"
+#include "httpgzipcompression.h"
 #include "staticfilecontroller.h"
 
 #include <QDebug>
@@ -315,6 +316,27 @@ void Test::httpserverHttpService() {
     QVERIFY(reply->error() == QNetworkReply::NoError);
     QVERIFY(reply->readAll() == "test");
     file.remove();
+
+}
+
+
+void Test::crc32() {
+    quint32 crc;
+    QString crcstring;
+
+    crc = HttpGZipCompression::crc32(QByteArray("ABCD", 4));
+    crcstring = QString("0x%1").arg(crc, 8, 16, QLatin1Char('0')).toUpper();
+    QVERIFY(crcstring == "0XDB1720A5");
+
+    crc = HttpGZipCompression::crc32(QByteArray("1234567890", 10));
+    crcstring = QString("0x%1").arg(crc, 8, 16, QLatin1Char('0')).toUpper();
+    QVERIFY(crcstring == "0X261DAEE5");
+
+    QByteArray body("AAAAABBBBBCCCCCDDDDDEEEEEFFFFFGGGGGHHHHHIIIIIKKKKK"
+                    "AAAAABBBBBCCCCCDDDDDEEEEEFFFFFGGGGGHHHHHIIIIIKKKKK", 100);
+    crc = HttpGZipCompression::crc32(body);
+    crcstring = QString("0x%1").arg(crc, 8, 16, QLatin1Char('0')).toUpper();
+    QVERIFY(crcstring == "0X178D6B76");
 
 }
 

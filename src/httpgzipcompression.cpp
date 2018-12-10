@@ -35,15 +35,15 @@ QByteArray HttpGZipCompression::footer(const QByteArray &sourceData) {
 
 
 quint32 HttpGZipCompression::updateCRC32(unsigned char ch, quint32 crc) {
-    return (crc_32_tab[((crc) ^ ((quint8)ch)) & 0xff] ^ ((crc) >> 8));
+    return (crc_32_tab[((crc) ^ ((quint32)ch)) & 0xff] ^ ((crc) >> 8));
 }
 
 
 quint32 HttpGZipCompression::crc32(const QByteArray& data) {
-    quint32 crc = 0xFFFFFFFF;
+    quint32 crc = 0xFFFFFFFFL;
     for (int i=0; i<data.size(); i++) {
         crc = updateCRC32(data[i], crc);
         }
-    return crc;
+    return ~crc;
 }
 
