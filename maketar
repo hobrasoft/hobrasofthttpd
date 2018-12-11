@@ -3,7 +3,7 @@
 VERZE=$(cat version)
 
 doxygen
-(cd doc/html; find . -print | cpio -pvudm ../../../hobrasoft/www/en/httpserver/doc)
+(cd doc/html; find . -print | cpio -pvudm /home/tycho/SRC/hobrasoft/www/en/httpserver/doc)
 
 tar -cjf /tmp/hobrasofthttp-$VERZE.tar.bz2 \
     --exclude '.tmp' \
