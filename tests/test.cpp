@@ -341,6 +341,14 @@ void Test::crc32() {
 }
 
 
+void Test::gzip() {
+    QByteArray data("ABCD01234567890", 14);
+    QVERIFY(HttpGZipCompression::compressData(data).toHex() == 
+            "1f8b080000000000000b737472763130343236313533b7b004007debbeb40e000000");
+}
+    
+
+
 void Test::httpserverHttpServiceGzip() {
     QObject qobject(0);
     createServer(&qobject, QHostAddress::LocalHost, true);
