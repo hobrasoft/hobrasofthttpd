@@ -9,11 +9,17 @@
 #include "httpconnection.h"
 #include "httprequesthandler.h"
 #include "httptcpserver.h"
+#include "staticfilecontroller.h"
 #include <QSslSocket>
 #include <QPointer>
 #include <QThread>
 
 using namespace HobrasoftHttpd;
+
+
+HttpServer::~HttpServer() {
+    StaticFileController::deleteMimeTypes();
+}
 
 
 HttpServer::HttpServer(QObject *parent) : QObject(parent) {

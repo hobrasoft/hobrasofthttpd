@@ -102,6 +102,8 @@ class HttpServer : public QObject {
      */
     HttpServer(const HttpSettings* settings, QObject *parent);
 
+   ~HttpServer();
+
     /**
      * @brief Starts of restart HttpServer with new parameters
      */

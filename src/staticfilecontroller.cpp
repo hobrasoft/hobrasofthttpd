@@ -21,11 +21,12 @@
 
 using namespace HobrasoftHttpd;
 
-QHash<QString, QString> StaticFileController::m_mimetypes;
+QHash<QString, QString> *StaticFileController::m_mimetypes = NULL;
+
 
 StaticFileController::StaticFileController(HttpConnection *parent) : HttpRequestHandler(parent) {
-
-    if (m_mimetypes.isEmpty()) { 
+    if (m_mimetypes == NULL) {
+        m_mimetypes = new QHash<QString, QString>();
         addMimeType("png",   "image/png");
         addMimeType("jpeg",  "image/jpeg");
         addMimeType("jpg",   "image/jpeg");
@@ -49,8 +50,22 @@ const HttpSettings *StaticFileController::settings() const {
 }
 
 
+QString StaticFileController::mimetype(const QString& fileSuffix) {
+    if (m_mimetypes != NULL && m_mimetypes->contains(fileSuffix)) {
+        return m_mimetypes->value(fileSuffix);
+        }
+    return "applicaton/octet-stream";
+}
+
+
 void StaticFileController::addMimeType(const QString& fileSuffix, const QString& mimetype) {
-    m_mimetypes[fileSuffix] = mimetype;
+    m_mimetypes->insert(fileSuffix, mimetype);
+}
+
+
+void StaticFileController::deleteMimeTypes() {
+    delete m_mimetypes;
+    m_mimetypes = NULL;
 }
 
 
@@ -88,9 +103,7 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
         }
 
     QString suffix = fileinfo.suffix();
-    if (!suffix.isEmpty() && m_mimetypes.contains(suffix)) {
-        response->setHeader("Content-Type", m_mimetypes[suffix]);
-        }
+    response->setHeader("Content-Type", mimetype(suffix));
 
     response->setHeader("Cache-Control", QString("Public,max-age=") + QString("%1").arg(settings()->maxAge()) );
     response->setHeader("Expires", toGMTString(QDateTime::currentDateTime().addSecs(settings()->maxAge()).toUTC()) );

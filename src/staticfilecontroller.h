@@ -57,6 +57,17 @@ class StaticFileController : public HttpRequestHandler {
     static QString toGMTString(const QDateTime&);
 
 
+    /**
+     * @brief Method called from Httpd server desctructor to prevent sigsegv in some situations
+     */
+    static void deleteMimeTypes();
+
+
+    /**
+     * @brief Returns contentType based on file suffix
+     */
+    static QString mimetype(const QString& fileSuffix);
+
   private:
     /**
      * @brief Returs pointer to HttpSettings used in the HttpServer
@@ -64,7 +75,7 @@ class StaticFileController : public HttpRequestHandler {
     const HttpSettings *settings() const;
 
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
-    static QHash<QString, QString> m_mimetypes;
+    static QHash<QString, QString> *m_mimetypes;
     HttpConnection  *m_parent;
     #endif
 
