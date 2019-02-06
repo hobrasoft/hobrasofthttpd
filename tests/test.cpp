@@ -948,18 +948,18 @@ void Test::httpServiceAbort() {
 void Test::slotStaticFileController(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
     StaticFileController *sfc = new StaticFileController(request->connection());
     sfc->addMimeType("tiff", "image/tiff");
-    QVERIFY(sfc->m_mimetypes["png"]   == "image/png");
-    QVERIFY(sfc->m_mimetypes["jpeg"]  == "image/jpeg");
-    QVERIFY(sfc->m_mimetypes["jpg"]   == "image/jpeg");
-    QVERIFY(sfc->m_mimetypes["gif"]   == "image/gif");
-    QVERIFY(sfc->m_mimetypes["tiff"]  == "image/tiff");
-    QVERIFY(sfc->m_mimetypes["txt"]   == "text/plain");
-    QVERIFY(sfc->m_mimetypes["html"]  == "text/html");
-    QVERIFY(sfc->m_mimetypes["xhtml"] == "text/html");
-    QVERIFY(sfc->m_mimetypes["htm"]   == "text/html");
-    QVERIFY(sfc->m_mimetypes["css"]   == "text/css");
-    QVERIFY(sfc->m_mimetypes["json"]  == "application/json");
-    QVERIFY(sfc->m_mimetypes["js"]    == "application/javascript");
+    QVERIFY(sfc->mimetype("png")   == "image/png");
+    QVERIFY(sfc->mimetype("jpeg")  == "image/jpeg");
+    QVERIFY(sfc->mimetype("jpg")   == "image/jpeg");
+    QVERIFY(sfc->mimetype("gif")   == "image/gif");
+    QVERIFY(sfc->mimetype("tiff")  == "image/tiff");
+    QVERIFY(sfc->mimetype("txt")   == "text/plain");
+    QVERIFY(sfc->mimetype("html")  == "text/html");
+    QVERIFY(sfc->mimetype("xhtml") == "text/html");
+    QVERIFY(sfc->mimetype("htm")   == "text/html");
+    QVERIFY(sfc->mimetype("css")   == "text/css");
+    QVERIFY(sfc->mimetype("json")  == "application/json");
+    QVERIFY(sfc->mimetype("js")    == "application/javascript");
 
     QVERIFY(sfc->settings() == request->connection()->settings());
 
