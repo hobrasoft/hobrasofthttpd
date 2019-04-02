@@ -11,6 +11,9 @@
 #include "httprequest.h"
 #include "httpsettings.h"
 #include "httpserver.h"
+#include <QSet>
+#include <QSetIterator>
+#include <QHashIterator>
 
 using namespace HobrasoftHttpd;
 
@@ -89,15 +92,22 @@ HttpSession HttpSessionStore::session(const QByteArray& id) {
 
 void HttpSessionStore::slotCleaner() {
     QDateTime now = QDateTime::currentDateTime();
-    QHash<QByteArray, HttpSession>::iterator i = m_sessions.begin() ;
-    while (i != m_sessions.end()) {
-        QHash<QByteArray, HttpSession>::iterator prev = i;
-        i++;
-        HttpSession session = prev.value();
+    QSet<QByteArray> sessionsToRemove;
+    QHashIterator<QByteArray, HttpSession> iterator(m_sessions);
+    while (iterator.hasNext()) {
+        iterator.next();
+        const QByteArray& key = iterator.key();
+        const HttpSession& session = iterator.value();
         if (!session.lastAccess().isValid() || session.lastAccess().addSecs(m_settings->sessionExpirationTime()) < now) {
             emit aboutToRemove(session);
-            m_sessions.erase(prev);
+            sessionsToRemove << key;
             }
+        }
+
+    QSetIterator<QByteArray> iteratorR(sessionsToRemove);
+    while (iteratorR.hasNext()) {
+        const QByteArray& key = iteratorR.next();
+        m_sessions.remove(key);
         }
 }
 

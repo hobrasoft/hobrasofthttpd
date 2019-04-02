@@ -91,7 +91,7 @@ class HttpSession {
     /**
      * @brief Return time of last access to the session
      */
-    QDateTime lastAccess() { 
+    QDateTime lastAccess() const { 
         QMutexLocker locker(&m_mutex);
         return (m_data == NULL) ? QDateTime() : m_data->lastAccess; 
         }
