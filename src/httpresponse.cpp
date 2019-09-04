@@ -86,7 +86,6 @@ void HttpResponse::clearHeaders() {
 
 
 void HttpResponse::setStatus(int statusCode, const QString& statusText) {
-    Q_ASSERT(m_sentHeaders == false);
     m_statusCode = statusCode;
     m_statusText = statusText;
 }
@@ -103,7 +102,6 @@ bool HttpResponse::chunked() {
 
 
 void HttpResponse::writeHeaders() {
-    Q_ASSERT(m_sentHeaders == false);
     if (m_sentHeaders) { return; }
 
     QString contentType = m_headers.value("Content-Type").toLower();
