@@ -12,6 +12,11 @@
 #include "httpserver.h"
 #include "httpsettings.h"
 #include <QTcpSocket>
+#include <QSslSocket>
+#include <QSslCertificate>
+#include <QThread>
+
+#include <QDebug>
 
 using namespace HobrasoftHttpd;
 
@@ -23,12 +28,95 @@ HttpConnection::~HttpConnection() {
 }
 
 
-HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject(parent) {
-    m_peerAddress = socket->peerAddress();
-    m_socket = socket;
+QPointer<HttpConnection> HttpConnection::createConnection(HttpServer *parent, QINTPTR socketDescriptor) {
+    QPointer<HttpConnection> connection;
+    connection = new HttpConnection(parent, socketDescriptor);
+    if (parent->settings()->thread()) {
+        connection->setParent(NULL);
+        QThread *thread = new QThread(parent);
+        thread->setObjectName("Http connection");
+        thread->start();
+        connection->moveToThread(thread);
+        connect(connection, SIGNAL(destroyed(QObject *)),
+                thread,       SLOT(quit()));
+        connect(thread, SIGNAL(finished()),
+                thread,   SLOT(deleteLater()));
+        }
+    QMetaObject::invokeMethod(connection, "slotCreateSocket", Qt::QueuedConnection);
+    return connection;
+}
+
+
+HttpConnection::HttpConnection(HttpServer *parent, QINTPTR socketDescriptor) : QObject(parent) {
+    m_socketDescriptor = socketDescriptor;
+    m_socket = NULL;
+    m_parent = parent;
+}
+
+
+void HttpConnection::slotCreateSocket() {
+    qDebug() << "HttpConnection::slotCreateSocket()" << m_socketDescriptor;
+    if (!settings()->useSSL()) {
+        m_socket = new QTcpSocket(this);
+        m_socket->setSocketDescriptor(m_socketDescriptor);
+        }
+
+    if (settings()->useSSL()) {
+        m_socket = new QSslSocket(this);
+        m_socket->setSocketDescriptor(m_socketDescriptor);
+
+        /**
+         * If SSL is on then the original QTcpServer::incomingConnection() is unuseable
+         * and  SSL must be initialized.
+         */
+        QSslSocket *socket = new QSslSocket;
+        if (!socket->setSocketDescriptor(m_socketDescriptor)) {
+            qDebug() << "setSocketDescriptor failed";
+            delete socket;
+            return;
+            }
+
+        /**
+         * Signals of the QSslSocket are connected to slots to
+         * watch for SSL  errors: slotSslErrors() and slotPeerVerifyError()..
+         * When the SSL handshake is complete and the connection is encrypted() then
+         * the slotEncrypted() is called and signal newConnection() is emited from that slot.
+         */
+        m_verified = true;
+        connect(socket, SIGNAL(encrypted()),
+                this,     SLOT(slotEncrypted()));
+        connect(socket, SIGNAL(          sslErrors(const QList<QSslError>&)),
+                this,     SLOT(      slotSslErrors(const QList<QSslError>&)));
+        connect(socket, SIGNAL(    peerVerifyError(const QSslError&)),
+                this,     SLOT(slotPeerVerifyError(const QSslError&)));
+        connect(socket, SIGNAL(    disconnected()),
+                this,     SLOT(slotDisconnected()));
+
+        /**
+         * FIX: this code should load all certificates in the chain
+         * not only the first one.
+         */
+        QList<QSslCertificate> cacerts;
+        QFile cacertf(settings()->sslCaCrt());
+        if (cacertf.open(QIODevice::ReadOnly)) {
+            cacerts << QSslCertificate(&cacertf);
+            cacertf.close();
+            }
+
+        /**
+         * Sets the private key, local certificate and 
+         * CA certificates chain to the QSslSocket.
+         */
+        socket->setPrivateKey(settings()->sslKey());
+        socket->setLocalCertificate(settings()->sslCrt());
+        socket->setCaCertificates(cacerts);
+        socket->startServerEncryption();
+
+        }
+
+    m_peerAddress = m_socket->peerAddress();
     m_request = NULL;
-    m_parent  = parent;
-    m_handler = parent->requestHandler(this);
+    m_handler = m_parent->requestHandler(this);
     m_connected = true;
     m_inService = true;
 
@@ -46,10 +134,13 @@ HttpConnection::HttpConnection(HttpServer *parent, QTcpSocket *socket) : QObject
 
     connect(m_socket, SIGNAL(disconnected()),
             this,     SLOT(slotDisconnected()));
+
+
 }
 
+
 const HttpSettings *HttpConnection::settings() const { 
-    return m_parent->settings(); 
+    return m_parent->settings();
 }
 
 
@@ -200,5 +291,41 @@ QVariant HttpConnection::webStatus() const {
         }
     return list;
 }
+
+
+void HttpConnection::slotEncrypted() {
+    QSslSocket *socket = qobject_cast<QSslSocket *>(m_socket);
+    m_peerCertificate = socket->peerCertificate();
+}
+
+
+/**
+ * @brief Slot is called when the peer's certificate is not verified
+ */
+void HttpConnection::slotPeerVerifyError(const QSslError& error) {
+    Q_UNUSED(error);
+    m_verified = false;
+}
+
+
+/**
+ * @brief Slot is called when an SSL error occured
+ */
+void HttpConnection::slotSslErrors(const QList<QSslError>& errors) {
+    QList<QSslError> ignoreList;
+    for (int i=0; i<errors.size(); i++) {
+        if (settings()->ignoreSslError(errors[i])) {
+            ignoreList << errors[i];
+            continue;
+            }
+        qDebug() << "sslError" << errors[i].errorString();
+        }
+
+    QSslSocket *socket = qobject_cast<QSslSocket *>(m_socket);
+    socket->ignoreSslErrors(ignoreList);
+
+}
+
+
 
 

@@ -139,7 +139,7 @@ class HttpServer : public QObject {
      *
      * The method processes new request.
      */
-    void            slotNewConnection();
+    void            slotNewConnection(QPointer<HttpConnection>);
 
 
     void            slotConnectionClosed(QObject *);

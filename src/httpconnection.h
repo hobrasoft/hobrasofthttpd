@@ -14,6 +14,14 @@
 #include <QTimer>
 #include <QDateTime>
 #include <QHostAddress>
+#include <QPointer>
+#include <QTcpServer>
+
+#if QT_VERSION > 0x050000
+#define QINTPTR qintptr
+#else
+#define QINTPTR int
+#endif
 
 namespace HobrasoftHttpd {
 
@@ -33,10 +41,7 @@ class HttpConnection : public QObject {
 
    ~HttpConnection();
 
-    /**
-     * @brief Constructor is called automatically when new request arrived
-     */
-    HttpConnection(HttpServer *parent, QTcpSocket *socket);
+    static QPointer<HttpConnection> createConnection(HttpServer *parent, QINTPTR socketDescriptor);
 
     /**
      * @brief Returns new instance of class HttpResponse
@@ -77,12 +82,6 @@ class HttpConnection : public QObject {
      * @brief Returns true if the client is verified using SSL
      */
     bool verified() const { return m_verified; }
-
-
-    /**
-     * @brief Sets the flag verified
-     */
-    void setVerified(bool x) { m_verified = x; }
 
     /**
      * @brief Sets peer's certificate
@@ -131,10 +130,20 @@ class HttpConnection : public QObject {
     void        slotTimeout();
     void        slotRead();
     void        slotDisconnected();
+    void        slotCreateSocket();
+    void        slotEncrypted();
+    void        slotSslErrors(const QList<QSslError>&);
+    void        slotPeerVerifyError(const QSslError&);
 
   private:
+    /**
+     * @brief Constructor is called from createConnection()
+     */
+    HttpConnection(HttpServer *parent, QINTPTR socketDescriptor);
+
     void                 deleteRequest();
     void                 startTimeout();
+    QINTPTR              m_socketDescriptor;
     QTcpSocket          *m_socket;
     QTimer              *m_timeout;
     HttpRequest         *m_request;

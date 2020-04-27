@@ -52,8 +52,8 @@ void HttpServer::start() {
         delete m_server;
         }
     m_server = new HttpTcpServer(this);
-    connect(m_server, SIGNAL(    newConnection()),
-            this,       SLOT(slotNewConnection()));
+    connect(m_server, SIGNAL(    newConnection(QPointer<HttpConnection>)),
+            this,       SLOT(slotNewConnection(QPointer<HttpConnection>)));
 
     m_server->listen(address, port);
 
@@ -79,29 +79,12 @@ HttpRequestHandler *HttpServer::requestHandler(HttpConnection *parent) {
 }
 
 
-void HttpServer::slotNewConnection() {
+void HttpServer::slotNewConnection(QPointer<HttpConnection> connection) {
     bool threads = m_settings->threads();
-    while (m_server->hasPendingConnections()) {
-        QTcpSocket *socket = m_server->nextPendingConnection();
-        QPointer<HttpConnection> connection = new HttpConnection(this, socket);
-        socket->setParent(connection);
-        connection->setPeerCertificate(m_server->peerCertificate(socket));
-        connection->setVerified(m_server->verified(socket));
-
-        if (threads) {
-            QThread *thread = new QThread(this);
-            thread->setObjectName("Http connection");
-            thread->start();
-            m_connections << connection;
-            connection->setParent(0);
-            connection->moveToThread(thread);
-            connect(connection, SIGNAL(destroyed(QObject *)),
-                    this,         SLOT(slotConnectionClosed(QObject *)));
-            connect(connection, SIGNAL(destroyed(QObject *)),
-                    thread,       SLOT(quit()));
-            connect(thread, SIGNAL(finished()),
-                    thread,   SLOT(deleteLater()));
-            }
+    if (threads) {
+        m_connections << connection;
+        connect(connection, SIGNAL(destroyed(QObject *)),
+                this,         SLOT(slotConnectionClosed(QObject *)));
         }
 }
 

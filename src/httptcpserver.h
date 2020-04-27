@@ -11,17 +11,13 @@
 #include <QHash>
 #include <QSslError>
 #include <QSslCertificate>
+#include <QPointer>
+#include "httpconnection.h"
 
 namespace HobrasoftHttpd {
 
 class HttpServer;
 class HttpSettings;
-
-#if QT_VERSION > 0x050000
-#define QINTPTR qintptr
-#else
-#define QINTPTR int
-#endif
 
 /**
  * @brief Listens for incoming TCP connections, supports plain and ssl connections
@@ -39,27 +35,13 @@ class HttpTcpServer : public QTcpServer {
     QSslCertificate peerCertificate(QTcpSocket *) const;
 
   signals:
-
-  private slots:
-    void    slotEncrypted();
-    void    slotSslErrors(const QList<QSslError>&);
-    void    slotPeerVerifyError(const QSslError&);
-    void    slotDisconnected();
+    void    newConnection(QPointer<HttpConnection>);
 
   private:
     void    incomingConnection(QINTPTR socketDescriptor);
 
     const HttpSettings   *m_settings;
-
-    /**
-     * @brief Verified status of each socket
-     */
-    QHash<QTcpSocket *, bool>   m_verified;
-
-    /**
-     * @brief Peer's certificate of each socket
-     */
-    QHash<QTcpSocket *, QSslCertificate>   m_peerCert;
+    HttpServer *m_parent;
 
 };
 
