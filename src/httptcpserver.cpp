@@ -36,7 +36,7 @@ void HttpTcpServer::incomingConnection(QINTPTR socketDescriptor) {
      * If no SSL is used then the original QTcpServer::incomingConnection() is called.
      */
 
-    qDebug() << "HttpTcpServer::incomingConnection()" << socketDescriptor;
+    // qDebug() << "HttpTcpServer::incomingConnection()" << socketDescriptor;
     QPointer<HttpConnection> connection = HttpConnection::createConnection(m_parent, socketDescriptor);
     emit newConnection(connection);
 }
