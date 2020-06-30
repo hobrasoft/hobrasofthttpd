@@ -55,7 +55,6 @@ HttpConnection::HttpConnection(HttpServer *parent, QINTPTR socketDescriptor) : Q
 
 
 void HttpConnection::slotCreateSocket() {
-    qDebug() << "HttpConnection::slotCreateSocket()" << m_socketDescriptor;
     if (!settings()->useSSL()) {
         m_socket = new QTcpSocket(this);
         m_socket->setSocketDescriptor(m_socketDescriptor);
