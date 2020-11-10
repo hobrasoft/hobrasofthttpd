@@ -27,6 +27,7 @@ QHash<QString, QString> *StaticFileController::m_mimetypes = NULL;
 StaticFileController::StaticFileController(HttpConnection *parent) : HttpRequestHandler(parent) {
     if (m_mimetypes == NULL) {
         m_mimetypes = new QHash<QString, QString>();
+        addMimeType("svg",   "image/svg+xml");
         addMimeType("png",   "image/png");
         addMimeType("jpeg",  "image/jpeg");
         addMimeType("jpg",   "image/jpeg");
