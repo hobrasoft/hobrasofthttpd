@@ -23,53 +23,52 @@ HttpServer::~HttpServer() {
 
 
 HttpServer::HttpServer(QObject *parent) : QObject(parent) {
-    m_server = NULL;
     m_settings = new HttpSettings(this);
     start();
 }
 
 
 HttpServer::HttpServer(const HttpSettings* settings, QObject *parent) : QObject(parent) {
-    m_server = NULL;
     m_settings = settings;
     start();
 }
 
 
 void HttpServer::close() {
-    if (m_server != NULL) {
-        m_server->close();
+    for (int i=0; i<m_servers.size(); i++) {
+        m_servers[i]->close();
+        delete m_servers[i];
         }
+    m_servers.clear();
 }
 
 
 void HttpServer::start() {
-    QHostAddress address = m_settings->address();
-    int             port = m_settings->port();
-    
-    if (m_server != NULL) {
-        m_server->close();
-        delete m_server;
-        }
-    m_server = new HttpTcpServer(this);
-    connect(m_server, SIGNAL(    newConnection(QPointer<HttpConnection>)),
-            this,       SLOT(slotNewConnection(QPointer<HttpConnection>)));
+    QString address = m_settings->address();
+    int        port = m_settings->port();
 
-    m_server->listen(address, port);
+    close();
+    QStringList addresses = address.split(QRegExp("\\s+"));
+    for (int i=0; i<addresses.size(); i++) {
+        HttpTcpServer *server = new HttpTcpServer(this);
+        connect(server, SIGNAL(    newConnection(QPointer<HttpConnection>)),
+                this,     SLOT(slotNewConnection(QPointer<HttpConnection>)));
 
-    if (!m_server->isListening()) {
-        qWarning("HttpServer cannot bind on %s:%i : %s", 
-                    qPrintable(address.toString()), 
-                    port, 
-                    qPrintable(m_server->errorString())
-                    );
-      } else {
-        /*
-        qDebug("HttpServer listening on %s port %i",
-                    qPrintable(address.toString()), 
-                    port
-                    );
-        */
+        QHostAddress addr(addresses[i]);
+        server->listen(addr, port);
+
+        if (!server->isListening()) {
+            qWarning("HttpServer cannot bind on %s:%i : %s", 
+                        qPrintable(addresses[i]),
+                        port, 
+                        qPrintable(server->errorString())
+                        );
+          } else {
+            qDebug("HttpServer listening on %s port %i",
+                        qPrintable(addresses[i]),
+                        port
+                        );
+            }
         }
 }
 

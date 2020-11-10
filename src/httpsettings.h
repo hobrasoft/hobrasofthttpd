@@ -26,7 +26,7 @@ can looks like this:
  
 @code
 [httpd]
-address = 0.0.0.0
+address = 192.168.1.1   2001:db8:1000:1000::1
 port = 8086
 root = /home/tycho/SRC/mdcv04ip/htdocs
 cacheMaxAge = 600000
@@ -57,9 +57,9 @@ class HttpSettings : public QObject {
      */
     HttpSettings(const QSettings *, const QString& section, QObject *parent);
 
-    const QHostAddress&  address() const { return m_address; }                              ///< Returns the bind address
-    void            setAddress(const QHostAddress& x) { m_address = x; }                    ///< Sets the bind address
-    void            setDefaultAddress(const QHostAddress& x) { m_default_address = x; }     ///< Sets the defailt bind address
+    const QString&  address() const { return m_address; }                                   ///< Returns the bind address
+    void            setAddress(const QString& x) { m_address = x; }                         ///< Sets the bind address
+    void            setDefaultAddress(const QString& x) { m_default_address = x; }          ///< Sets the defailt bind address
 
     int             port() const { return m_port; }                                         ///< Returns the port number 
     void            setPort(int x) { m_port = x; }                                          ///< Sets the port number
@@ -174,7 +174,7 @@ class HttpSettings : public QObject {
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     QString         m_section2;
     int             m_port;
-    QHostAddress    m_address;
+    QString         m_address;
     int             m_timeout;
     int             m_maxAge;
     QString         m_encoding;
@@ -197,7 +197,7 @@ class HttpSettings : public QObject {
     // Default values
     QString         m_default_section2;
     int             m_default_port;
-    QHostAddress    m_default_address;
+    QString         m_default_address;
     int             m_default_timeout;
     int             m_default_maxAge;
     QString         m_default_encoding;

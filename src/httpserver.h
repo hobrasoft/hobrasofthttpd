@@ -146,7 +146,7 @@ class HttpServer : public QObject {
 
   private:
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
-    HttpTcpServer       *m_server;
+    QList<HttpTcpServer *>  m_servers;
     const HttpSettings  *m_settings;
     QList<QPointer<HobrasoftHttpd::HttpConnection> > m_connections;
     #endif

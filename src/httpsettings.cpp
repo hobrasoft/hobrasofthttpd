@@ -79,7 +79,7 @@ HttpSettings::HttpSettings(QObject *parent) : QObject(parent) {
 
 void HttpSettings::setDefaultValues() {
     m_port                  = 8080;
-    m_address               = QHostAddress::Any;
+    m_address               = "::";
     m_timeout               = 600;
     m_maxAge                = 3600;
     m_encoding              = "UTF-8";
@@ -94,7 +94,7 @@ void HttpSettings::setDefaultValues() {
 
     m_default_section2 = "http";
     m_default_port = 8080;
-    m_default_address = QHostAddress::Any;
+    m_default_address = "::";
     m_default_timeout = 600;
     m_default_maxAge = 3600;
     m_default_encoding = "UTF-8";
