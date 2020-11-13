@@ -11,10 +11,10 @@
 #include "httpresponse.h"
 #include "httpserver.h"
 #include "httpsettings.h"
+#include "httpthread.h"
 #include <QTcpSocket>
 #include <QSslSocket>
 #include <QSslCertificate>
-#include <QThread>
 
 #include <QDebug>
 
@@ -33,7 +33,7 @@ QPointer<HttpConnection> HttpConnection::createConnection(HttpServer *parent, QI
     connection = new HttpConnection(parent, socketDescriptor);
     if (parent->settings()->thread()) {
         connection->setParent(NULL);
-        QThread *thread = new QThread(parent);
+        HttpThread *thread = new HttpThread(parent);
         thread->setObjectName("Http connection");
         thread->start();
         connection->moveToThread(thread);

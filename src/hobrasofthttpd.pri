@@ -16,6 +16,7 @@ HEADERS += \
  $$PWD/httpsettings.h \
  $$PWD/httptcpserver.h \
  $$PWD/httpgzipcompression.h \
+ $$PWD/httpthread.h \
  $$PWD/testsettings.h \
 
 
@@ -33,4 +34,5 @@ SOURCES += \
  $$PWD/httpsettings.cpp \
  $$PWD/httpgzipcompression.cpp \
  $$PWD/httptcpserver.cpp \
+ $$PWD/httpthread.cpp \
 
