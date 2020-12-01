@@ -13,6 +13,7 @@
 #include <QSslSocket>
 #include <QPointer>
 #include <QThread>
+#include <QStringList>
 
 using namespace HobrasoftHttpd;
 
