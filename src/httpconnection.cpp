@@ -297,6 +297,7 @@ void HttpConnection::slotEncrypted() {
     m_peerCertificate = socket->peerCertificate();
 }
 
+#if QT_VERSION > 0x050000
 
 /**
  * @brief Slot is called when the peer's certificate is not verified
@@ -324,7 +325,7 @@ void HttpConnection::slotSslErrors(const QList<QSslError>& errors) {
     socket->ignoreSslErrors(ignoreList);
 
 }
-
+#endif
 
 
 

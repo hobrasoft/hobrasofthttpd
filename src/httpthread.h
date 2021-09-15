@@ -10,6 +10,11 @@
 
 #include <QThread>
 
+#if QT_VERSION < 0x050000
+#define Q_DECL_OVERRIDE
+#endif
+
+
 namespace HobrasoftHttpd {
 
 class HttpThread : public QThread {
