@@ -46,7 +46,6 @@ void HttpServer::close() {
 
 void HttpServer::start() {
     QString address = m_settings->address();
-    int        port = m_settings->port();
 
     close();
     QStringList addresses = address.split(QRegExp("\\s+"));
@@ -55,18 +54,43 @@ void HttpServer::start() {
         connect(server, SIGNAL(    newConnection(QPointer<HttpConnection>)),
                 this,     SLOT(slotNewConnection(QPointer<HttpConnection>)));
 
-        QHostAddress addr(addresses[i]);
+        QHostAddress addr;
+        int port = m_settings->port();
+        if (addresses[i].startsWith("[")) {
+            QStringList a = addresses[i].split(QString("]:"));
+            addr = QHostAddress(a[0].replace("[", "").replace("]", ""));
+            if (a.size() == 2) {
+                addr = QHostAddress(a[0].replace("[", ""));
+                port = a[1].toInt();
+                }
+          } else {
+            QStringList a = addresses[i].split(QString(":"));
+            // IPv4
+            if (a.size() == 1) {
+                addr = QHostAddress(a[0]);
+                }
+            // IPv4 + port
+            if (a.size() == 2) {
+                addr = QHostAddress(a[0]);
+                port = a[i].toInt();
+                }
+            // IPv6
+            if (a.size() > 2) {
+                addr = QHostAddress(a[0]);
+                }
+            }
+
         server->listen(addr, port);
 
         if (!server->isListening()) {
             qWarning("HttpServer cannot bind on %s:%i : %s", 
-                        qPrintable(addresses[i]),
+                        qPrintable(addr.toString()),
                         port, 
                         qPrintable(server->errorString())
                         );
           } else {
             qDebug("HttpServer listening on %s port %i",
-                        qPrintable(addresses[i]),
+                        qPrintable(addr.toString()),
                         port
                         );
             }

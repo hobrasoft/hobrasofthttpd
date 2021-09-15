@@ -132,10 +132,10 @@ class HttpConnection : public QObject {
     void        slotDisconnected();
     void        slotCreateSocket();
     void        slotEncrypted();
-#if QT_VERSION > 0x050000
+    #if QT_VERSION > 0x050000
     void        slotSslErrors(const QList<QSslError>&);
     void        slotPeerVerifyError(const QSslError&);
-#endif
+    #endif
 
   private:
     /**

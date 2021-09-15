@@ -14,7 +14,6 @@
 #define Q_DECL_OVERRIDE
 #endif
 
-
 namespace HobrasoftHttpd {
 
 class HttpThread : public QThread {

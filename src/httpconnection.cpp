@@ -84,10 +84,12 @@ void HttpConnection::slotCreateSocket() {
         m_verified = true;
         connect(socket, SIGNAL(encrypted()),
                 this,     SLOT(slotEncrypted()));
+        #if QT_VERSION > 0x050000
         connect(socket, SIGNAL(          sslErrors(const QList<QSslError>&)),
                 this,     SLOT(      slotSslErrors(const QList<QSslError>&)));
         connect(socket, SIGNAL(    peerVerifyError(const QSslError&)),
                 this,     SLOT(slotPeerVerifyError(const QSslError&)));
+        #endif
         connect(socket, SIGNAL(    disconnected()),
                 this,     SLOT(slotDisconnected()));
 
@@ -299,6 +301,7 @@ void HttpConnection::slotEncrypted() {
 
 #if QT_VERSION > 0x050000
 
+#if QT_VERSION > 0x050000
 /**
  * @brief Slot is called when the peer's certificate is not verified
  */
