@@ -300,8 +300,6 @@ void HttpConnection::slotEncrypted() {
 }
 
 #if QT_VERSION > 0x050000
-
-#if QT_VERSION > 0x050000
 /**
  * @brief Slot is called when the peer's certificate is not verified
  */
