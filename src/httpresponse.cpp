@@ -145,7 +145,7 @@ void HttpResponse::writeHeaders() {
     m_dataHeaders += "HTTP/1.1 ";
     m_dataHeaders += QByteArray::number(m_statusCode);
     m_dataHeaders += " ";
-    m_dataHeaders += m_statusText;
+    m_dataHeaders += m_statusText.toUtf8();
     m_dataHeaders += "\r\n";
 
     QStringList keys = m_headers.keys();
@@ -160,7 +160,7 @@ void HttpResponse::writeHeaders() {
     for (int i=0; i<keys.size(); i++) {
         m_dataHeaders += "Set-Cookie: ";
         m_dataHeaders += m_cookies[keys[i]].toByteArray();
-        m_dataHeaders += "; SameSite=None";
+        // m_dataHeaders += "; SameSite=None";
         m_dataHeaders += "\r\n";
         }
 
