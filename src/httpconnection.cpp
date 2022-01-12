@@ -299,6 +299,7 @@ void HttpConnection::slotEncrypted() {
     m_peerCertificate = socket->peerCertificate();
 }
 
+#if QT_VERSION > 0x050000
 
 #if QT_VERSION > 0x050000
 /**
