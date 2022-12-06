@@ -129,6 +129,15 @@ class HttpResponse : public QObject {
 
 
     /**
+     * @brief Sets the chunked flag to true or false
+     */
+    void setChunked(bool x) { m_chunked = x; }
+
+
+    void setSendContentLength(bool x) { m_sendContentLength = x; }
+    void setCloseAfterFlush(bool x) { m_closeAfterFlush = x; }
+
+    /**
      * @brief Returns true if the http connection is in connected state
      */
     bool isConnected() const;
@@ -176,6 +185,7 @@ class HttpResponse : public QObject {
     bool        m_deleteAfterFlush;
     bool        m_flushed;
     bool        m_chunked;
+    bool        m_sendContentLength;
     #endif
 };
 
