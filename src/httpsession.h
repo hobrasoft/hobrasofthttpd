@@ -22,6 +22,15 @@ namespace HobrasoftHttpd {
 class HttpSessionStore;
 
 /**
+ * @brief Data of the session
+ */
+struct HttpSessionData {
+    QByteArray  id;                     ///< Session ID
+    QDateTime   lastAccess;             ///< Time of last access
+    QHash<QString, QVariant> values;    ///< List of values
+    };
+
+/**
  * @brief Information about one session
  *
  * Please, do not use constructors. The session should be created calling HttpSessionStore functions only, otherwise 
@@ -125,14 +134,6 @@ class HttpSession {
         }
 
   private:
-    /**
-     * @brief Data of the session
-     */
-    struct HttpSessionData {
-        QByteArray  id;                     ///< Session ID
-        QDateTime   lastAccess;             ///< Time of last access
-        QHash<QString, QVariant> values;    ///< List of values
-        };
 
     #ifndef DOXYGEN_SHOULD_SKIP_THIS
     QSharedPointer<HttpSessionData> m_data;
@@ -155,6 +156,8 @@ class HttpSession {
      * @brief Operator=(), should be private. Do not use in your code
      */
     HttpSession& operator= (const HttpSession& other);
+
+    HttpSessionData data() const { return *m_data; }
 
 };
 

@@ -162,7 +162,7 @@ void HttpResponse::writeHeaders() {
     for (int i=0; i<keys.size(); i++) {
         m_dataHeaders += "Set-Cookie: ";
         m_dataHeaders += m_cookies[keys[i]].toByteArray();
-        // m_dataHeaders += "; SameSite=None";
+        m_dataHeaders += "; SameSite=None; Secure";
         m_dataHeaders += "\r\n";
         }
 
