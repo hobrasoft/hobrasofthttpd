@@ -74,6 +74,16 @@ class HttpSessionStore : public QObject {
 
     bool contains(const QByteArray& id) const { return m_sessions.contains(id); }
 
+    QList<HttpSessionData> sessionsData() const { 
+        QList<HttpSessionData> list;
+        QHashIterator<QByteArray, HttpSession> iterator(m_sessions);
+        while (iterator.hasNext()) {
+            iterator.next();
+            list << iterator.value().data();
+            }
+        return list;
+        }
+
   signals:
 
     /**

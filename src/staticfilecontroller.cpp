@@ -106,8 +106,10 @@ void StaticFileController::service(HttpRequest *request, HttpResponse *response)
     QString suffix = fileinfo.suffix();
     response->setHeader("Content-Type", mimetype(suffix));
 
-    response->setHeader("Cache-Control", QString("Public,max-age=") + QString("%1").arg(settings()->maxAge()) );
-    response->setHeader("Expires", toGMTString(QDateTime::currentDateTime().addSecs(settings()->maxAge()).toUTC()) );
+    if (!response->containsHeader("Cache-Control")) {
+        response->setHeader("Cache-Control", QString("Public,max-age=") + QString("%1").arg(settings()->maxAge()) );
+        response->setHeader("Expires", toGMTString(QDateTime::currentDateTime().addSecs(settings()->maxAge()).toUTC()) );
+        }
     response->write( file.readAll() );
     response->flush();
 }

@@ -28,6 +28,7 @@ HttpResponse::HttpResponse(HttpConnection *connection) : QObject(connection) {
     m_statusCode = 200;
     m_statusText = "OK";
     m_sentHeaders = false;
+    m_sendContentLength = true;
     m_chunked = false;
     m_dataBodyPointer = 0;
     m_dataHeadersPointer = 0;
@@ -131,9 +132,10 @@ void HttpResponse::writeHeaders() {
         m_dataBody = HttpGZipCompression::compressData(m_dataBody);
         }
 
-    if (!chunked() && m_statusCode != 204) {
+    if (!chunked() && m_statusCode != 204 && m_sendContentLength) {
         m_headers["Content-Length"] = QString("%1").arg(m_dataBody.size());
         }
+
     /*
     qDebug() << "gzip" << cancompress << requestGzip << !chunked << m_headers.value("Content-Type") << dbs << m_dataBody.size()
             << ( (m_connection->request() != NULL) ? m_connection->request()->path() : "") 
@@ -160,7 +162,7 @@ void HttpResponse::writeHeaders() {
     for (int i=0; i<keys.size(); i++) {
         m_dataHeaders += "Set-Cookie: ";
         m_dataHeaders += m_cookies[keys[i]].toByteArray();
-        // m_dataHeaders += "; SameSite=None";
+        // m_dataHeaders += "; SameSite=None; Secure"; // Tohle fungovat opravdu nechce
         m_dataHeaders += "\r\n";
         }
 

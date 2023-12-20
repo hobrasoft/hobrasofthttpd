@@ -72,7 +72,7 @@ void HttpServer::start() {
             // IPv4 + port
             if (a.size() == 2) {
                 addr = QHostAddress(a[0]);
-                port = a[i].toInt();
+                port = a[1].toInt();
                 }
             // IPv6
             if (a.size() > 2) {
