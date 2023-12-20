@@ -80,7 +80,22 @@ void HttpServer::start() {
                 }
             }
 
-        server->listen(addr, port);
+        int timeout = 1000;
+        qDebug("HttpServer bind to %s:%i",
+                qPrintable(addr.toString()),
+                port
+                );
+        for (int r=0; r<11; r++) {
+            server->listen(addr, port);
+            if (server->isListening()) { break; }
+            QThread::msleep(timeout);
+            timeout = timeout + timeout/5;
+            qDebug("HttpServer trying to bind on %s:%i : %s", 
+                        qPrintable(addr.toString()),
+                        port, 
+                        qPrintable(server->errorString())
+                        );
+            }
 
         if (!server->isListening()) {
             qWarning("HttpServer cannot bind on %s:%i : %s", 
