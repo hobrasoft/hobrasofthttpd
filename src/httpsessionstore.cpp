@@ -66,6 +66,14 @@ HttpSession HttpSessionStore::session(HttpRequest *request, HttpResponse *respon
     if (!id.isEmpty()) {
         HttpSession session(m_sessions.value(id));
         session.setLastAccess();
+        response->setCookie(
+                HttpCookie(
+                    sessionCookieName(),
+                    session.id(),
+                    m_settings->sessionExpirationTime(),
+                    "/"
+                    )
+                );
         return session;
         }
 
