@@ -11,6 +11,7 @@
 #include "httprequest.h"
 #include "httpsettings.h"
 #include "httpserver.h"
+#include "staticfilecontroller.h"
 #include <QSet>
 #include <QSetIterator>
 #include <QHashIterator>
@@ -74,6 +75,10 @@ HttpSession HttpSessionStore::session(HttpRequest *request, HttpResponse *respon
                     "/"
                     )
                 );
+        response->setHeader(
+                "X-Session-Expires", 
+                StaticFileController::toGMTString(QDateTime::currentDateTime().addSecs(m_settings->sessionExpirationTime()).toUTC()) 
+                );
         return session;
         }
 
@@ -86,6 +91,10 @@ HttpSession HttpSessionStore::session(HttpRequest *request, HttpResponse *respon
                 m_settings->sessionExpirationTime(),
                 "/"
                 )
+            );
+    response->setHeader(
+            "X-Session-Expires", 
+            StaticFileController::toGMTString(QDateTime::currentDateTime().addSecs(m_settings->sessionExpirationTime()).toUTC()) 
             );
     return session;
 }
