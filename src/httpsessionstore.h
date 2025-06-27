@@ -12,6 +12,7 @@
 #include <QHash>
 #include <QTimer>
 #include <QString>
+#include <QList>
 #include "httpsession.h"
 
 namespace HobrasoftHttpd {
@@ -74,7 +75,7 @@ class HttpSessionStore : public QObject {
 
     bool contains(const QByteArray& id) const { return m_sessions.contains(id); }
 
-    QList<HttpSessionData> sessionsData() const { 
+    QList<HttpSessionData> sessionsData() const {
         QList<HttpSessionData> list;
         QHashIterator<QByteArray, HttpSession> iterator(m_sessions);
         while (iterator.hasNext()) {
@@ -83,6 +84,11 @@ class HttpSessionStore : public QObject {
             }
         return list;
         }
+
+    /**
+     * @brief Adds session data to the store
+     */
+    void setSessionData(const HttpSessionData& data);
 
   signals:
 

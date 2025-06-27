@@ -153,6 +153,11 @@ class HttpSession {
     HttpSession(const HttpSession& other);
 
     /**
+     * @brief Constructor from session data
+     */
+    HttpSession(const HttpSessionData& data);
+
+    /**
      * @brief Operator=(), should be private. Do not use in your code
      */
     HttpSession& operator= (const HttpSession& other);

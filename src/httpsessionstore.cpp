@@ -135,3 +135,9 @@ void HttpSessionStore::remove(HttpSession session) {
 }
 
 
+void HttpSessionStore::setSessionData(const HttpSessionData& data) {
+    HttpSession session(data);
+    m_sessions.insert(session.id(), session);
+}
+
+

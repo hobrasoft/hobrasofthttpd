@@ -29,6 +29,11 @@ HttpSession::HttpSession(const HttpSession& other) {
 }
 
 
+HttpSession::HttpSession(const HttpSessionData& data) {
+    m_data = QSharedPointer<HttpSessionData>(new HttpSessionData(data));
+}
+
+
 HttpSession& HttpSession::operator= (const HttpSession& other) {
     QMutexLocker locker1(&m_mutex);
     m_data = other.m_data;
