@@ -217,7 +217,11 @@ HttpSettings::HttpSettings(const QSettings *settings, QObject *parent) : QObject
 }
 
 
+#if QT_VERSION > 0x060000
+bool HttpSettings::ignoreSslError(QSslError::SslError error) const {
+#else
 bool HttpSettings::ignoreSslError(QSslError error) const {
+#endif
     if (m_ignoreAllSslErrors) { 
         return true;
         }

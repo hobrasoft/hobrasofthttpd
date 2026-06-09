@@ -14,6 +14,11 @@
 #include <QPointer>
 #include <QThread>
 #include <QStringList>
+#if QT_VERSION > 0x060000
+#include <QRegularExpression>
+#else
+#include <QRegExp>
+#endif
 
 using namespace HobrasoftHttpd;
 
@@ -48,7 +53,11 @@ void HttpServer::start() {
     QString address = m_settings->address();
 
     close();
+    #if QT_VERSION > 0x060000
+    QStringList addresses = address.split(QRegularExpression("\\s+"));
+    #else
     QStringList addresses = address.split(QRegExp("\\s+"));
+    #endif
     for (int i=0; i<addresses.size(); i++) {
         HttpTcpServer *server = new HttpTcpServer(this);
         connect(server, SIGNAL(    newConnection(QPointer<HttpConnection>)),
@@ -130,10 +139,11 @@ void HttpServer::slotNewConnection(QPointer<HttpConnection> connection) {
 
 void HttpServer::slotConnectionClosed(QObject *object) {
     Q_UNUSED(object);
-    // QPointer<HttpConnection> connection = qobject_cast<HobrasoftHttpd::HttpConnection*>(object);
-    // HttpConnection *connection = qobject_cast<HobrasoftHttpd::HttpConnection*>(object);
-    // m_connections.removeAll(connection);
+    #if QT_VERSION > 0x060000
+    m_connections.removeAll(QPointer<HobrasoftHttpd::HttpConnection>());
+    #else
     m_connections.removeAll(NULL);
+    #endif
 }
 
 

@@ -17,6 +17,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QDateTime>
+#include <QRegularExpression>
 #include <QDebug>
 
 using namespace HobrasoftHttpd;
@@ -87,7 +88,11 @@ QByteArray ShtmlController::readFile(const QString& path, HttpResponse *response
 
     while (!file.atEnd()) {
         QString line = QString::fromUtf8(file.readLine());
+        #if QT_VERSION > 0x060000
+        if (line.contains(QRegularExpression("^\\s*<!--\\s*#include\\s+\".+\"\\s*-->\\s*$"))) {
+        #else
         if (line.contains(QRegExp("^\\s*<!--\\s*#include\\s+\".+\"\\s*-->\\s*$"))) {
+        #endif
             QStringList lineparts = line.split('"');
             if (lineparts.size() != 3) {
                 continue;

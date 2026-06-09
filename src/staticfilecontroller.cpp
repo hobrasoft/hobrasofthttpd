@@ -17,7 +17,6 @@
 #include <QDir>
 #include <QDateTime>
 #include <QDebug>
-#include <QRegExp>
 
 using namespace HobrasoftHttpd;
 

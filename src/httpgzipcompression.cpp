@@ -4,6 +4,7 @@
  */
 #include "httpgzipcompression.h"
 #include <QDataStream>
+#include <QIODevice>
 #include <QDebug>
 
 

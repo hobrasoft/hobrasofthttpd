@@ -12,6 +12,11 @@
 #include <QDir>
 #include <QMapIterator>
 #include <QDebug>
+#if QT_VERSION > 0x060000
+#include <QRegularExpression>
+#else
+#include <QRegExp>
+#endif
 
 using namespace HobrasoftHttpd;
 
@@ -305,7 +310,11 @@ void HttpRequest::parseMultiPartFile() {
                     }
                 }
             if (line.startsWith("Content-Type:", Qt::CaseInsensitive)) { 
+                #if QT_VERSION > 0x060000
+                contentType = line.remove(QRegularExpression("^Content-Type:\\s*", QRegularExpression::CaseInsensitiveOption));
+                #else
                 contentType = line.remove(QRegExp("^Content-Type:\\s*", Qt::CaseInsensitive));
+                #endif
                 continue;
                 }
 
@@ -364,7 +373,11 @@ void HttpRequest::parseMultiPartFile() {
 
 
 QString HttpRequest::header(const QString& name) const { 
+    #if QT_VERSION > 0x060000
+    QMultiMapIterator<QString, QString>  iterator(m_headers);
+    #else
     QMapIterator<QString, QString>  iterator(m_headers);
+    #endif
     while (iterator.hasNext()) {
         iterator.next();
         if (iterator.key().toLower() == name.toLower()) {
@@ -376,7 +389,11 @@ QString HttpRequest::header(const QString& name) const {
 
 
 QList<QString>  HttpRequest::headers(const QString& name) const {
+    #if QT_VERSION > 0x060000
+    QMultiMapIterator<QString, QString>  iterator(m_headers);
+    #else
     QMapIterator<QString, QString>  iterator(m_headers);
+    #endif
     while (iterator.hasNext()) {
         iterator.next();
         if (iterator.key().toLower() == name.toLower()) {

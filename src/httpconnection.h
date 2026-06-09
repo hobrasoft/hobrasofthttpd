@@ -11,6 +11,7 @@
 #include <QObject>
 #include <QTcpSocket>
 #include <QSslCertificate>
+#include <QSslError>
 #include <QTimer>
 #include <QDateTime>
 #include <QHostAddress>
@@ -133,8 +134,13 @@ class HttpConnection : public QObject {
     void        slotCreateSocket();
     void        slotEncrypted();
     #if QT_VERSION > 0x050000
+    #if QT_VERSION > 0x060000
+    void        slotSslErrors(const QList<QSslError::SslError>&);
+    void        slotPeerVerifyError(const QSslError::SslError&);
+    #else
     void        slotSslErrors(const QList<QSslError>&);
     void        slotPeerVerifyError(const QSslError&);
+    #endif
     #endif
 
   private:

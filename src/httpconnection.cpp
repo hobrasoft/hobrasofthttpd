@@ -13,8 +13,11 @@
 #include "httpsettings.h"
 #include "httpthread.h"
 #include <QTcpSocket>
+#include <QFileInfo>
+#include <QSslKey>
 #include <QSslSocket>
 #include <QSslCertificate>
+#include <QSslConfiguration>
 
 #include <QDebug>
 
@@ -97,21 +100,66 @@ void HttpConnection::slotCreateSocket() {
          * FIX: this code should load all certificates in the chain
          * not only the first one.
          */
-        QList<QSslCertificate> cacerts;
+/*
         QFile cacertf(settings()->sslCaCrt());
         if (cacertf.open(QIODevice::ReadOnly)) {
             cacerts << QSslCertificate(&cacertf);
             cacertf.close();
             }
+*/
 
+        QList<QSslCertificate> caCertificates;
+
+        if (!settings()->sslCaCrt().isEmpty() &&
+            QFileInfo::exists(settings()->sslCaCrt())) {
+            QList<QSslCertificate> caCertificates;
+            QFile fileca(settings()->sslCaCrt());
+            fileca.open(QIODevice::ReadOnly);
+            caCertificates << QSslCertificate(&fileca);
+            fileca.close();
+            if (caCertificates.isEmpty()) {
+                qDebug() << "No CA certificate loaded!";
+                }
+            }
+
+        #if QT_VERSION > 0x060000
+        QSslConfiguration sslConfiguration = QSslConfiguration::defaultConfiguration();
+        sslConfiguration.setCaCertificates(caCertificates);
+
+        if (!settings()->sslKey().isEmpty() &&
+            QFileInfo::exists(settings()->sslKey())) {
+            QFile filekey(settings()->sslKey());
+            filekey.open(QIODevice::ReadOnly);
+            QSslKey key = QSslKey(&filekey, QSsl::Rsa);
+            sslConfiguration.setPrivateKey(key);
+            if (key.isNull()) {
+                qDebug() << "SSL key isNull" << filekey.fileName();
+                }
+            }
+
+        if (!settings()->sslCrt().isEmpty() && 
+            QFileInfo::exists(settings()->sslCrt())) {
+            QFile filecrt(settings()->sslCrt());
+            filecrt.open(QIODevice::ReadOnly);
+            QSslCertificate crt = QSslCertificate(&filecrt);
+            sslConfiguration.setLocalCertificate(crt);
+            if (crt.isNull()) {
+                qDebug() << "SSL certifikat isNull" << filecrt.fileName();
+                }
+            }
+
+
+        socket->setSslConfiguration(sslConfiguration);
+        #else
         /**
          * Sets the private key, local certificate and 
          * CA certificates chain to the QSslSocket.
          */
         socket->setPrivateKey(settings()->sslKey());
         socket->setLocalCertificate(settings()->sslCrt());
-        socket->setCaCertificates(cacerts);
+        socket->setCaCertificates(caCertificates);
         socket->startServerEncryption();
+        #endif
 
         }
 
@@ -303,12 +351,35 @@ void HttpConnection::slotEncrypted() {
 /**
  * @brief Slot is called when the peer's certificate is not verified
  */
+#if QT_VERSION > 0x060000
+void HttpConnection::slotPeerVerifyError(const QSslError::SslError& error) {
+#else
 void HttpConnection::slotPeerVerifyError(const QSslError& error) {
+#endif
     Q_UNUSED(error);
     m_verified = false;
 }
 
 
+#if QT_VERSION > 0x060000
+/**
+ * @brief Slot is called when an SSL error occured
+ */
+void HttpConnection::slotSslErrors(const QList<QSslError::SslError>& errors) {
+    QList<QSslError> ignoreList;
+    for (int i=0; i<errors.size(); i++) {
+        if (settings()->ignoreSslError(errors[i])) {
+            ignoreList << QSslError(errors[i]);
+            continue;
+            }
+        // qDebug() << "sslError" << errors[i].errorString();
+        }
+
+    QSslSocket *socket = qobject_cast<QSslSocket *>(m_socket);
+    socket->ignoreSslErrors(ignoreList);
+}
+
+#else
 /**
  * @brief Slot is called when an SSL error occured
  */
@@ -324,8 +395,9 @@ void HttpConnection::slotSslErrors(const QList<QSslError>& errors) {
 
     QSslSocket *socket = qobject_cast<QSslSocket *>(m_socket);
     socket->ignoreSslErrors(ignoreList);
-
 }
+
+#endif
 #endif
 
 

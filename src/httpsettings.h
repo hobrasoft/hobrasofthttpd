@@ -130,7 +130,11 @@ class HttpSettings : public QObject {
     void            setDefaultSslCaCrt(const QString& x) { m_default_sslCaCrt = x; }        ///< Set default SSL CA certificate
 
 
+    #if QT_VERSION > 0x060000
+    bool            ignoreSslError(QSslError::SslError error) const;                        ///< Returns true if the error should be ignored, default true
+    #else
     bool            ignoreSslError(QSslError error) const;                                  ///< Returns true if the error should be ignored, default true
+    #endif
 
     /**
      * @brief Read settings from configuration file. 
@@ -189,7 +193,11 @@ class HttpSettings : public QObject {
     QString         m_sslKey;
     QString         m_sslCrt;
     QString         m_sslCaCrt;
+    #if QT_VERSION > 0x060000
+    QSet<QSslError::SslError> m_sslErrors;
+    #else
     QSet<QSslError> m_sslErrors;
+    #endif
     bool            m_ignoreAllSslErrors;
     bool            m_threads;
     bool            m_gzip;
