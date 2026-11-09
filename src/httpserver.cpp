@@ -10,7 +10,6 @@
 #include "httprequesthandler.h"
 #include "httptcpserver.h"
 #include "staticfilecontroller.h"
-#include <QSslSocket>
 #include <QPointer>
 #include <QThread>
 #include <QStringList>

@@ -7,8 +7,6 @@
 #include "httpserver.h"
 #include "httpsettings.h"
 #include "httpconnection.h"
-#include <QSslSocket>
-#include <QSslCertificate>
 #include <QFile>
 #include <QDateTime>
 #include <QDebug>

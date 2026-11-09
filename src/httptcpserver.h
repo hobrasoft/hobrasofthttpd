@@ -9,7 +9,6 @@
 #include <QTcpServer>
 #include <QList>
 #include <QHash>
-#include <QSslError>
 #include <QSslCertificate>
 #include <QPointer>
 #include "httpconnection.h"

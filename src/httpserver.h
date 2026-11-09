@@ -12,7 +12,6 @@
 #include <QTcpServer>
 #include <QHostAddress>
 #include <QString>
-#include <QSslError>
 #include <QSet>
 #include <QPointer>
 #include "testsettings.h"
