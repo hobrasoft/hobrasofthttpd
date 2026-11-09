@@ -1,6 +1,11 @@
 INCLUDEPATH += $$PWD
 DEPENDPATH  += $$PWD
 
+# SSL support is optional. Enable it with: qmake CONFIG+=ssl
+contains(CONFIG, ssl) {
+    DEFINES += HOBRASOFT_HTTPD_SSL
+}
+
 HEADERS += \
  $$PWD/hobrasofthttpd.h \
  $$PWD/httpserver.h \
@@ -35,4 +40,3 @@ SOURCES += \
  $$PWD/httpgzipcompression.cpp \
  $$PWD/httptcpserver.cpp \
  $$PWD/httpthread.cpp \
-

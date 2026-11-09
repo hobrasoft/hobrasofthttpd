@@ -26,8 +26,10 @@
 #include <QList>
 #include <QUrl>
 #include <QEventLoop>
+#ifdef HOBRASOFT_HTTPD_SSL
 #include <QSslConfiguration>
 #include <QSslKey>
+#endif
 #if QT_VERSION > 0x050000
 #include <QUrlQuery>
 #endif
@@ -38,10 +40,12 @@
         .arg(m_port) \
         .arg(x))
 
+#ifdef HOBRASOFT_HTTPD_SSL
 #define QURLSSL(x) \
     QUrl(QString("https://localhost:%1/%2") \
         .arg(m_port) \
         .arg(x))
+#endif
 
 using namespace HobrasoftHttpd;
 
@@ -93,7 +97,9 @@ void Test::settingsDefaultValues() {
     QVERIFY(s.sessionExpirationTime()   == 3600);
     QVERIFY(s.maxRequestSize()          == 16384);
     QVERIFY(s.maxMultiPartSize()        == 16728064);
+    #ifdef HOBRASOFT_HTTPD_SSL
     QVERIFY(s.useSSL()                  == false);
+    #endif
 }
 
 
@@ -110,7 +116,9 @@ void Test::settingsCustomValues1() {
     q.setValue("http/sessionExpirationTime",   3601);
     q.setValue("http/maxRequestSize",          16385);
     q.setValue("http/maxMultiPartSize",        16728065);
+    #ifdef HOBRASOFT_HTTPD_SSL
     q.setValue("http/useSSL",                  true);
+    #endif
     q.sync();
     HttpSettings s(&q,0);
     QVERIFY(s.port()                    == 8081);
@@ -124,7 +132,9 @@ void Test::settingsCustomValues1() {
     QVERIFY(s.sessionExpirationTime()   == 3601);
     QVERIFY(s.maxRequestSize()          == 16385);
     QVERIFY(s.maxMultiPartSize()        == 16728065);
+    #ifdef HOBRASOFT_HTTPD_SSL
     QVERIFY(s.useSSL()                  == true);
+    #endif
 }
 
 
@@ -467,6 +477,7 @@ Httpd *Httpd::create(QObject *parent, const QHostAddress& address, int port) {
 }
 
 
+#ifdef HOBRASOFT_HTTPD_SSL
 Httpd *Httpd::createSSL(QObject *parent, const QHostAddress& address, int port) {
     QSettings q;
     q.clear();
@@ -485,6 +496,7 @@ Httpd *Httpd::createSSL(QObject *parent, const QHostAddress& address, int port) 
     HttpSettings *hq = new HttpSettings(&q,parent);
     return new Httpd(hq,parent);
 }
+#endif
 
 
 RequestMapper::RequestMapper(HobrasoftHttpd::HttpConnection *parent) : HobrasoftHttpd::HttpRequestHandler(parent) {
@@ -1044,6 +1056,7 @@ void Test::staticFileController() {
 }
 
 
+#ifdef HOBRASOFT_HTTPD_SSL
 void Test::slotHttpSSL(HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response) {
     QVERIFY(request->connection()->commonName() == "client");
     QVERIFY(request->connection()->verified() == true);
@@ -1258,4 +1271,4 @@ void Test::httpSSLselfsigned() {
 
 }
 
-
+#endif

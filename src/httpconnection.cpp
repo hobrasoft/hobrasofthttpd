@@ -14,10 +14,12 @@
 #include "httpthread.h"
 #include <QTcpSocket>
 #include <QFileInfo>
+#ifdef HOBRASOFT_HTTPD_SSL
 #include <QSslKey>
 #include <QSslSocket>
 #include <QSslCertificate>
 #include <QSslConfiguration>
+#endif
 
 #include <QDebug>
 
@@ -58,9 +60,12 @@ HttpConnection::HttpConnection(HttpServer *parent, QINTPTR socketDescriptor) : Q
 
 
 void HttpConnection::slotCreateSocket() {
+#ifdef HOBRASOFT_HTTPD_SSL
     if (!settings()->useSSL()) {
+#endif
         m_socket = new QTcpSocket(this);
         m_socket->setSocketDescriptor(m_socketDescriptor);
+#ifdef HOBRASOFT_HTTPD_SSL
         }
 
     if (settings()->useSSL()) {
@@ -162,6 +167,7 @@ void HttpConnection::slotCreateSocket() {
         #endif
 
         }
+#endif
 
     m_peerAddress = m_socket->peerAddress();
     m_request = NULL;
@@ -202,11 +208,14 @@ void HttpConnection::startTimeout() {
 }
 
 
+#ifdef HOBRASOFT_HTTPD_SSL
 void HttpConnection::setPeerCertificate(const QSslCertificate& crt) {
     m_peerCertificate = crt;
 }
+#endif
 
 
+#ifdef HOBRASOFT_HTTPD_SSL
 QString HttpConnection::commonName() const {
     #if QT_VERSION > 0x050000
     QDateTime now = QDateTime::currentDateTime();
@@ -221,6 +230,7 @@ QString HttpConnection::commonName() const {
     return m_peerCertificate.subjectInfo(QSslCertificate::CommonName);
     #endif
 }
+#endif
 
 
 void HttpConnection::close() {
@@ -342,6 +352,7 @@ QVariant HttpConnection::webStatus() const {
 }
 
 
+#ifdef HOBRASOFT_HTTPD_SSL
 void HttpConnection::slotEncrypted() {
     QSslSocket *socket = qobject_cast<QSslSocket *>(m_socket);
     m_peerCertificate = socket->peerCertificate();
@@ -355,6 +366,7 @@ void HttpConnection::slotEncrypted() {
 void HttpConnection::slotPeerVerifyError(const QSslError::SslError& error) {
 #else
 void HttpConnection::slotPeerVerifyError(const QSslError& error) {
+#endif
 #endif
     Q_UNUSED(error);
     m_verified = false;
@@ -399,6 +411,5 @@ void HttpConnection::slotSslErrors(const QList<QSslError>& errors) {
 
 #endif
 #endif
-
 
 

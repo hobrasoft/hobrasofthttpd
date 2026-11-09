@@ -65,9 +65,11 @@
  * @}
  */
 
+#ifdef HOBRASOFT_HTTPD_SSL
 int qHash(const QSslError error) {
     return qHash(error.error());
 }
+#endif
 
 using namespace HobrasoftHttpd;
 
@@ -89,7 +91,9 @@ void HttpSettings::setDefaultValues() {
     m_sessionExpirationTime = 3600;
     m_maxRequestSize        = 16384;
     m_maxMultiPartSize      = 16728064;
+    #ifdef HOBRASOFT_HTTPD_SSL
     m_useSSL                = false;
+    #endif
     m_threads               = false;
 
     m_default_section2 = "http";
@@ -104,11 +108,13 @@ void HttpSettings::setDefaultValues() {
     m_default_sessionExpirationTime = 3600;
     m_default_maxRequestSize = 16384;
     m_default_maxMultiPartSize = 16728064;
+    #ifdef HOBRASOFT_HTTPD_SSL
     m_default_useSSL = false;
     m_default_sslKey = "";
     m_default_sslCrt = "";
     m_default_sslCaCrt = "";
     m_default_ignoreAllSslErrors = true;
+    #endif
     m_default_threads = true;
     m_default_gzip = true;
 }
@@ -151,6 +157,7 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
                               settings->value(m_section2 + "/maxRequestSize",        m_default_maxRequestSize)).toInt();
     m_maxMultiPartSize      = settings->value(  section  + "/maxMultiPartSize", 
                               settings->value(m_section2 + "/maxMultiPartSize",      m_default_maxMultiPartSize)).toInt();
+#ifdef HOBRASOFT_HTTPD_SSL
     m_useSSL                = settings->value(  section  + "/useSSL",
                               settings->value(m_section2 + "/useSSL",                m_default_useSSL)).toBool();
     m_sslKey                = settings->value(  section  + "/sslKey",
@@ -166,7 +173,7 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
     m_gzip                  = settings->value(  section  + "/gzip",              
                               settings->value(m_section2 + "/gzip",                  m_default_gzip)).toBool();
 
-    #define SSLERROR(x) { if (settings->value(  section  + "/Ignore" + #x, \
+#define SSLERROR(x) { if (settings->value(  section  + "/Ignore" + #x, \
                               settings->value(m_section2 + "/Ignore" + #x, false)).toBool()) { \
                                 m_sslErrors << QSslError::x; \
                                 } \
@@ -196,9 +203,10 @@ void HttpSettings::readSettings(const QSettings *settings, const QString& sectio
     SSLERROR(HostNameMismatch);
     SSLERROR(UnspecifiedError);
     SSLERROR(NoSslSupport);
-    #if QT_VERSION > 0x040700
+#if QT_VERSION > 0x040700
     SSLERROR(CertificateBlacklisted);
-    #endif
+#endif
+#endif
 
 }
 
@@ -217,6 +225,7 @@ HttpSettings::HttpSettings(const QSettings *settings, QObject *parent) : QObject
 }
 
 
+#ifdef HOBRASOFT_HTTPD_SSL
 #if QT_VERSION > 0x060000
 bool HttpSettings::ignoreSslError(QSslError::SslError error) const {
 #else
@@ -227,5 +236,4 @@ bool HttpSettings::ignoreSslError(QSslError error) const {
         }
     return m_sslErrors.contains(error);
 }
-
-
+#endif

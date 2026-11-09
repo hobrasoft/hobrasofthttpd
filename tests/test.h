@@ -13,7 +13,9 @@
 #include <QThread>
 #include <QNetworkReply>
 #include <QList>
+#ifdef HOBRASOFT_HTTPD_SSL
 #include <QSslError>
+#endif
 #include "httpserver.h"
 #include "httprequesthandler.h"
 
@@ -44,7 +46,9 @@ class Httpd : public HobrasoftHttpd::HttpServer {
   public:
     Httpd(HobrasoftHttpd::HttpSettings*, QObject *parent);
     static Httpd *create(QObject *parent, const QHostAddress& address, int port);
+    #ifdef HOBRASOFT_HTTPD_SSL
     static Httpd *createSSL(QObject *parent, const QHostAddress& address, int port);
+    #endif
     virtual HobrasoftHttpd::HttpRequestHandler *requestHandler(HobrasoftHttpd::HttpConnection *);
   signals:
     void sigService(HobrasoftHttpd::HttpRequest *, HobrasoftHttpd::HttpResponse *);
@@ -103,8 +107,10 @@ class Test : public QObject {
     void    httpServiceSession();
     void    httpServiceAbort();
     void    staticFileController();
+    #ifdef HOBRASOFT_HTTPD_SSL
     void    httpSSL();
     void    httpSSLselfsigned();
+    #endif
 
     void    slotServiceGet              (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotServicePost             (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
@@ -116,9 +122,11 @@ class Test : public QObject {
     void    slotServiceSession          (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotServiceAbort            (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotStaticFileController    (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
+    #ifdef HOBRASOFT_HTTPD_SSL
     void    slotHttpSSL                 (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotHttpSSLselfsigned       (HobrasoftHttpd::HttpRequest *request, HobrasoftHttpd::HttpResponse *response);
     void    slotSslErrors               (QNetworkReply *, QList<QSslError>);
+    #endif
 
     void    cleanupTestCase();
 

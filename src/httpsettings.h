@@ -9,10 +9,12 @@
 
 #include <QHostAddress>
 #include <QSettings>
+#ifdef HOBRASOFT_HTTPD_SSL
 #include <QSslError>
 #include <QSet>
 
 int qHash(const QSslError error);
+#endif
 
 namespace HobrasoftHttpd {
 
@@ -105,9 +107,11 @@ class HttpSettings : public QObject {
     void            setTempDir(const QString& x) { m_tempDir = x; }                         ///< Sets path to temporary directory
     void            setDefaultTempDir(const QString& x) { m_default_tempDir = x; }          ///< Sets default path to temporary directory
 
+    #ifdef HOBRASOFT_HTTPD_SSL
     bool            useSSL() const { return m_useSSL; }                                     ///< Returns status of SSL connections
     void            setUseSSL(bool x) { m_useSSL = x; }                                     ///< Set status of SSL connections
     void            setDefaultUseSSL(bool x) { m_default_useSSL = x; }                      ///< Set default status of SSL connections
+    #endif
 
     bool            threads() const { return m_threads; }                                   ///< Returns true if server starts new thread for each connection
     void            setThreads(bool x) { m_threads = x; }                                   ///< Set starting new thread for each connection
@@ -117,6 +121,7 @@ class HttpSettings : public QObject {
     void            setGzip(bool x) { m_gzip = x; }                                         ///< Enable gzip compression
     void            setDefaultGzip(bool x) { m_default_gzip = x; }                          ///< Set default value for gzip compression
 
+    #ifdef HOBRASOFT_HTTPD_SSL
     const QString&  sslKey() const { return m_sslKey; }                                     ///< Returns SSL key
     void            setSslKey(const QString& x) { m_sslKey = x; }                           ///< Set SSL key
     void            setDefaultSslKey(const QString& x) { m_default_sslKey = x; }            ///< Set default SSL key
@@ -134,6 +139,7 @@ class HttpSettings : public QObject {
     bool            ignoreSslError(QSslError::SslError error) const;                        ///< Returns true if the error should be ignored, default true
     #else
     bool            ignoreSslError(QSslError error) const;                                  ///< Returns true if the error should be ignored, default true
+    #endif
     #endif
 
     /**
@@ -189,6 +195,7 @@ class HttpSettings : public QObject {
     int             m_maxRequestSize;
     int             m_maxMultiPartSize;
     QString         m_tempDir;
+    #ifdef HOBRASOFT_HTTPD_SSL
     bool            m_useSSL;
     QString         m_sslKey;
     QString         m_sslCrt;
@@ -199,6 +206,7 @@ class HttpSettings : public QObject {
     QSet<QSslError> m_sslErrors;
     #endif
     bool            m_ignoreAllSslErrors;
+    #endif
     bool            m_threads;
     bool            m_gzip;
 
@@ -216,11 +224,13 @@ class HttpSettings : public QObject {
     int             m_default_maxRequestSize;
     int             m_default_maxMultiPartSize;
     QString         m_default_tempDir;
+    #ifdef HOBRASOFT_HTTPD_SSL
     bool            m_default_useSSL;
     QString         m_default_sslKey;
     QString         m_default_sslCrt;
     QString         m_default_sslCaCrt;
     bool            m_default_ignoreAllSslErrors;
+    #endif
     bool            m_default_threads;
     bool            m_default_gzip;
     #endif

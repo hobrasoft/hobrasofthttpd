@@ -10,8 +10,10 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#ifdef HOBRASOFT_HTTPD_SSL
 #include <QSslCertificate>
 #include <QSslError>
+#endif
 #include <QTimer>
 #include <QDateTime>
 #include <QHostAddress>
@@ -82,6 +84,7 @@ class HttpConnection : public QObject {
     /**
      * @brief Returns true if the client is verified using SSL
      */
+    #ifdef HOBRASOFT_HTTPD_SSL
     bool verified() const { return m_verified; }
 
     /**
@@ -100,6 +103,7 @@ class HttpConnection : public QObject {
      * @brief Returns Peer's certificate
      */
     const QSslCertificate peerCertificate() const { return m_peerCertificate; }
+    #endif
 
     /**
      * @brief Returns true if the connection is in connected state
@@ -132,6 +136,7 @@ class HttpConnection : public QObject {
     void        slotRead();
     void        slotDisconnected();
     void        slotCreateSocket();
+    #ifdef HOBRASOFT_HTTPD_SSL
     void        slotEncrypted();
     #if QT_VERSION > 0x050000
     #if QT_VERSION > 0x060000
@@ -140,6 +145,7 @@ class HttpConnection : public QObject {
     #else
     void        slotSslErrors(const QList<QSslError>&);
     void        slotPeerVerifyError(const QSslError&);
+    #endif
     #endif
     #endif
 
@@ -158,7 +164,9 @@ class HttpConnection : public QObject {
     QList<HttpRequest *> m_requests;
     HttpRequestHandler  *m_handler;
     HttpServer          *m_parent;
+    #ifdef HOBRASOFT_HTTPD_SSL
     QSslCertificate      m_peerCertificate;
+    #endif
     QHostAddress         m_peerAddress;
     bool                 m_connected;
     bool                 m_inService;

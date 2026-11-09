@@ -13,6 +13,15 @@ http://www.hobrasoft.cz/en/httpserver/doc/
     qmake
     make
 
+SSL support is not compiled by default. Enable it explicitly when configuring
+the project:
+
+    qmake CONFIG+=ssl
+    make
+
+When SSL is disabled, the SSL-related API and implementation are omitted from
+the build.
+
 ## Example
 Start the example:
     cd example/htdocs
@@ -118,4 +127,3 @@ If you have your application based on 1.0 version, you should modify your code w
 - method HttpResponse::write() writes the data to socket when the 
   flush() method was called. Flush is non-blocking and the HttpReponse object is deleted automatically when
   all data are written to the socket.
-
